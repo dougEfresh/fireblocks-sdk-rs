@@ -30,7 +30,8 @@ jobs:
       - name: install rust nightly
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly        
+          toolchain: nightly
+          components: rustfmt
       - name: Check formatting
         run: |
           cargo fmt --all -- --check
@@ -44,7 +45,7 @@ jobs:
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
       - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
         with:
           components: llvm-tools
       - name: Install cargo-llvm-cov and cargo-make
@@ -91,7 +92,8 @@ jobs:
       - name: Install Rust nightly
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly        
+          toolchain: nightly
+          components: clippy
       - name: clippy
         run: |
           cargo clippy --all-targets
