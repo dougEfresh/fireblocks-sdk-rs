@@ -117,11 +117,9 @@ impl FireblocksHttpClient {
     let text = response.text().await?;
     // debug!("body response {}", text.clone());
     let r: Result<R> = match status {
-      StatusCode::OK | StatusCode::ACCEPTED | StatusCode::CREATED => {
-        match serde_json::from_str::<R>(&text) {
-          Ok(deserialized) => Ok((deserialized, request_id)),
-          Err(err) => Err(FireblocksError::SerdeJson { request_id, err, text }),
-        }
+      StatusCode::OK | StatusCode::ACCEPTED | StatusCode::CREATED => match serde_json::from_str::<R>(&text) {
+        Ok(deserialized) => Ok((deserialized, request_id)),
+        Err(err) => Err(FireblocksError::SerdeJson { request_id, err, text }),
       },
       StatusCode::NOT_FOUND => Err(FireblocksError::NotFound { request_id, path: String::from(path) }),
       StatusCode::BAD_REQUEST => Err(FireblocksError::BadRequest { request_id, path: String::from(path), text }),

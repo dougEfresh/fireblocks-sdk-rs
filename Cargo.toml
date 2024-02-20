@@ -55,7 +55,7 @@ futures = { version = "0.3" }
 human-panic = { version = "1.2" }
 sha2 = "0.10"
 rand = "0.8"
-sqlx = { version = "0.7", default-features = false , features = ["macros"] }
+
 ### WASM #####
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"], optional = true }
 js-sys = { version = "0.3", optional = true }

@@ -97,20 +97,16 @@ mod tests {
       let env = dotenvy::dotenv();
       let api_key: Option<String> = match env {
         Err(_) => None,
-        Ok(_) => {
-          match std::env::var("FIREBLOCKS_API_KEY") {
-            Err(_) => None,
-            Ok(k) => Some(k),
-          }
+        Ok(_) => match std::env::var("FIREBLOCKS_API_KEY") {
+          Err(_) => None,
+          Ok(k) => Some(k),
         },
       };
       let path: Option<String> = match env {
         Err(_) => None,
-        Ok(_) => {
-          match std::env::var("FIREBLOCKS_SECRET_PATH") {
-            Err(_) => None,
-            Ok(k) => Some(k),
-          }
+        Ok(_) => match std::env::var("FIREBLOCKS_SECRET_PATH") {
+          Err(_) => None,
+          Ok(k) => Some(k),
         },
       };
       if api_key.is_none() || path.is_none() {
