@@ -14,7 +14,6 @@ env:
   CARGO_INCREMENTAL: 0
   CARGO_NET_RETRY: 10
   RUSTUP_MAX_RETRIES: 10
-  HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
   CARGO_TERM_COLOR: always
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   CI: 1
@@ -28,6 +27,9 @@ jobs:
         uses: actions/checkout@v4
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly        
       - name: Check formatting
         run: |
           cargo fmt --all -- --check
@@ -67,10 +69,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-#      - name: Install Rust stable
-#        uses: dtolnay/rust-toolchain@master
-#        with:
-#          toolchain: stable
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
       - name: Check examples
@@ -85,6 +87,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly        
       - name: clippy
         run: |
           cargo clippy --all-targets
@@ -97,19 +103,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly        
       - name: rustdoc
         run: |
           cargo doc
-
-  build-bot:
-    name: bot
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Cache Dependencies
-        uses: Swatinem/rust-cache@v2
-      - name: Compile
-        run: |
-          cd bot && cargo clippy && cargo build
-
