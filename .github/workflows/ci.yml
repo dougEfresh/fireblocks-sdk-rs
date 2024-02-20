@@ -28,9 +28,8 @@ jobs:
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
       - name: install rust nightly
-        uses: dtolnay/rust-toolchain@master
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: nightly
           components: rustfmt
       - name: Check formatting
         run: |
@@ -45,13 +44,11 @@ jobs:
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
       - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@master
-        with:
-          components: llvm-tools
+        uses: dtolnay/rust-toolchain@stable
       - name: Install cargo-llvm-cov and cargo-make
         uses: taiki-e/install-action@v2
         with:
-          tool: cargo-llvm-cov,cargo-make        
+          tool: cargo-llvm-cov,cargo-make
       - name: Compile
         run: |
           echo cargo test
@@ -71,10 +68,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: nightly
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
       - name: Check examples
@@ -89,11 +84,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
-      - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: nightly
-          components: clippy
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
       - name: clippy
         run: |
           cargo clippy --all-targets
@@ -106,10 +98,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
-      - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: nightly        
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
       - name: rustdoc
         run: |
           cargo doc
