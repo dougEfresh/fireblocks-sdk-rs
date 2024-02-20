@@ -1,0 +1,115 @@
+on:
+  push:
+    branches: [ "main" , "draft" ]
+  pull_request:
+    branches: [ "main" ]
+  merge_group:
+
+name: Continuous integration
+
+env:
+  RUSTFLAGS: "-Dwarnings"
+  RUSTDOCFLAGS: "-Dwarnings"
+  RUST_BACKTRACE: short
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_RETRY: 10
+  RUSTUP_MAX_RETRIES: 10
+  HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+  CARGO_TERM_COLOR: always
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  CI: 1
+
+jobs:
+  fmt:
+    name: fmt
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Check formatting
+        run: |
+          cargo fmt --all -- --check
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools
+      - name: Install cargo-llvm-cov and cargo-make
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov,cargo-make        
+      - name: Compile
+        run: |
+          echo cargo test
+          cargo llvm-cov --lcov --output-path target/lcov.info
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          slug: dougEfresh/selene-helius-sdk
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Test documentation tests
+        run: |
+          cargo test --doc
+
+  check-examples:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+#      - name: Install Rust stable
+#        uses: dtolnay/rust-toolchain@master
+#        with:
+#          toolchain: stable
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Check examples
+        run: |
+          cargo check --examples
+
+  clippy:
+    name: Run linter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: clippy
+        run: |
+          cargo clippy --all-targets
+
+  doc:
+    name: check docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: rustdoc
+        run: |
+          cargo doc
+
+  build-bot:
+    name: bot
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Compile
+        run: |
+          cd bot && cargo clippy && cargo build
+

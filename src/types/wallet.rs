@@ -1,0 +1,40 @@
+use serde_derive::{Deserialize, Serialize};
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
+pub struct WalletContainer {
+  pub id: String,
+  pub name: String,
+  pub assets: Vec<ExternalWalletAsset>,
+  pub customer_ref_id: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
+pub struct ExternalWalletAsset {
+  pub id: String,
+  pub status: String,
+  pub address: String,
+  pub tag: Option<String>,
+  pub activation_time: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[allow(dead_code)]
+pub struct WalletCreate {
+  pub name: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[allow(dead_code)]
+pub struct WalletCreateAsset {
+  pub address: String,
+  pub tag: String,
+}
+#[derive(Debug, Deserialize, Serialize)]
+#[allow(dead_code)]
+pub struct WalletCreateAssetResponse {
+  pub id: String,
+}
