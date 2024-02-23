@@ -7,7 +7,7 @@ use crate::types::{deserialize_epoch_time, deserialize_option_empty_object};
 
 #[allow(clippy::upper_case_acronyms)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, Deserialize, Serialize, Clone, Default)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq, Eq)]
 #[allow(dead_code)]
 pub enum PeerType {
   VAULT_ACCOUNT,
@@ -43,7 +43,7 @@ pub enum TransactionOperation {
 
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug, Deserialize, Default, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Default, Clone, PartialEq, Eq)]
 #[allow(dead_code)]
 pub enum TransactionStatus {
   SUBMITTED,
@@ -73,7 +73,7 @@ pub struct TransactionListOptions {
 }
 
 impl TransactionListOptions {
-  pub fn new() -> Self {
+  pub const fn new() -> Self {
     Self { params: Vec::new() }
   }
 
@@ -102,7 +102,7 @@ impl TransactionListOptions {
 
   fn add_instant(&mut self, param: &str, t: Option<&DateTime<Utc>>) -> &mut Self {
     if let Some(tm) = t {
-      self.params.push((param.to_owned(), self.epoch(tm)));
+      self.params.push((param.to_owned(), Self::epoch(tm)));
     }
     self
   }
@@ -118,11 +118,11 @@ impl TransactionListOptions {
   }
 
   pub fn limit(&mut self, limit: u16) -> &mut Self {
-    self.params.push(("limit".to_owned(), format!("{}", limit)));
+    self.params.push(("limit".to_owned(), format!("{limit}")));
     self
   }
 
-  fn epoch(&self, before: &DateTime<Utc>) -> String {
+  fn epoch(before: &DateTime<Utc>) -> String {
     format!("{}", before.timestamp_millis())
   }
 
@@ -132,7 +132,7 @@ impl TransactionListOptions {
 }
 #[allow(clippy::upper_case_acronyms)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, Deserialize, Serialize, Clone, Default)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Default)]
 pub enum VirtualType {
   OFF_EXCHANGE,
   #[default]
@@ -218,7 +218,7 @@ pub struct AuthorizationInfo {
   allow_operator_as_authorizer: bool,
   logic: Logic,
 }
-#[derive(Debug, Deserialize, PartialEq, Clone, Default)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Clone, Default)]
 #[allow(dead_code)]
 #[allow(non_camel_case_types)]
 pub enum SigningAlgorithm {
@@ -243,24 +243,6 @@ pub struct SignedMessage {
   pub algorithm: SigningAlgorithm,
   pub public_key: String,
   pub signature: Signature,
-}
-
-impl SignedMessage {
-  pub fn derivation_path(&self) -> &Vec<u64> {
-    &self.derivation_path
-  }
-
-  pub fn algorithm(&self) -> &SigningAlgorithm {
-    &self.algorithm
-  }
-
-  pub fn public_key(&self) -> &str {
-    &self.public_key
-  }
-
-  pub fn signature(&self) -> &Signature {
-    &self.signature
-  }
 }
 
 #[derive(Debug, Deserialize, Serialize, Default)]
@@ -291,7 +273,7 @@ pub struct DestinationTransferPeerPath {
 
 impl Default for DestinationTransferPeerPath {
   fn default() -> Self {
-    DestinationTransferPeerPath {
+    Self {
       peer_type: PeerType::VAULT_ACCOUNT,
       id: String::new(),
       wallet_id: None,
@@ -313,379 +295,63 @@ pub struct TransactionDestination {
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct Transaction {
-  id: String,
-  asset_id: String,
-  status: TransactionStatus,
-  destination: Option<TransferPeerPath>,
-  source: Option<TransferPeerPath>,
-  amount: Option<BigDecimal>,
-  network_fee: Option<BigDecimal>,
+  pub id: String,
+  pub asset_id: String,
+  pub status: TransactionStatus,
+  pub destination: Option<TransferPeerPath>,
+  pub source: Option<TransferPeerPath>,
+  pub amount: Option<BigDecimal>,
+  pub network_fee: Option<BigDecimal>,
   #[serde(rename = "amountUSD")]
-  amount_usd: Option<BigDecimal>,
-  net_amount: Option<BigDecimal>,
+  pub amount_usd: Option<BigDecimal>,
+  pub net_amount: Option<BigDecimal>,
   #[serde(deserialize_with = "deserialize_epoch_time")]
-  created_at: DateTime<Utc>,
+  pub created_at: DateTime<Utc>,
   #[serde(deserialize_with = "deserialize_epoch_time")]
-  last_updated: DateTime<Utc>,
+  pub last_updated: DateTime<Utc>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
-  tx_hash: Option<String>,
-  num_of_confirmations: Option<i64>,
+  pub tx_hash: Option<String>,
+  pub num_of_confirmations: Option<i64>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
-  sub_status: Option<String>,
-  signed_by: Vec<String>,
+  pub sub_status: Option<String>,
+  pub signed_by: Vec<String>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
-  created_by: Option<String>,
-  rejected_by: Option<String>,
+  pub created_by: Option<String>,
+  pub rejected_by: Option<String>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
-  destination_address: Option<String>,
+  pub destination_address: Option<String>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
-  source_address: Option<String>,
+  pub source_address: Option<String>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
-  destination_address_description: Option<String>,
+  pub destination_address_description: Option<String>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
-  destination_tag: Option<String>,
+  pub destination_tag: Option<String>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
-  address_type: Option<String>,
-  note: String,
+  pub address_type: Option<String>,
+  pub note: String,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
-  exchange_tx_id: Option<String>,
-  requested_amount: Option<BigDecimal>,
-  service_fee: Option<BigDecimal>,
-  fee_currency: String,
+  pub exchange_tx_id: Option<String>,
+  pub requested_amount: Option<BigDecimal>,
+  pub service_fee: Option<BigDecimal>,
+  pub fee_currency: String,
 
   // amlScreeningResult?: AmlScreeningResult;
-  customer_ref_id: Option<String>,
+  pub customer_ref_id: Option<String>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
-  amount_info: Option<AmountInfo>,
+  pub amount_info: Option<AmountInfo>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
-  fee_info: Option<FeeInfo>,
-  signed_messages: Option<Vec<SignedMessage>>,
-  external_tx_id: Option<String>,
+  pub fee_info: Option<FeeInfo>,
+  pub signed_messages: Option<Vec<SignedMessage>>,
+  pub external_tx_id: Option<String>,
 
-  destinations: Option<Vec<TransactionDestination>>,
+  pub destinations: Option<Vec<TransactionDestination>>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
-  block_info: Option<BlockInfo>,
-  authorization_info: Option<AuthorizationInfo>,
-  index: Option<u64>,
-  reward_info: Option<RewardInfo>,
-  fee_payer_info: Option<FeePayerInfo>,
-  extra_parameters: Option<serde_json::Value>,
-}
-
-impl Transaction {
-  pub fn id(&self) -> &str {
-    &self.id
-  }
-
-  pub fn asset_id(&self) -> &str {
-    &self.asset_id
-  }
-
-  pub fn status(&self) -> &TransactionStatus {
-    &self.status
-  }
-
-  pub fn destination(&self) -> Option<&TransferPeerPath> {
-    self.destination.as_ref()
-  }
-
-  pub fn amount(&self) -> Option<&BigDecimal> {
-    self.amount.as_ref()
-  }
-
-  pub fn network_fee(&self) -> Option<&BigDecimal> {
-    self.network_fee.as_ref()
-  }
-
-  pub fn amount_usd(&self) -> Option<&BigDecimal> {
-    self.amount_usd.as_ref()
-  }
-
-  pub fn net_amount(&self) -> Option<&BigDecimal> {
-    self.net_amount.as_ref()
-  }
-
-  pub fn created_at(&self) -> &DateTime<Utc> {
-    &self.created_at
-  }
-
-  pub fn last_updated(&self) -> &DateTime<Utc> {
-    &self.last_updated
-  }
-
-  pub fn tx_hash(&self) -> Option<&str> {
-    self.tx_hash.as_deref()
-  }
-
-  pub fn num_of_confirmations(&self) -> Option<i64> {
-    self.num_of_confirmations
-  }
-
-  pub fn sub_status(&self) -> Option<&str> {
-    self.sub_status.as_deref()
-  }
-
-  pub fn signed_by(&self) -> &Vec<String> {
-    self.signed_by.as_ref()
-  }
-
-  pub fn created_by(&self) -> Option<&str> {
-    self.created_by.as_deref()
-  }
-
-  pub fn rejected_by(&self) -> Option<&str> {
-    self.rejected_by.as_deref()
-  }
-
-  pub fn destination_address(&self) -> Option<&str> {
-    self.destination_address.as_deref()
-  }
-
-  pub fn source_address(&self) -> Option<&str> {
-    self.source_address.as_deref()
-  }
-
-  pub fn destination_address_description(&self) -> Option<&str> {
-    self.destination_address_description.as_deref()
-  }
-
-  pub fn destination_tag(&self) -> Option<&str> {
-    self.destination_tag.as_deref()
-  }
-
-  pub fn address_type(&self) -> Option<&str> {
-    self.address_type.as_deref()
-  }
-
-  pub fn note(&self) -> &str {
-    &self.note
-  }
-
-  pub fn exchange_tx_id(&self) -> Option<&str> {
-    self.exchange_tx_id.as_deref()
-  }
-
-  pub fn requested_amount(&self) -> &Option<BigDecimal> {
-    &self.requested_amount
-  }
-
-  pub fn service_fee(&self) -> &Option<BigDecimal> {
-    &self.service_fee
-  }
-
-  pub fn fee_currency(&self) -> &str {
-    &self.fee_currency
-  }
-
-  pub fn customer_ref_id(&self) -> Option<&str> {
-    self.customer_ref_id.as_deref()
-  }
-
-  pub fn amount_info(&self) -> Option<&AmountInfo> {
-    self.amount_info.as_ref()
-  }
-
-  pub fn fee_info(&self) -> Option<&FeeInfo> {
-    self.fee_info.as_ref()
-  }
-
-  pub fn signed_messages(&self) -> Option<&Vec<SignedMessage>> {
-    self.signed_messages.as_ref()
-  }
-
-  pub fn external_tx_id(&self) -> Option<&str> {
-    self.external_tx_id.as_deref()
-  }
-
-  pub fn destinations(&self) -> Option<&Vec<TransactionDestination>> {
-    self.destinations.as_ref()
-  }
-
-  pub fn block_info(&self) -> Option<&BlockInfo> {
-    self.block_info.as_ref()
-  }
-
-  pub fn authorization_info(&self) -> Option<&AuthorizationInfo> {
-    self.authorization_info.as_ref()
-  }
-
-  pub fn index(&self) -> Option<u64> {
-    self.index
-  }
-
-  pub fn reward_info(&self) -> Option<&RewardInfo> {
-    self.reward_info.as_ref()
-  }
-
-  pub fn fee_payer_info(&self) -> Option<&FeePayerInfo> {
-    self.fee_payer_info.as_ref()
-  }
-
-  pub fn extra_parameters(&self) -> Option<&serde_json::Value> {
-    self.extra_parameters.as_ref()
-  }
-
-  pub fn source(&self) -> Option<&TransferPeerPath> {
-    self.source.as_ref()
-  }
-}
-
-impl Transaction {
-  pub fn set_asset_id(&mut self, asset_id: String) {
-    self.asset_id = asset_id;
-  }
-
-  pub fn set_status(&mut self, status: TransactionStatus) {
-    self.status = status;
-  }
-
-  pub fn set_destination(&mut self, destination: Option<TransferPeerPath>) {
-    self.destination = destination;
-  }
-
-  pub fn set_source(&mut self, source: Option<TransferPeerPath>) {
-    self.source = source;
-  }
-
-  pub fn set_amount(&mut self, amount: Option<BigDecimal>) {
-    self.amount = amount;
-  }
-
-  pub fn set_network_fee(&mut self, network_fee: Option<BigDecimal>) {
-    self.network_fee = network_fee;
-  }
-
-  pub fn set_amount_usd(&mut self, amount_usd: Option<BigDecimal>) {
-    self.amount_usd = amount_usd;
-  }
-
-  pub fn set_net_amount(&mut self, net_amount: Option<BigDecimal>) {
-    self.net_amount = net_amount;
-  }
-
-  pub fn set_created_at(&mut self, created_at: DateTime<Utc>) {
-    self.created_at = created_at;
-  }
-
-  pub fn set_last_updated(&mut self, last_updated: DateTime<Utc>) {
-    self.last_updated = last_updated;
-  }
-
-  pub fn set_tx_hash(&mut self, tx_hash: Option<String>) {
-    self.tx_hash = tx_hash;
-  }
-
-  pub fn set_num_of_confirmations(&mut self, num_of_confirmations: Option<i64>) {
-    self.num_of_confirmations = num_of_confirmations;
-  }
-
-  pub fn set_sub_status(&mut self, sub_status: Option<String>) {
-    self.sub_status = sub_status;
-  }
-
-  pub fn set_signed_by(&mut self, signed_by: Vec<String>) {
-    self.signed_by = signed_by;
-  }
-
-  pub fn set_created_by(&mut self, created_by: Option<String>) {
-    self.created_by = created_by;
-  }
-
-  pub fn set_rejected_by(&mut self, rejected_by: Option<String>) {
-    self.rejected_by = rejected_by;
-  }
-
-  pub fn set_destination_address(&mut self, destination_address: Option<String>) {
-    self.destination_address = destination_address;
-  }
-
-  pub fn set_source_address(&mut self, source_address: Option<String>) {
-    self.source_address = source_address;
-  }
-
-  pub fn set_destination_address_description(&mut self, destination_address_description: Option<String>) {
-    self.destination_address_description = destination_address_description;
-  }
-
-  pub fn set_destination_tag(&mut self, destination_tag: Option<String>) {
-    self.destination_tag = destination_tag;
-  }
-
-  pub fn set_address_type(&mut self, address_type: Option<String>) {
-    self.address_type = address_type;
-  }
-
-  pub fn set_note(&mut self, note: String) {
-    self.note = note;
-  }
-
-  pub fn set_exchange_tx_id(&mut self, exchange_tx_id: Option<String>) {
-    self.exchange_tx_id = exchange_tx_id;
-  }
-
-  pub fn set_requested_amount(&mut self, requested_amount: Option<BigDecimal>) {
-    self.requested_amount = requested_amount;
-  }
-
-  pub fn set_service_fee(&mut self, service_fee: Option<BigDecimal>) {
-    self.service_fee = service_fee;
-  }
-
-  pub fn set_fee_currency(&mut self, fee_currency: String) {
-    self.fee_currency = fee_currency;
-  }
-
-  pub fn set_customer_ref_id(&mut self, customer_ref_id: Option<String>) {
-    self.customer_ref_id = customer_ref_id;
-  }
-
-  pub fn set_amount_info(&mut self, amount_info: Option<AmountInfo>) {
-    self.amount_info = amount_info;
-  }
-
-  pub fn set_fee_info(&mut self, fee_info: Option<FeeInfo>) {
-    self.fee_info = fee_info;
-  }
-
-  pub fn set_signed_messages(&mut self, signed_messages: Option<Vec<SignedMessage>>) {
-    self.signed_messages = signed_messages;
-  }
-
-  pub fn set_external_tx_id(&mut self, external_tx_id: Option<String>) {
-    self.external_tx_id = external_tx_id;
-  }
-
-  pub fn set_destinations(&mut self, destinations: Option<Vec<TransactionDestination>>) {
-    self.destinations = destinations;
-  }
-
-  pub fn set_block_info(&mut self, block_info: Option<BlockInfo>) {
-    self.block_info = block_info;
-  }
-
-  pub fn set_authorization_info(&mut self, authorization_info: Option<AuthorizationInfo>) {
-    self.authorization_info = authorization_info;
-  }
-
-  pub fn set_index(&mut self, index: Option<u64>) {
-    self.index = index;
-  }
-
-  pub fn set_reward_info(&mut self, reward_info: Option<RewardInfo>) {
-    self.reward_info = reward_info;
-  }
-
-  pub fn set_fee_payer_info(&mut self, fee_payer_info: Option<FeePayerInfo>) {
-    self.fee_payer_info = fee_payer_info;
-  }
-
-  pub fn set_extra_parameters(&mut self, extra_parameters: Option<serde_json::Value>) {
-    self.extra_parameters = extra_parameters;
-  }
-
-  pub fn set_id(&mut self, id: String) {
-    self.id = id;
-  }
+  pub block_info: Option<BlockInfo>,
+  pub authorization_info: Option<AuthorizationInfo>,
+  pub index: Option<u64>,
+  pub reward_info: Option<RewardInfo>,
+  pub fee_payer_info: Option<FeePayerInfo>,
+  pub extra_parameters: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

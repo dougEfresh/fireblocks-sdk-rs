@@ -1,6 +1,5 @@
 use std::str::FromStr;
 
-use asset::AssetResponse;
 use chrono::{DateTime, LocalResult, TimeZone, Utc};
 use serde::{de::Error as SerdeError, Deserialize, Deserializer};
 use serde_derive::Serialize;
@@ -13,6 +12,14 @@ pub mod staking;
 pub mod transaction;
 pub mod vault;
 pub mod wallet;
+
+pub use address::{Address, AddressContainer, AddressType, CreateAddressResponse};
+pub use asset::{AccountAsset, AssetResponse, SupportedAsset};
+pub use fee::*;
+pub use staking::*;
+pub use transaction::*;
+pub use vault::*;
+pub use wallet::*;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -97,16 +104,16 @@ impl PagingVaultRequest {
 }
 
 impl Paging {
-  fn epoch(&self, before: &DateTime<Utc>) -> String {
+  fn epoch(before: &DateTime<Utc>) -> String {
     format!("{}", before.timestamp_millis())
   }
 
   pub fn set_before(&mut self, before: &DateTime<Utc>) {
-    self.before = Some(self.epoch(before));
+    self.before = Some(Self::epoch(before));
   }
 
   pub fn set_after(&mut self, after: &DateTime<Utc>) {
-    self.after = Some(self.epoch(after));
+    self.after = Some(Self::epoch(after));
   }
 }
 

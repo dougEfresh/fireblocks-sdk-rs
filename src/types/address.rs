@@ -3,7 +3,7 @@ use serde_derive::Serialize;
 
 use crate::types::{deserialize_option_empty_object, Paging};
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Default)]
 #[allow(dead_code)]
 pub enum AddressType {
   #[default]

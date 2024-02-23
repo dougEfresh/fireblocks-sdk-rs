@@ -3,10 +3,6 @@ use serde_derive::{Deserialize, Serialize};
 
 use crate::types::deserialize_str_u64;
 
-pub enum Asset {
-  ETH(SupportedAsset),
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
@@ -18,32 +14,6 @@ pub struct SupportedAsset {
   pub contract_address: String,
   pub native_asset: String,
   pub decimals: i32,
-}
-
-impl SupportedAsset {
-  pub fn name(&self) -> &str {
-    &self.name
-  }
-
-  pub fn asset_type(&self) -> &str {
-    &self.asset_type
-  }
-
-  pub fn contract_address(&self) -> &str {
-    &self.contract_address
-  }
-
-  pub fn native_asset(&self) -> &str {
-    &self.native_asset
-  }
-
-  pub fn decimals(&self) -> i32 {
-    self.decimals
-  }
-
-  pub fn id(&self) -> &str {
-    &self.id
-  }
 }
 
 #[derive(Debug, Deserialize)]
