@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct WalletContainer {
@@ -33,7 +33,7 @@ pub struct WalletCreateAsset {
   pub address: String,
   pub tag: String,
 }
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 #[allow(dead_code)]
 pub struct WalletCreateAssetResponse {
   pub id: String,

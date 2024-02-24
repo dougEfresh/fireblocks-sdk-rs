@@ -71,7 +71,7 @@ pub struct StakingAmountSummary {
   pub amount: BigDecimal,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct StakingPositionsSummary {

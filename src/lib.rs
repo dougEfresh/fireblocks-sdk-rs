@@ -64,13 +64,15 @@ pub trait FireblocksClient {
 
 #[cfg(test)]
 mod tests {
+  use std::sync::{Once, OnceLock};
   use std::{str::FromStr, time::Duration};
 
   use bigdecimal::BigDecimal;
   use chrono::Utc;
   use jsonwebtoken::EncodingKey;
-  use lazy_static::lazy_static;
+  use log::warn;
   use reqwest::Client;
+  use tracing_subscriber::EnvFilter;
 
   use crate::{
     api::FireblocksHttpClient,
@@ -78,13 +80,38 @@ mod tests {
     FireblocksFactory,
   };
 
-  lazy_static! {
-    static ref _INIT: () = {
-      color_eyre::install().expect("Failed to install color_eyre");
-    };
+  static INIT: Once = Once::new();
+  static FB: OnceLock<FireblocksHttpClient> = OnceLock::new();
+
+  #[allow(clippy::unwrap_used)]
+  fn setup() {
+    INIT.call_once(|| {
+      color_eyre::install().unwrap();
+      let filter = EnvFilter::from_default_env();
+      let subscriber = tracing_subscriber::FmtSubscriber::builder().with_env_filter(filter).with_target(true).finish();
+      tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+      let env = dotenvy::dotenv();
+      if env.is_err() {
+        warn!("no .env file");
+      }
+      let api_key: Option<String> = std::env::var("FIREBLOCKS_API_KEY").ok();
+      let path: Option<String> = std::env::var("FIREBLOCKS_SECRET_PATH").ok();
+      if api_key.is_none() || path.is_none() {
+        return;
+      }
+      let rsa_pem = std::fs::read(path.unwrap()).unwrap();
+      let key = EncodingKey::from_rsa_pem(&rsa_pem[..]).unwrap();
+      let signer = crate::jwt::Signer::new(key, &api_key.unwrap());
+      let c =
+        Client::builder().connect_timeout(Duration::from_secs(5)).timeout(Duration::from_secs(30)).build().unwrap();
+      let fb = FireblocksHttpClient::sandbox(signer, c);
+      let _ = FB.set(fb);
+    });
   }
+
   #[rstest::fixture]
   fn config() -> Config {
+    setup();
     Config::new()
   }
 
@@ -94,36 +121,14 @@ mod tests {
 
   impl Config {
     fn new() -> Self {
-      let env = dotenvy::dotenv();
-      let api_key: Option<String> = match env {
-        Err(_) => None,
-        Ok(_) => match std::env::var("FIREBLOCKS_API_KEY") {
-          Err(_) => None,
-          Ok(k) => Some(k),
-        },
-      };
-      let path: Option<String> = match env {
-        Err(_) => None,
-        Ok(_) => match std::env::var("FIREBLOCKS_SECRET_PATH") {
-          Err(_) => None,
-          Ok(k) => Some(k),
-        },
-      };
-      if api_key.is_none() || path.is_none() {
-        return Self { client: None };
-      }
-      let rsa_pem = std::fs::read(path.unwrap()).unwrap();
-      let key = EncodingKey::from_rsa_pem(&rsa_pem[..]).unwrap();
-      let signer = crate::jwt::Signer::new(key, &api_key.unwrap());
-      let c =
-        Client::builder().connect_timeout(Duration::from_secs(5)).timeout(Duration::from_secs(30)).build().unwrap();
-      return Self { client: Some(FireblocksHttpClient::sandbox(signer, c)) };
+      Self { client: FB.get().map_or_else(|| None, |c| Some(c.clone())) }
     }
 
-    fn is_ok(&self) -> bool {
+    const fn is_ok(&self) -> bool {
       self.client.is_some()
     }
 
+    #[allow(clippy::unwrap_used)]
     fn client(&self) -> &FireblocksHttpClient {
       self.client.as_ref().unwrap()
     }
@@ -217,13 +222,7 @@ mod tests {
       .await?;
     assert!(!addr_response.id.is_empty());
 
-    // TODO fix empty response
-    match config.client().contract_delete(&name).await {
-      Err(e) => {
-        assert!(e.to_string().contains("EOF"));
-      },
-      Ok(_) => {},
-    };
+    config.client().contract_delete(&name).await?;
     Ok(())
   }
 
@@ -245,13 +244,7 @@ mod tests {
       .await?;
     assert!(!addr_response.id.is_empty());
 
-    // TODO fix empty response
-    match config.client().external_wallet_delete(&name).await {
-      Err(e) => {
-        assert!(e.to_string().contains("EOF"));
-      },
-      Ok(_) => {},
-    };
+    config.client().external_wallet_delete(&name).await?;
     Ok(())
   }
 
@@ -278,9 +271,10 @@ mod tests {
   }
 
   #[test]
-  fn test_handle_not_present() {
+  fn test_handle_not_present() -> color_eyre::Result<()> {
     let data = r#"{ "type": "VAULT_ACCOUNT","name": "jupiter","subType": ""}"#;
-    let result: TransferPeerPath = serde_json::from_str(data).unwrap();
-    assert!(result.id.is_none())
+    let result: TransferPeerPath = serde_json::from_str(data)?;
+    assert!(result.id.is_none());
+    Ok(())
   }
 }

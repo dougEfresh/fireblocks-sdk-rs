@@ -27,7 +27,7 @@ where
   }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct AddressContainer {
@@ -35,7 +35,7 @@ pub struct AddressContainer {
   pub paging: Option<Paging>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct CreateAddressResponse {

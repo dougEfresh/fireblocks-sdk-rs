@@ -61,22 +61,22 @@ impl FireblocksHttpClient {
     }
   }
 
-  async fn get<R: DeserializeOwned>(&self, url: Url) -> Result<R> {
+  async fn get<R: DeserializeOwned + Default>(&self, url: Url) -> Result<R> {
     self.send_no_body(url, Method::GET).await
   }
 
-  async fn delete<R: DeserializeOwned>(&self, url: Url) -> Result<R> {
+  async fn delete<R: DeserializeOwned + Default>(&self, url: Url) -> Result<R> {
     self.send_no_body(url, Method::DELETE).await
   }
 
-  async fn post<R: DeserializeOwned>(&self, url: Url) -> Result<R> {
+  async fn post<R: DeserializeOwned + Default>(&self, url: Url) -> Result<R> {
     self.send_no_body(url, Method::POST).await
   }
 
   async fn post_body<S, R>(&self, url: Url, body: S) -> Result<R>
   where
     S: Serialize + Debug,
-    R: DeserializeOwned + Send,
+    R: DeserializeOwned + Send + Default,
   {
     let mut path = String::from(url.path());
     if let Some(q) = url.query() {
@@ -86,7 +86,7 @@ impl FireblocksHttpClient {
     self.send(&path, req, body).await
   }
 
-  async fn send_no_body<R: DeserializeOwned>(&self, url: Url, method: Method) -> Result<R> {
+  async fn send_no_body<R: DeserializeOwned + Default>(&self, url: Url, method: Method) -> Result<R> {
     let mut path = String::from(url.path());
     if let Some(q) = url.query() {
       path = format!("{path}?{q}");
@@ -104,7 +104,7 @@ impl FireblocksHttpClient {
   async fn send<S, R>(&self, path: &str, req: RequestBuilder, body: S) -> Result<R>
   where
     S: Serialize + Debug,
-    R: DeserializeOwned,
+    R: DeserializeOwned + Default,
   {
     debug!("sending request {}", path);
     let (req, _) = self.authed(path, req, &body)?;
@@ -115,11 +115,18 @@ impl FireblocksHttpClient {
     debug!("got response with x-request-id={}", request_id);
 
     let text = response.text().await?;
+
     // debug!("body response {}", text.clone());
     let r: Result<R> = match status {
-      StatusCode::OK | StatusCode::ACCEPTED | StatusCode::CREATED => match serde_json::from_str::<R>(&text) {
-        Ok(deserialized) => Ok((deserialized, request_id)),
-        Err(err) => Err(FireblocksError::SerdeJson { request_id, err, text }),
+      StatusCode::OK | StatusCode::ACCEPTED | StatusCode::CREATED => {
+        if text.is_empty() {
+          Ok((R::default(), request_id))
+        } else {
+          match serde_json::from_str::<R>(&text) {
+            Ok(deserialized) => Ok((deserialized, request_id)),
+            Err(err) => Err(FireblocksError::SerdeJson { request_id, err, text }),
+          }
+        }
       },
       StatusCode::NOT_FOUND => Err(FireblocksError::NotFound { request_id, path: String::from(path) }),
       StatusCode::BAD_REQUEST => Err(FireblocksError::BadRequest { request_id, path: String::from(path), text }),

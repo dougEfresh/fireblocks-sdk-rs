@@ -1,7 +1,7 @@
 use bigdecimal::BigDecimal;
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct Fee {
@@ -12,7 +12,7 @@ pub struct Fee {
   pub priority_fee: Option<BigDecimal>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct EstimateFee {

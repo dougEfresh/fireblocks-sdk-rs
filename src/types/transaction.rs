@@ -401,7 +401,7 @@ pub struct UnsignedMessage {
   pub index: i32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct CreateTransactionResponse {
