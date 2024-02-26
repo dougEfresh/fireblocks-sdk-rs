@@ -65,10 +65,11 @@ pub trait FireblocksClient {
 #[cfg(test)]
 mod tests {
   use std::sync::{Once, OnceLock};
-  use std::{str::FromStr, time::Duration};
+  use std::{env, str::FromStr, time::Duration};
 
   use bigdecimal::BigDecimal;
   use chrono::Utc;
+  use color_eyre::eyre::format_err;
   use jsonwebtoken::EncodingKey;
   use log::warn;
   use reqwest::Client;
@@ -290,5 +291,4 @@ mod tests {
       },
     }
   }
-
 }
