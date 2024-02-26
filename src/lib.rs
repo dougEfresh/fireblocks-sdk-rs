@@ -95,11 +95,12 @@ mod tests {
         warn!("no .env file");
       }
       let api_key: Option<String> = std::env::var("FIREBLOCKS_API_KEY").ok();
-      let path: Option<String> = std::env::var("FIREBLOCKS_SECRET_PATH").ok();
+      let path: Option<String> = std::env::var("FIREBLOCKS_SECRET").ok();
       if api_key.is_none() || path.is_none() {
         return;
       }
-      let rsa_pem = std::fs::read(path.unwrap()).unwrap();
+      let path = path.unwrap().clone();
+      let rsa_pem = path.clone().as_bytes().to_vec();
       let key = EncodingKey::from_rsa_pem(&rsa_pem[..]).unwrap();
       let signer = crate::jwt::Signer::new(key, &api_key.unwrap());
       let c =
@@ -129,8 +130,8 @@ mod tests {
     }
 
     #[allow(clippy::unwrap_used)]
-    fn client(&self) -> &FireblocksHttpClient {
-      self.client.as_ref().unwrap()
+    fn client(&self) -> FireblocksHttpClient {
+      self.client.as_ref().unwrap().clone()
     }
   }
 
@@ -277,4 +278,17 @@ mod tests {
     assert!(result.id.is_none());
     Ok(())
   }
+
+  #[rstest::rstest]
+  #[test]
+  fn check_ci(config: Config) -> color_eyre::Result<()> {
+    match env::var("CI") {
+      Err(_) => Ok(()),
+      Ok(_) => match config.client {
+        Some(_) => Ok(()),
+        None => Err(format_err!("client is not configured and you are running in CI")),
+      },
+    }
+  }
+
 }
