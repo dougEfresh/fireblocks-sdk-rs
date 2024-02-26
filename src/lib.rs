@@ -100,8 +100,8 @@ mod tests {
       if api_key.is_none() || path.is_none() {
         return;
       }
-      let path = path.unwrap().clone();
-      let rsa_pem = path.clone().as_bytes().to_vec();
+      let path = path.unwrap();
+      let rsa_pem = path.as_bytes().to_vec();
       let key = EncodingKey::from_rsa_pem(&rsa_pem[..]).unwrap();
       let signer = crate::jwt::Signer::new(key, &api_key.unwrap());
       let c =
