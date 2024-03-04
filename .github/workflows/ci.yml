@@ -74,7 +74,7 @@ jobs:
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
         with:
-          slug: dougEfresh/selene-helius-sdk
+          slug: dougEfresh/fireblocks-sdk-rs
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Test documentation tests
         run: |
