@@ -3,6 +3,7 @@ use types::{address::Address, asset::SupportedAsset, vault::VaultAccounts, walle
 
 use crate::types::{
   address::{AddressContainer, CreateAddressResponse},
+  connect::PagedWalletConnectResponse,
   fee::EstimateFee,
   staking::{StakingPosition, StakingPositionsSummary},
   transaction::{CreateTransactionResponse, Transaction, TransactionArguments, TransactionListOptions},
@@ -60,6 +61,8 @@ pub trait FireblocksClient {
   async fn transactions(&self, options: &TransactionListOptions) -> Result<Vec<Transaction>>;
   async fn create_transaction(&self, args: &TransactionArguments) -> Result<CreateTransactionResponse>;
   async fn get_transaction(&self, id: &str) -> Result<Transaction>;
+
+  async fn wallet_connections(&self) -> Result<PagedWalletConnectResponse>;
 }
 
 #[cfg(test)]
@@ -277,6 +280,16 @@ mod tests {
     let data = r#"{ "type": "VAULT_ACCOUNT","name": "jupiter","subType": ""}"#;
     let result: TransferPeerPath = serde_json::from_str(data)?;
     assert!(result.id.is_none());
+    Ok(())
+  }
+
+  #[rstest::rstest]
+  #[tokio::test]
+  async fn test_network(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    config.client().wallet_connections().await?;
     Ok(())
   }
 

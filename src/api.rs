@@ -7,6 +7,7 @@ use reqwest::Method;
 use reqwest::{Client, RequestBuilder, StatusCode, Url};
 use serde::{de::DeserializeOwned, Serialize};
 
+use crate::types::connect::{PagedWalletConnectResponse, WalletConnection};
 use crate::{
   error::FireblocksError,
   jwt::Signer,
@@ -297,6 +298,11 @@ impl FireblocksFactory for FireblocksHttpClient {
 
   async fn get_transaction(&self, id: &str) -> Result<Transaction> {
     let (u, _) = self.build_uri(&format!("transactions/{id}"), None)?;
+    self.get(u).await
+  }
+
+  async fn wallet_connections(&self) -> Result<PagedWalletConnectResponse> {
+    let (u, _) = self.build_uri("connections", None)?;
     self.get(u).await
   }
 }

@@ -1,7 +1,6 @@
+use crate::types::deserialize_str_u64;
 use bigdecimal::BigDecimal;
 use serde_derive::{Deserialize, Serialize};
-
-use crate::types::deserialize_str_u64;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]

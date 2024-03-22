@@ -7,6 +7,7 @@ use serde_json::Value;
 
 pub mod address;
 pub mod asset;
+pub mod connect;
 pub mod fee;
 pub mod staking;
 pub mod transaction;
