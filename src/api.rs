@@ -7,13 +7,13 @@ use reqwest::Method;
 use reqwest::{Client, RequestBuilder, StatusCode, Url};
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::types::connect::{PagedWalletConnectResponse, WalletConnection};
 use crate::{
   error::FireblocksError,
   jwt::Signer,
   types::{
     address::{Address, AddressContainer, CreateAddressResponse},
     asset::SupportedAsset,
+    connect::PagedWalletConnectResponse,
     fee::EstimateFee,
     staking::{StakingPosition, StakingPositionsSummary},
     transaction::{CreateTransactionResponse, Transaction, TransactionArguments, TransactionListOptions},
