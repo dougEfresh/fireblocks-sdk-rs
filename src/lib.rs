@@ -63,6 +63,7 @@ pub trait FireblocksClient {
   async fn get_transaction(&self, id: &str) -> Result<Transaction>;
 
   async fn wallet_connections(&self) -> Result<PagedWalletConnectResponse>;
+  async fn wallet_connection_delete(&self, id: &str) -> Result<()>;
 }
 
 #[cfg(test)]

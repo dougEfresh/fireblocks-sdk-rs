@@ -76,7 +76,7 @@ mod test {
     }
     "#;
 
-    let r: WalletConnection = serde_json::from_str(data).unwrap();
+    let r: WalletConnection = serde_json::from_str(data).expect("oh no");
     assert_eq!(22, r.creation_date.day());
     assert_eq!("url", r.metadata.app_url);
   }

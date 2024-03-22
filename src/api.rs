@@ -305,4 +305,9 @@ impl FireblocksFactory for FireblocksHttpClient {
     let (u, _) = self.build_uri("connections", None)?;
     self.get(u).await
   }
+
+  async fn wallet_connection_delete(&self, id: &str) -> Result<()> {
+    let u = self.build_uri(&format!("connections/wc/{id}"), None)?.0;
+    self.delete(u).await
+  }
 }
