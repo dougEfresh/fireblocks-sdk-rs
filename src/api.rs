@@ -23,6 +23,7 @@ use crate::{
   },
   FireblocksFactory, Result,
 };
+use crate::types::connect::{WalletApprove, WalletConnectRequest, WalletConnectResponse};
 
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
 pub const FIREBLOCKS_SANDBOX_API: &str = "https://sandbox-api.fireblocks.io/v1";
@@ -74,6 +75,15 @@ impl FireblocksHttpClient {
     self.send_no_body(url, Method::POST).await
   }
 
+  async fn put<R: DeserializeOwned + Default, S: Serialize + Debug>(&self, url: Url, body: S) -> Result<R> {
+    let mut path = String::from(url.path());
+    if let Some(q) = url.query() {
+      path = format!("{path}?{q}");
+    }
+    let req = self.client.put(url).json(&body);
+    self.send(&path, req, body).await
+  }
+
   async fn post_body<S, R>(&self, url: Url, body: S) -> Result<R>
   where
     S: Serialize + Debug,
@@ -114,7 +124,10 @@ impl FireblocksHttpClient {
     let request_id =
       response.headers().get("x-request-id").and_then(|value| value.to_str().ok()).unwrap_or_default().to_string();
     debug!("got response with x-request-id={}", request_id);
-
+    let json_response =
+      response.headers().get("content-type").and_then(|value| value.to_str().ok()).unwrap_or_default().to_string().contains("json");
+    debug!("got response with x-request-id={}", request_id);
+    
     let text = response.text().await?;
 
     // debug!("body response {}", text.clone());
@@ -122,7 +135,10 @@ impl FireblocksHttpClient {
       StatusCode::OK | StatusCode::ACCEPTED | StatusCode::CREATED => {
         if text.is_empty() {
           Ok((R::default(), request_id))
+        } else if !json_response{
+          Ok((R::default(), request_id))
         } else {
+          //debug!("body: {text}");
           match serde_json::from_str::<R>(&text) {
             Ok(deserialized) => Ok((deserialized, request_id)),
             Err(err) => Err(FireblocksError::SerdeJson { request_id, err, text }),
@@ -302,12 +318,22 @@ impl FireblocksFactory for FireblocksHttpClient {
   }
 
   async fn wallet_connections(&self) -> Result<PagedWalletConnectResponse> {
-    let (u, _) = self.build_uri("connections", None)?;
+    let u= self.build_uri("connections", None)?.0;
     self.get(u).await
+  }
+
+  async fn wallet_connect(&self, request: &WalletConnectRequest) -> Result<WalletConnectResponse> {
+    let u = self.build_uri("connections/wc", None)?.0;
+    self.post_body(u, request).await
   }
 
   async fn wallet_connection_delete(&self, id: &str) -> Result<()> {
     let u = self.build_uri(&format!("connections/wc/{id}"), None)?.0;
     self.delete(u).await
+  }
+
+  async fn wallet_connection_approve(&self, id: &str, approve: bool) -> Result<()> {
+    let u = self.build_uri(&format!("connections/wc/{id}"), None)?.0;
+    self.put(u, WalletApprove{approve}).await
   }
 }

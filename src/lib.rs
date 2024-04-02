@@ -11,6 +11,7 @@ use crate::types::{
   wallet::WalletCreateAssetResponse,
   PaginatedAssetWallet, PagingVaultRequest,
 };
+use crate::types::connect::{WalletConnectRequest, WalletConnectResponse};
 
 pub mod api;
 pub mod error;
@@ -63,7 +64,9 @@ pub trait FireblocksClient {
   async fn get_transaction(&self, id: &str) -> Result<Transaction>;
 
   async fn wallet_connections(&self) -> Result<PagedWalletConnectResponse>;
+  async fn wallet_connect(&self, request: &WalletConnectRequest) -> Result<WalletConnectResponse>;
   async fn wallet_connection_delete(&self, id: &str) -> Result<()>;
+  async fn wallet_connection_approve(&self, id: &str, approve: bool) -> Result<()>;
 }
 
 #[cfg(test)]
@@ -246,7 +249,7 @@ mod tests {
 
     let (addr_response, _) = config
       .client()
-      .external_wallet_asset(&contract_response.id, "ETH_TEST3", "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
+      .external_wallet_asset(&contract_response.id, "ETH_TEST5", "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
       .await?;
     assert!(!addr_response.id.is_empty());
 

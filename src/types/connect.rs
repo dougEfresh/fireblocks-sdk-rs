@@ -46,6 +46,40 @@ pub struct PagedWalletConnectResponse {
   pub page: Option<NextPage>,
 }
 
+
+#[derive(Debug, Deserialize, Serialize, Default)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[allow(dead_code)]
+pub enum FeeLevel {
+  #[default]
+  Medium
+}
+
+#[derive(Debug, Deserialize, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
+pub struct WalletConnectRequest {
+  pub fee_level: FeeLevel,
+  pub vault_account_id: i32,
+  pub uri: String,
+  pub chain_ids: Vec<String>
+}
+
+#[derive(Debug, Deserialize, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
+pub struct WalletConnectResponse {
+  pub id: String,
+}
+
+
+#[derive(Debug, Deserialize, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
+pub struct WalletApprove {
+  pub approve: bool,
+}
+
 #[cfg(test)]
 mod test {
   use crate::types::connect::WalletConnection;
