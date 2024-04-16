@@ -47,7 +47,7 @@ impl ClientBuilder {
     Self { api_key: String::from(api_key), secret: Vec::from(secret), ..Default::default() }
   }
 
-  #[allow(unused_mut,clippy::return_self_not_must_use)]
+  #[allow(unused_mut, clippy::return_self_not_must_use)]
   pub fn use_sandbox(mut self) -> Self {
     self.with_url(FIREBLOCKS_SANDBOX_API)
   }
@@ -83,7 +83,7 @@ impl ClientBuilder {
   }
 
   /// Error
-  /// 
+  ///
   /// returns [`error:ClientError`]
   pub fn build(&self) -> Result<Client, error::ClientError> {
     let c = match self.client.as_ref() {
