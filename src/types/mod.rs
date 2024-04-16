@@ -14,13 +14,14 @@ pub mod transaction;
 pub mod vault;
 pub mod wallet;
 
-pub use address::{Address, AddressContainer, AddressType, CreateAddressResponse};
-pub use asset::{AccountAsset, AssetResponse, SupportedAsset};
+pub use address::*;
+pub use asset::*;
 pub use fee::*;
 pub use staking::*;
 pub use transaction::*;
 pub use vault::*;
 pub use wallet::*;
+use crate::Paging;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -69,53 +70,6 @@ where
 {
   let s = String::deserialize(deserializer)?;
   u64::from_str(&s).map_err(SerdeError::custom)
-}
-#[derive(Debug, Deserialize, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
-pub struct Paging {
-  pub before: Option<String>,
-  pub after: Option<String>,
-}
-
-#[derive(Debug)]
-#[allow(dead_code)]
-pub struct PagingVaultRequest {
-  pub limit: i32,
-  pub before: Option<String>,
-  pub after: Option<String>,
-  pub name_prefix: Option<String>,
-  pub name_suffix: Option<String>,
-}
-
-impl Default for PagingVaultRequest {
-  fn default() -> Self {
-    Self { limit: 500, before: None, after: None, name_prefix: None, name_suffix: None }
-  }
-}
-
-impl PagingVaultRequest {
-  pub fn params(&self) -> Vec<(String, String)> {
-    let mut params: Vec<(String, String)> = Vec::new();
-    params.push(("limit".to_owned(), self.limit.to_string()));
-    self.name_prefix.clone().inspect(|v| params.push(("namePrefix".to_owned(), String::from(v))));
-    self.name_suffix.clone().inspect(|v| params.push(("nameSuffix".to_owned(), String::from(v))));
-    params
-  }
-}
-
-impl Paging {
-  fn epoch(before: &DateTime<Utc>) -> String {
-    format!("{}", before.timestamp_millis())
-  }
-
-  pub fn set_before(&mut self, before: &DateTime<Utc>) {
-    self.before = Some(Self::epoch(before));
-  }
-
-  pub fn set_after(&mut self, after: &DateTime<Utc>) {
-    self.after = Some(Self::epoch(after));
-  }
 }
 
 #[derive(Debug, Deserialize, Default)]

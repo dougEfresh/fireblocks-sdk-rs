@@ -45,11 +45,7 @@ bigdecimal = { version = "^0.3", features = ["serde"] }
 url = "2"
 chrono = { version = "0.4", default-features = true, features = ["serde", "wasmbind"] }
 pretty_assertions = "1.4.0"
-log = { version = "0.4" , features = ["std", "serde", "kv_unstable", "kv_unstable_serde"] }
 tracing = {  version = "0.1" }
-tracing-log = {version = "0.2" }
-tracing-error = { version = "0.2" }
-tracing-subscriber = { version = "0.3", features = ["env-filter", "serde"] }
 tokio-util = { version = "0.7", features = ["rt"] }
 futures = { version = "0.3" }
 human-panic = { version = "1.2" }
@@ -79,6 +75,7 @@ optional = true
 
 
 [dev-dependencies]
+tracing-subscriber = { version = "0.3", features = ["env-filter", "serde"] }
 #reqwest = { version = "0.11.22", default-features = false, features = ["json", "rustls"] }
 tokio = { version = "1", features = ["macros", "rt"] }
 rstest = { version = "0.18" }

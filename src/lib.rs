@@ -1,72 +1,47 @@
-use bigdecimal::BigDecimal;
-use types::{address::Address, asset::SupportedAsset, vault::VaultAccounts, wallet::WalletContainer};
+use std::fmt::Debug;
+use serde::de::DeserializeOwned;
+use serde::Serialize;
+use chrono::{DateTime, Utc};
+use serde_derive::Deserialize;
 
-use crate::types::{
-  address::{AddressContainer, CreateAddressResponse},
-  connect::PagedWalletConnectResponse,
-  fee::EstimateFee,
-  staking::{StakingPosition, StakingPositionsSummary},
-  transaction::{CreateTransactionResponse, Transaction, TransactionArguments, TransactionListOptions},
-  vault::{Account, CreateAccount},
-  wallet::WalletCreateAssetResponse,
-  PaginatedAssetWallet, PagingVaultRequest,
-};
-use crate::types::connect::{WalletConnectRequest, WalletConnectResponse};
+use crate::error::FireblocksError;
 
 pub mod api;
 pub mod error;
-pub mod jwt;
+pub(crate) mod jwt;
 pub mod types;
+mod client;
 
-pub type Result<T> = std::result::Result<(T, String), error::FireblocksError>;
+pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
+pub const FIREBLOCKS_SANDBOX_API: &str = "https://sandbox-api.fireblocks.io/v1";
 
-#[trait_variant::make(FireblocksFactory: Send)]
-pub trait FireblocksClient {
-  async fn create_address(&self, vault_id: i32, asset_id: &str) -> Result<CreateAddressResponse>;
-  async fn addresses(&self, vault_id: i32, asset_id: &str) -> Result<Vec<Address>>;
-  async fn addresses_paginated(
-    &self,
-    vault_id: i32,
-    asset_id: &str,
-    paging: Option<&PagingVaultRequest>,
-  ) -> Result<AddressContainer>;
+pub type Result<T> = std::result::Result<(T, String), FireblocksError>;
 
-  async fn vault(&self, vault_id: i32) -> Result<Account>;
-  async fn vaults(
-    &self,
-    page: Option<&PagingVaultRequest>,
-    min_threshold: Option<&BigDecimal>,
-  ) -> Result<VaultAccounts>;
-  async fn create_vault(&self, account: &CreateAccount) -> Result<Account>;
 
-  async fn assets(&self, page: Option<&PagingVaultRequest>, greater_than: Option<f64>) -> Result<PaginatedAssetWallet>;
+#[derive(Debug)]
+#[allow(dead_code)]
+pub struct PagingVaultRequest {
+  pub limit: i32,
+  pub before: Option<String>,
+  pub after: Option<String>,
+  pub name_prefix: Option<String>,
+  pub name_suffix: Option<String>,
+}
 
-  async fn external_wallets(&self) -> Result<Vec<WalletContainer>>;
-  async fn external_wallet(&self, id: &str) -> Result<WalletContainer>;
-  async fn external_wallet_asset(&self, id: &str, asset: &str, address: &str) -> Result<WalletCreateAssetResponse>;
-  async fn external_wallet_create(&self, name: &str) -> Result<WalletContainer>;
-  async fn external_wallet_delete(&self, id: &str) -> Result<()>;
+impl Default for PagingVaultRequest {
+  fn default() -> Self {
+    Self { limit: 500, before: None, after: None, name_prefix: None, name_suffix: None }
+  }
+}
 
-  async fn contracts(&self) -> Result<Vec<WalletContainer>>;
-  async fn contract(&self, id: &str) -> Result<WalletContainer>;
-  async fn contract_asset(&self, id: &str, asset: &str, address: &str) -> Result<WalletCreateAssetResponse>;
-  async fn contract_create(&self, name: &str) -> Result<WalletContainer>;
-  async fn contract_delete(&self, id: &str) -> Result<()>;
-
-  async fn internal_wallets(&self) -> Result<Vec<WalletContainer>>;
-  async fn supported_assets(&self) -> Result<Vec<SupportedAsset>>;
-  async fn staking_chains(&self) -> Result<Vec<String>>;
-  async fn staking_positions(&self) -> Result<Vec<StakingPosition>>;
-  async fn staking_positions_summary(&self) -> Result<StakingPositionsSummary>;
-  async fn estimate_fee(&self, asset: &str) -> Result<EstimateFee>;
-  async fn transactions(&self, options: &TransactionListOptions) -> Result<Vec<Transaction>>;
-  async fn create_transaction(&self, args: &TransactionArguments) -> Result<CreateTransactionResponse>;
-  async fn get_transaction(&self, id: &str) -> Result<Transaction>;
-
-  async fn wallet_connections(&self) -> Result<PagedWalletConnectResponse>;
-  async fn wallet_connect(&self, request: &WalletConnectRequest) -> Result<WalletConnectResponse>;
-  async fn wallet_connection_delete(&self, id: &str) -> Result<()>;
-  async fn wallet_connection_approve(&self, id: &str, approve: bool) -> Result<()>;
+impl PagingVaultRequest {
+  pub fn params(&self) -> Vec<(String, String)> {
+    let mut params: Vec<(String, String)> = Vec::new();
+    params.push(("limit".to_owned(), self.limit.to_string()));
+    self.name_prefix.clone().inspect(|v| params.push(("namePrefix".to_owned(), String::from(v))));
+    self.name_suffix.clone().inspect(|v| params.push(("nameSuffix".to_owned(), String::from(v))));
+    params
+  }
 }
 
 #[cfg(test)]
@@ -77,19 +52,14 @@ mod tests {
   use bigdecimal::BigDecimal;
   use chrono::Utc;
   use color_eyre::eyre::format_err;
-  use jsonwebtoken::EncodingKey;
-  use log::warn;
-  use reqwest::Client;
+  use tracing::warn;
   use tracing_subscriber::EnvFilter;
-
-  use crate::{
-    api::FireblocksHttpClient,
-    types::{transaction::TransferPeerPath, vault::CreateAccount, PagingVaultRequest},
-    FireblocksFactory,
-  };
+  use crate::types::*;
+  use crate::PagingVaultRequest;
+  use crate::client::FireblocksClient;
 
   static INIT: Once = Once::new();
-  static FB: OnceLock<FireblocksHttpClient> = OnceLock::new();
+  static FB: OnceLock<FireblocksClient> = OnceLock::new();
 
   #[allow(clippy::unwrap_used)]
   fn setup() {
@@ -109,11 +79,7 @@ mod tests {
       }
       let path = path.unwrap();
       let rsa_pem = path.as_bytes().to_vec();
-      let key = EncodingKey::from_rsa_pem(&rsa_pem[..]).unwrap();
-      let signer = crate::jwt::Signer::new(key, &api_key.unwrap());
-      let c =
-        Client::builder().connect_timeout(Duration::from_secs(5)).timeout(Duration::from_secs(30)).build().unwrap();
-      let fb = FireblocksHttpClient::sandbox(signer, c);
+      let fb = crate::client::Builder::new(api_key.as_ref().unwrap(), rsa_pem).use_sandbox().with_user_agent("fireblocks-sdk-rs test").with_timeout(Duration::from_secs(30)).with_connect_timeout(Duration::from_secs(5)).build()?;
       let _ = FB.set(fb);
     });
   }
@@ -125,7 +91,7 @@ mod tests {
   }
 
   pub struct Config {
-    client: Option<FireblocksHttpClient>,
+    client: Option<FireblocksClient>,
   }
 
   impl Config {
@@ -138,7 +104,7 @@ mod tests {
     }
 
     #[allow(clippy::unwrap_used)]
-    fn client(&self) -> FireblocksHttpClient {
+    fn client(&self) -> FireblocksClient {
       self.client.as_ref().unwrap().clone()
     }
   }
@@ -307,5 +273,27 @@ mod tests {
         None => Err(format_err!("client is not configured and you are running in CI")),
       },
     }
+  }
+}
+
+#[derive(Debug, Deserialize, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
+pub struct Paging {
+  pub before: Option<String>,
+  pub after: Option<String>,
+}
+
+impl Paging {
+  fn epoch(before: &DateTime<Utc>) -> String {
+    format!("{}", before.timestamp_millis())
+  }
+
+  pub fn set_before(&mut self, before: &DateTime<Utc>) {
+    self.before = Some(Self::epoch(before));
+  }
+
+  pub fn set_after(&mut self, after: &DateTime<Utc>) {
+    self.after = Some(Self::epoch(after));
   }
 }

@@ -4,6 +4,13 @@ use url::ParseError;
 use crate::jwt;
 
 #[derive(Debug, Error)]
+pub enum ClientError {
+  #[error(transparent)]
+  /// Thrown when JWT signing fails
+  JwtError(#[from] jwt::JwtError),
+}
+
+#[derive(Debug, Error)]
 pub enum FireblocksError {
   #[error(transparent)]
   /// Thrown when JWT signing fails
