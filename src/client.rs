@@ -82,9 +82,6 @@ impl ClientBuilder {
     self
   }
 
-  /// Error
-  ///
-  /// returns [`error:ClientError`]
   pub fn build(&self) -> Result<Client, error::ClientError> {
     let c = match self.client.as_ref() {
       None => reqwest::ClientBuilder::new()
