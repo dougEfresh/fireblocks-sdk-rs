@@ -47,36 +47,44 @@ impl ClientBuilder {
     Self { api_key: String::from(api_key), secret: Vec::from(secret), ..Default::default() }
   }
 
-  #[allow(unused_mut)]
+  #[allow(unused_mut,clippy::return_self_not_must_use)]
   pub fn use_sandbox(mut self) -> Self {
     self.with_url(FIREBLOCKS_SANDBOX_API)
   }
 
+  #[allow(clippy::return_self_not_must_use)]
   pub fn with_url(mut self, url: &str) -> Self {
     self.url = String::from(url);
     self
   }
 
+  #[allow(clippy::return_self_not_must_use)]
   pub const fn with_timeout(mut self, timeout: Duration) -> Self {
     self.timeout = timeout;
     self
   }
 
+  #[allow(clippy::return_self_not_must_use)]
   pub const fn with_connect_timeout(mut self, timeout: Duration) -> Self {
     self.connect_timeout = timeout;
     self
   }
 
+  #[allow(clippy::return_self_not_must_use)]
   pub fn with_user_agent(mut self, ua: &str) -> Self {
     self.user_agent = String::from(ua);
     self
   }
 
+  #[allow(clippy::return_self_not_must_use)]
   pub fn with_client(mut self, client: reqwest::Client) -> Self {
     self.client = Some(client);
     self
   }
 
+  /// Error
+  /// 
+  /// returns [`error:ClientError`]
   pub fn build(&self) -> Result<Client, error::ClientError> {
     let c = match self.client.as_ref() {
       None => reqwest::ClientBuilder::new()
@@ -165,7 +173,7 @@ impl Client {
     self.send(&path, req, ()).await
   }
 
-  #[tracing::instrument(skip(self,req,body))]
+  #[tracing::instrument(skip(self, req, body))]
   pub(crate) async fn send<S, R>(&self, path: &str, req: RequestBuilder, body: S) -> crate::Result<R>
   where
     S: Serialize + Debug,

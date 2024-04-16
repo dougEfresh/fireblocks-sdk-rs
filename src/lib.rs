@@ -47,14 +47,14 @@ mod tests {
   use std::sync::{Once, OnceLock};
   use std::{env, str::FromStr, time::Duration};
 
-  use crate::{Client, ClientBuilder, PagingVaultRequest};
   use crate::types::*;
+  use crate::{Client, ClientBuilder, PagingVaultRequest};
   use bigdecimal::BigDecimal;
   use chrono::Utc;
   use color_eyre::eyre::format_err;
   use tracing::{error, warn};
-  use tracing_subscriber::EnvFilter;
   use tracing_subscriber::fmt::format::FmtSpan;
+  use tracing_subscriber::EnvFilter;
 
   static INIT: Once = Once::new();
   static FB: OnceLock<Client> = OnceLock::new();
@@ -87,13 +87,14 @@ mod tests {
         .with_user_agent("fireblocks-sdk-rs test")
         .with_timeout(Duration::from_secs(30))
         .with_connect_timeout(Duration::from_secs(5))
-        .build() {
+        .build()
+      {
         Ok(fb) => {
           let _ = FB.set(fb);
-        }
+        },
         Err(e) => {
           error!("failed to create client {e}");
-        }
+        },
       };
     });
   }

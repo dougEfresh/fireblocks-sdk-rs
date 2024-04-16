@@ -30,7 +30,8 @@ unwrap_used = "deny"
 module_name_repetitions = "allow"
 future_not_send = "allow"
 must_use_candidate = "allow"
-
+return_self_not_must_use = "allow"
+missing_errors_doc = "allow"
 
 [dependencies]
 trait-variant = { version = "0.1.0"}
