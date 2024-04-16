@@ -22,7 +22,6 @@ impl Signer {
     Self { key, api_key: api_key.to_string() }
   }
 
-  #[tracing::instrument(skip(self))]
   pub fn sign<S: Serialize + Debug>(&self, path: &str, body: S) -> Result<String, JwtError> {
     let header = Header::new(Algorithm::RS256);
     let claims = Claims::new(path, &self.api_key, body)?;

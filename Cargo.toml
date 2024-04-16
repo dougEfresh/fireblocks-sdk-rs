@@ -20,7 +20,7 @@ wasm = ["wasm-bindgen", "js-sys", "wasm-bindgen-futures", "reqwest_wasi", "web-s
 
 [lints.rust]
 unsafe_code = "forbid"
-#dead_code = "allow"
+dead_code = "allow"
 
 [lints.clippy]
 enum_glob_use = "deny"
@@ -30,7 +30,7 @@ unwrap_used = "deny"
 module_name_repetitions = "allow"
 future_not_send = "allow"
 must_use_candidate = "allow"
-#dead_code = "allow"
+
 
 [dependencies]
 trait-variant = { version = "0.1.0"}

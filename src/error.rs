@@ -8,6 +8,14 @@ pub enum ClientError {
   #[error(transparent)]
   /// Thrown when JWT signing fails
   JwtError(#[from] jwt::JwtError),
+
+  #[error(transparent)]
+  /// Thrown when Token fails
+  TokenError(#[from] jsonwebtoken::errors::Error),
+
+  #[error(transparent)]
+  /// Thrown when submitting a POST/GET request fails
+  ReqwestError(#[from] reqwest::Error),
 }
 
 #[derive(Debug, Error)]

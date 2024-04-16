@@ -14,6 +14,7 @@ pub mod transaction;
 pub mod vault;
 pub mod wallet;
 
+use crate::Paging;
 pub use address::*;
 pub use asset::*;
 pub use fee::*;
@@ -21,7 +22,6 @@ pub use staking::*;
 pub use transaction::*;
 pub use vault::*;
 pub use wallet::*;
-use crate::Paging;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]

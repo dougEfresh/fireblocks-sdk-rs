@@ -1,22 +1,20 @@
-use std::fmt::Debug;
-use serde::de::DeserializeOwned;
-use serde::Serialize;
 use chrono::{DateTime, Utc};
+use serde::Serialize;
 use serde_derive::Deserialize;
+use std::fmt::Debug;
 
 use crate::error::FireblocksError;
 
 pub mod api;
+mod client;
 pub mod error;
 pub(crate) mod jwt;
 pub mod types;
-mod client;
-
+pub use client::{Client, ClientBuilder};
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
 pub const FIREBLOCKS_SANDBOX_API: &str = "https://sandbox-api.fireblocks.io/v1";
 
 pub type Result<T> = std::result::Result<(T, String), FireblocksError>;
-
 
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -49,29 +47,34 @@ mod tests {
   use std::sync::{Once, OnceLock};
   use std::{env, str::FromStr, time::Duration};
 
+  use crate::{Client, ClientBuilder, PagingVaultRequest};
+  use crate::types::*;
   use bigdecimal::BigDecimal;
   use chrono::Utc;
   use color_eyre::eyre::format_err;
-  use tracing::warn;
+  use tracing::{error, warn};
   use tracing_subscriber::EnvFilter;
-  use crate::types::*;
-  use crate::PagingVaultRequest;
-  use crate::client::FireblocksClient;
+  use tracing_subscriber::fmt::format::FmtSpan;
 
   static INIT: Once = Once::new();
-  static FB: OnceLock<FireblocksClient> = OnceLock::new();
+  static FB: OnceLock<Client> = OnceLock::new();
 
   #[allow(clippy::unwrap_used)]
   fn setup() {
     INIT.call_once(|| {
       color_eyre::install().unwrap();
-      let filter = EnvFilter::from_default_env();
-      let subscriber = tracing_subscriber::FmtSubscriber::builder().with_env_filter(filter).with_target(true).finish();
-      tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+      tracing_subscriber::fmt()
+        .with_target(true)
+        .with_level(true)
+        .with_span_events(FmtSpan::CLOSE)
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
+
       let env = dotenvy::dotenv();
       if env.is_err() {
         warn!("no .env file");
       }
+
       let api_key: Option<String> = std::env::var("FIREBLOCKS_API_KEY").ok();
       let path: Option<String> = std::env::var("FIREBLOCKS_SECRET").ok();
       if api_key.is_none() || path.is_none() {
@@ -79,8 +82,19 @@ mod tests {
       }
       let path = path.unwrap();
       let rsa_pem = path.as_bytes().to_vec();
-      let fb = crate::client::Builder::new(api_key.as_ref().unwrap(), rsa_pem).use_sandbox().with_user_agent("fireblocks-sdk-rs test").with_timeout(Duration::from_secs(30)).with_connect_timeout(Duration::from_secs(5)).build()?;
-      let _ = FB.set(fb);
+      match ClientBuilder::new(api_key.as_ref().unwrap(), &rsa_pem)
+        .use_sandbox()
+        .with_user_agent("fireblocks-sdk-rs test")
+        .with_timeout(Duration::from_secs(30))
+        .with_connect_timeout(Duration::from_secs(5))
+        .build() {
+        Ok(fb) => {
+          let _ = FB.set(fb);
+        }
+        Err(e) => {
+          error!("failed to create client {e}");
+        }
+      };
     });
   }
 
@@ -91,7 +105,7 @@ mod tests {
   }
 
   pub struct Config {
-    client: Option<FireblocksClient>,
+    client: Option<Client>,
   }
 
   impl Config {
@@ -104,7 +118,7 @@ mod tests {
     }
 
     #[allow(clippy::unwrap_used)]
-    fn client(&self) -> FireblocksClient {
+    fn client(&self) -> Client {
       self.client.as_ref().unwrap().clone()
     }
   }

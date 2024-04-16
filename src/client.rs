@@ -1,24 +1,24 @@
-use reqwest::{Client, Method, RequestBuilder, StatusCode};
-use std::sync::Arc;
-use url::Url;
+use crate::error::FireblocksError;
+use crate::jwt::Signer;
+use crate::{error, PagingVaultRequest, FIREBLOCKS_API, FIREBLOCKS_SANDBOX_API};
+use jsonwebtoken::EncodingKey;
+use reqwest::{Method, RequestBuilder, StatusCode};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::fmt::Debug;
+use std::sync::Arc;
 use std::time::Duration;
-use jsonwebtoken::EncodingKey;
 use tracing::debug;
-use crate::{error, FIREBLOCKS_API, FIREBLOCKS_SANDBOX_API, PagingVaultRequest};
-use crate::error::FireblocksError;
-use crate::jwt::Signer;
+use url::Url;
 
 #[derive(Clone)]
-pub struct FireblocksClient {
+pub struct Client {
   signer: Arc<Signer>,
   client: reqwest::Client,
   host: String,
 }
 
-pub struct Builder {
+pub struct ClientBuilder {
   api_key: String,
   client: Option<reqwest::Client>,
   timeout: Duration,
@@ -28,10 +28,10 @@ pub struct Builder {
   url: String,
 }
 
-impl Default for Builder {
+impl Default for ClientBuilder {
   fn default() -> Self {
     Self {
-      api_key: "".to_string(),
+      api_key: String::new(),
       client: None,
       timeout: Duration::from_secs(15),
       connect_timeout: Duration::from_secs(5),
@@ -42,15 +42,12 @@ impl Default for Builder {
   }
 }
 
-impl Builder {
+impl ClientBuilder {
   pub fn new(api_key: &str, secret: &[u8]) -> Self {
-    Self {
-      api_key: String::from(api_key),
-      secret: Vec::from(secret),
-      ..Default::default()
-    }
+    Self { api_key: String::from(api_key), secret: Vec::from(secret), ..Default::default() }
   }
 
+  #[allow(unused_mut)]
   pub fn use_sandbox(mut self) -> Self {
     self.with_url(FIREBLOCKS_SANDBOX_API)
   }
@@ -60,12 +57,12 @@ impl Builder {
     self
   }
 
-  pub fn with_timeout(mut self, timeout: Duration) -> Self {
+  pub const fn with_timeout(mut self, timeout: Duration) -> Self {
     self.timeout = timeout;
     self
   }
 
-  pub fn with_connect_timeout(mut self, timeout: Duration) -> Self {
+  pub const fn with_connect_timeout(mut self, timeout: Duration) -> Self {
     self.connect_timeout = timeout;
     self
   }
@@ -79,29 +76,31 @@ impl Builder {
     self.client = Some(client);
     self
   }
-  
-  pub fn build(&self) -> Result<FireblocksClient, error::ClientError> {
+
+  pub fn build(&self) -> Result<Client, error::ClientError> {
     let c = match self.client.as_ref() {
-      None => {
-        reqwest::ClientBuilder::new().timeout(self.timeout).connect_timeout(self.connect_timeout).user_agent(String::from(&self.user_agent)).build()?
-      }
-      Some(cl) => cl.clone()
+      None => reqwest::ClientBuilder::new()
+        .timeout(self.timeout)
+        .connect_timeout(self.connect_timeout)
+        .user_agent(String::from(&self.user_agent))
+        .build()?,
+      Some(cl) => cl.clone(),
     };
     let key = EncodingKey::from_rsa_pem(&self.secret[..])?;
     let signer = Signer::new(key, &self.api_key);
-    Ok(FireblocksClient::new_with_url(signer, &self.url, c))
+    Ok(Client::new_with_url(signer, &self.url, c))
   }
 }
 
-impl FireblocksClient {
-  fn new_with_url(signer: Signer, url: &str, client: Client) -> Self {
+impl Client {
+  fn new_with_url(signer: Signer, url: &str, client: reqwest::Client) -> Self {
     Self { signer: Arc::new(signer), client, host: url.to_owned() }
   }
 }
 
 // This impl block contains the underlying GET/POST helpers for authing to fireblocks
-impl FireblocksClient {
-  fn build_uri(&self, path: &str, page: Option<&PagingVaultRequest>) -> crate::Result<Url> {
+impl Client {
+  pub(crate) fn build_uri(&self, path: &str, page: Option<&PagingVaultRequest>) -> crate::Result<Url> {
     let mut url = Url::parse(&format!("{}/{path}", self.host))?;
 
     match page {
@@ -113,19 +112,23 @@ impl FireblocksClient {
     }
   }
 
-  async fn get<R: DeserializeOwned + Default>(&self, url: Url) -> crate::Result<R> {
+  pub(crate) async fn get<R: DeserializeOwned + Default>(&self, url: Url) -> crate::Result<R> {
     self.send_no_body(url, Method::GET).await
   }
 
-  async fn delete<R: DeserializeOwned + Default>(&self, url: Url) -> crate::Result<R> {
+  pub(crate) async fn delete<R: DeserializeOwned + Default>(&self, url: Url) -> crate::Result<R> {
     self.send_no_body(url, Method::DELETE).await
   }
 
-  async fn post<R: DeserializeOwned + Default>(&self, url: Url) -> crate::Result<R> {
+  pub(crate) async fn post<R: DeserializeOwned + Default>(&self, url: Url) -> crate::Result<R> {
     self.send_no_body(url, Method::POST).await
   }
 
-  async fn put<R: DeserializeOwned + Default, S: Serialize + Debug>(&self, url: Url, body: S) -> crate::Result<R> {
+  pub(crate) async fn put<R: DeserializeOwned + Default, S: Serialize + Debug>(
+    &self,
+    url: Url,
+    body: S,
+  ) -> crate::Result<R> {
     let mut path = String::from(url.path());
     if let Some(q) = url.query() {
       path = format!("{path}?{q}");
@@ -134,10 +137,10 @@ impl FireblocksClient {
     self.send(&path, req, body).await
   }
 
-  async fn post_body<S, R>(&self, url: Url, body: S) -> crate::Result<R>
-    where
-      S: Serialize + Debug,
-      R: DeserializeOwned + Send + Default,
+  pub(crate) async fn post_body<S, R>(&self, url: Url, body: S) -> crate::Result<R>
+  where
+    S: Serialize + Debug,
+    R: DeserializeOwned + Send + Default,
   {
     let mut path = String::from(url.path());
     if let Some(q) = url.query() {
@@ -147,7 +150,7 @@ impl FireblocksClient {
     self.send(&path, req, body).await
   }
 
-  async fn send_no_body<R: DeserializeOwned + Default>(&self, url: Url, method: Method) -> crate::Result<R> {
+  pub(crate) async fn send_no_body<R: DeserializeOwned + Default>(&self, url: Url, method: Method) -> crate::Result<R> {
     let mut path = String::from(url.path());
     if let Some(q) = url.query() {
       path = format!("{path}?{q}");
@@ -162,10 +165,11 @@ impl FireblocksClient {
     self.send(&path, req, ()).await
   }
 
-  async fn send<S, R>(&self, path: &str, req: RequestBuilder, body: S) -> crate::Result<R>
-    where
-      S: Serialize + Debug,
-      R: DeserializeOwned + Default,
+  #[tracing::instrument(skip(self,req,body))]
+  pub(crate) async fn send<S, R>(&self, path: &str, req: RequestBuilder, body: S) -> crate::Result<R>
+  where
+    S: Serialize + Debug,
+    R: DeserializeOwned + Default,
   {
     debug!("sending request {}", path);
     let (req, _) = self.authed(path, req, &body)?;
@@ -174,8 +178,13 @@ impl FireblocksClient {
     let request_id =
       response.headers().get("x-request-id").and_then(|value| value.to_str().ok()).unwrap_or_default().to_string();
     debug!("got response with x-request-id={}", request_id);
-    let json_response =
-      response.headers().get("content-type").and_then(|value| value.to_str().ok()).unwrap_or_default().to_string().contains("json");
+    let json_response = response
+      .headers()
+      .get("content-type")
+      .and_then(|value| value.to_str().ok())
+      .unwrap_or_default()
+      .to_string()
+      .contains("json");
     debug!("got response with x-request-id={}", request_id);
 
     let text = response.text().await?;
@@ -183,9 +192,7 @@ impl FireblocksClient {
     // debug!("body response {}", text.clone());
     let r: crate::Result<R> = match status {
       StatusCode::OK | StatusCode::ACCEPTED | StatusCode::CREATED => {
-        if text.is_empty() {
-          Ok((R::default(), request_id))
-        } else if !json_response{
+        if text.is_empty() || !json_response {
           Ok((R::default(), request_id))
         } else {
           //debug!("body: {text}");
@@ -206,7 +213,12 @@ impl FireblocksClient {
     r
   }
 
-  fn authed<S: Serialize + Debug>(&self, url: &str, req: RequestBuilder, body: &S) -> crate::Result<RequestBuilder> {
+  pub(crate) fn authed<S: Serialize + Debug>(
+    &self,
+    url: &str,
+    req: RequestBuilder,
+    body: &S,
+  ) -> crate::Result<RequestBuilder> {
     let jwt = self.signer.sign(url, body)?;
     Ok((req.header("X-API-Key", self.signer.api_key()).bearer_auth(jwt), String::new()))
   }

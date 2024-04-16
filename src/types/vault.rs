@@ -1,5 +1,5 @@
-use serde_derive::{Deserialize, Serialize};
 use crate::Paging;
+use serde_derive::{Deserialize, Serialize};
 
 use crate::types::{asset::AccountAsset, deserialize_str_i32};
 
