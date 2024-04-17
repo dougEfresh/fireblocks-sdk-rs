@@ -10,10 +10,12 @@ mod client;
 pub mod error;
 pub(crate) mod jwt;
 pub mod types;
+mod page_client;
+
 pub use client::{Client, ClientBuilder};
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
 pub const FIREBLOCKS_SANDBOX_API: &str = "https://sandbox-api.fireblocks.io/v1";
-
+pub type Epoch = DateTime<Utc>;
 pub type Result<T> = std::result::Result<(T, String), FireblocksError>;
 
 #[derive(Debug)]

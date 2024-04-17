@@ -2,6 +2,7 @@ use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_derive::Serialize;
+use crate::Epoch;
 
 use crate::types::{deserialize_epoch_time, deserialize_option_empty_object};
 
@@ -72,11 +73,16 @@ pub struct TransactionListOptions {
   params: Vec<(String, String)>,
 }
 
-impl TransactionListOptions {
-  pub const fn new() -> Self {
-    Self { params: Vec::new() }
-  }
+pub struct TransactionListBuilder {
+  params: Vec<(String, String)>,
+}
 
+impl TransactionListBuilder {
+  pub const fn new() -> Self {
+    Self {
+      params: Vec::new()
+    }
+  }
   pub fn source_id(&mut self, id: i32) -> &mut Self {
     self.params.push(("sourceId".to_string(), id.to_string()));
     self
@@ -92,18 +98,16 @@ impl TransactionListOptions {
     self
   }
 
-  pub fn before(&mut self, t: Option<&DateTime<Utc>>) -> &mut Self {
+  pub fn before(&mut self, t: &Epoch) -> &mut Self {
     self.add_instant("before", t)
   }
 
-  pub fn after(&mut self, t: Option<&DateTime<Utc>>) -> &mut Self {
+  pub fn after(&mut self, t: &Epoch) -> &mut Self {
     self.add_instant("after", t)
   }
 
-  fn add_instant(&mut self, param: &str, t: Option<&DateTime<Utc>>) -> &mut Self {
-    if let Some(tm) = t {
-      self.params.push((param.to_owned(), Self::epoch(tm)));
-    }
+  fn add_instant(&mut self, param: &str, t: &Epoch) -> &mut Self {
+    self.params.push((param.to_owned(), Self::epoch(tm)));
     self
   }
 
@@ -122,14 +126,26 @@ impl TransactionListOptions {
     self
   }
 
-  fn epoch(before: &DateTime<Utc>) -> String {
+  fn epoch(before: &Epoch) -> String {
     format!("{}", before.timestamp_millis())
+  }
+
+  fn build(&self) -> TransactionListOptions {
+    TransactionListOptions::new(Vec::clone(&self.params))
+  }
+
+}
+
+impl TransactionListOptions {
+  pub const fn new(params: Vec<(String, String)>) -> Self {
+    Self { params }
   }
 
   pub fn params(&self) -> impl Iterator<Item = &(String, String)> {
     self.params.iter()
   }
 }
+
 #[allow(clippy::upper_case_acronyms)]
 #[allow(non_camel_case_types)]
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Default)]
