@@ -1,8 +1,9 @@
+use crate::Epoch;
 use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_derive::Serialize;
-use crate::Epoch;
+use std::borrow::Borrow;
 
 use crate::types::{deserialize_epoch_time, deserialize_option_empty_object};
 
@@ -79,9 +80,7 @@ pub struct TransactionListBuilder {
 
 impl TransactionListBuilder {
   pub const fn new() -> Self {
-    Self {
-      params: Vec::new()
-    }
+    Self { params: Vec::new() }
   }
   pub fn source_id(&mut self, id: i32) -> &mut Self {
     self.params.push(("sourceId".to_string(), id.to_string()));
@@ -107,11 +106,11 @@ impl TransactionListBuilder {
   }
 
   fn add_instant(&mut self, param: &str, t: &Epoch) -> &mut Self {
-    self.params.push((param.to_owned(), Self::epoch(tm)));
+    self.params.push((param.to_owned(), Self::epoch(t)));
     self
   }
 
-  pub fn assets(&mut self, a: &[String]) -> &mut Self {
+  pub fn assets<T: Borrow<str>>(&mut self, a: &[T]) -> &mut Self {
     self.params.push(("assets".to_owned(), a.join(",")));
     self
   }
@@ -130,10 +129,9 @@ impl TransactionListBuilder {
     format!("{}", before.timestamp_millis())
   }
 
-  fn build(&self) -> TransactionListOptions {
-    TransactionListOptions::new(Vec::clone(&self.params))
+  pub fn build(&self) -> Vec<(String, String)> {
+    Vec::clone(&self.params)
   }
-
 }
 
 impl TransactionListOptions {

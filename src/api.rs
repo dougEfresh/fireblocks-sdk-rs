@@ -1,4 +1,5 @@
 use bigdecimal::BigDecimal;
+use std::borrow::Borrow;
 
 use crate::client::Client;
 use crate::types::connect::{WalletApprove, WalletConnectRequest, WalletConnectResponse};
@@ -9,7 +10,7 @@ use crate::{
     connect::PagedWalletConnectResponse,
     fee::EstimateFee,
     staking::{StakingPosition, StakingPositionsSummary},
-    transaction::{CreateTransactionResponse, Transaction, TransactionArguments, TransactionListOptions},
+    transaction::{CreateTransactionResponse, Transaction, TransactionArguments},
     vault::{Account, CreateAccount, VaultAccounts},
     wallet::{WalletContainer, WalletCreate, WalletCreateAsset, WalletCreateAssetResponse},
     PaginatedAssetWallet,
@@ -183,10 +184,16 @@ impl Client {
     self.get(u).await
   }
 
-  #[tracing::instrument(skip(self))]
-  pub async fn transactions(&self, options: &TransactionListOptions) -> Result<Vec<Transaction>> {
+  #[tracing::instrument(skip(self, options))]
+  pub async fn transactions<I, K, V>(&self, options: I) -> Result<Vec<Transaction>>
+  where
+    I: IntoIterator,
+    I::Item: Borrow<(K, V)>,
+    K: AsRef<str>,
+    V: AsRef<str>,
+  {
     let (mut u, _) = self.build_uri("transactions", None)?;
-    u.query_pairs_mut().extend_pairs(options.params());
+    u.query_pairs_mut().extend_pairs(options);
     self.get(u).await
   }
 

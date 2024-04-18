@@ -9,8 +9,8 @@ pub mod api;
 mod client;
 pub mod error;
 pub(crate) mod jwt;
-pub mod types;
 mod page_client;
+pub mod types;
 
 pub use client::{Client, ClientBuilder};
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
@@ -49,11 +49,13 @@ mod tests {
   use std::sync::{Once, OnceLock};
   use std::{env, str::FromStr, time::Duration};
 
+  use crate::page_client::PagedClient;
   use crate::types::*;
   use crate::{Client, ClientBuilder, PagingVaultRequest};
   use bigdecimal::BigDecimal;
   use chrono::Utc;
   use color_eyre::eyre::format_err;
+  use futures::StreamExt;
   use tracing::{error, warn};
   use tracing_subscriber::fmt::format::FmtSpan;
   use tracing_subscriber::EnvFilter;
@@ -157,6 +159,58 @@ mod tests {
 
   fn vault_name() -> String {
     format!("z-test-{}", Utc::now().timestamp())
+  }
+
+  #[rstest::rstest]
+  #[tokio::test]
+  async fn test_transaction_list(config: Config) -> color_eyre::Result<()> {
+    let after = Utc::now();
+    let before = Utc::now();
+    // test all options
+    let options = TransactionListBuilder::new()
+      .after(&after)
+      .before(&before)
+      .assets(&vec!["BTC_TEST", "SOL_TEST"])
+      .tx_hash("something")
+      .source_id(9)
+      .destination_id(19)
+      .limit(200)
+      .build();
+
+    let v = options.iter().find(|(a, _)| *a == "after");
+    assert!(v.is_some());
+
+    let v = options.iter().find(|(a, _)| *a == "before");
+    assert!(v.is_some());
+
+    let v = options.iter().find(|(a, _)| *a == "assets");
+    assert!(v.is_some());
+    assert_eq!("BTC_TEST,SOL_TEST", v.unwrap().1);
+
+    let v = options.iter().find(|(a, _)| *a == "sourceId");
+    assert!(v.is_some());
+    assert_eq!("9", v.unwrap().1);
+
+    let v = options.iter().find(|(a, _)| *a == "destId");
+    assert!(v.is_some());
+    assert_eq!("19", v.unwrap().1);
+
+    let v = options.iter().find(|(a, _)| *a == "limit");
+    assert!(v.is_some());
+    assert_eq!("200", v.unwrap().1);
+
+    let options = TransactionListBuilder::new()
+      .after(&after)
+      .before(&before)
+      .assets(&vec!["BTC_TEST", "SOL_TEST"])
+      .limit(200)
+      .build();
+    if !config.is_ok() {
+      return Ok(());
+    }
+    let c = config.client();
+    c.transactions(options).await?;
+    Ok(())
   }
 
   #[rstest::rstest]
@@ -290,6 +344,20 @@ mod tests {
         None => Err(format_err!("client is not configured and you are running in CI")),
       },
     }
+  }
+
+  #[rstest::rstest]
+  #[test]
+  async fn page_transactions(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    let client = config.client();
+    let pc = PagedClient { client };
+    while let Some(t) = pc.paged_transactions().hnext() {
+      println!(t);
+    }
+    Ok(())
   }
 }
 
