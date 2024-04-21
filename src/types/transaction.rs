@@ -1,10 +1,11 @@
-use crate::Epoch;
+use crate::{impl_base_query_params, Epoch};
 use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_derive::Serialize;
 use std::borrow::Borrow;
 
+use crate::types::page::BasePageParams;
 use crate::types::{deserialize_epoch_time, deserialize_option_empty_object};
 
 #[allow(clippy::upper_case_acronyms)]
@@ -69,19 +70,19 @@ pub enum TransactionStatus {
   UNKNOWN,
 }
 
-#[derive(Debug, Default)]
 pub struct TransactionListOptions {
   params: Vec<(String, String)>,
 }
 
+#[derive(Debug, Default)]
 pub struct TransactionListBuilder {
   params: Vec<(String, String)>,
+  base: BasePageParams,
 }
 
+impl_base_query_params!(TransactionListBuilder);
+
 impl TransactionListBuilder {
-  pub const fn new() -> Self {
-    Self { params: Vec::new() }
-  }
   pub fn source_id(&mut self, id: i32) -> &mut Self {
     self.params.push(("sourceId".to_string(), id.to_string()));
     self
@@ -97,19 +98,6 @@ impl TransactionListBuilder {
     self
   }
 
-  pub fn before(&mut self, t: &Epoch) -> &mut Self {
-    self.add_instant("before", t)
-  }
-
-  pub fn after(&mut self, t: &Epoch) -> &mut Self {
-    self.add_instant("after", t)
-  }
-
-  fn add_instant(&mut self, param: &str, t: &Epoch) -> &mut Self {
-    self.params.push((param.to_owned(), Self::epoch(t)));
-    self
-  }
-
   pub fn assets<T: Borrow<str>>(&mut self, a: &[T]) -> &mut Self {
     self.params.push(("assets".to_owned(), a.join(",")));
     self
@@ -118,19 +106,6 @@ impl TransactionListBuilder {
   pub fn tx_hash(&mut self, tx: &str) -> &mut Self {
     self.params.push(("txHash".to_owned(), String::from(tx)));
     self
-  }
-
-  pub fn limit(&mut self, limit: u16) -> &mut Self {
-    self.params.push(("limit".to_owned(), format!("{limit}")));
-    self
-  }
-
-  fn epoch(before: &Epoch) -> String {
-    format!("{}", before.timestamp_millis())
-  }
-
-  pub fn build(&self) -> Vec<(String, String)> {
-    Vec::clone(&self.params)
   }
 }
 

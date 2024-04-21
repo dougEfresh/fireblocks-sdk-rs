@@ -1,10 +1,11 @@
 use crate::error::FireblocksError;
 use crate::jwt::Signer;
-use crate::{error, PagingVaultRequest, FIREBLOCKS_API, FIREBLOCKS_SANDBOX_API};
+use crate::{error, FIREBLOCKS_API, FIREBLOCKS_SANDBOX_API};
 use jsonwebtoken::EncodingKey;
 use reqwest::{Method, RequestBuilder, StatusCode};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use std::borrow::Borrow;
 use std::fmt::Debug;
 use std::sync::Arc;
 use std::time::Duration;
@@ -49,6 +50,11 @@ impl ClientBuilder {
 
   #[allow(unused_mut, clippy::return_self_not_must_use)]
   pub fn use_sandbox(mut self) -> Self {
+    self.with_url(FIREBLOCKS_SANDBOX_API)
+  }
+
+  #[allow(unused_mut, clippy::return_self_not_must_use)]
+  pub fn with_sandbox(mut self) -> Self {
     self.with_url(FIREBLOCKS_SANDBOX_API)
   }
 
@@ -105,13 +111,23 @@ impl Client {
 
 // This impl block contains the underlying GET/POST helpers for authing to fireblocks
 impl Client {
-  pub(crate) fn build_uri(&self, path: &str, page: Option<&PagingVaultRequest>) -> crate::Result<Url> {
+  pub(crate) fn build_url(&self, path: &str) -> crate::Result<Url> {
+    self.build_url_params::<Vec<(&str, &str)>, &str, &str>(path, None)
+  }
+
+  pub(crate) fn build_url_params<I, K, V>(&self, path: &str, params: Option<I>) -> crate::Result<Url>
+  where
+    I: IntoIterator,
+    I::Item: Borrow<(K, V)>,
+    K: AsRef<str>,
+    V: AsRef<str>,
+  {
     let mut url = Url::parse(&format!("{}/{path}", self.host))?;
 
-    match page {
+    match params {
       None => Ok((url, String::new())),
-      Some(paging) => {
-        url.query_pairs_mut().extend_pairs(paging.params());
+      Some(p) => {
+        url.query_pairs_mut().extend_pairs(p);
         Ok((url, String::new()))
       },
     }

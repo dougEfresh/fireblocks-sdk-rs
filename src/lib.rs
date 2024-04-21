@@ -6,62 +6,71 @@ use std::fmt::Debug;
 use crate::error::FireblocksError;
 
 pub mod api;
+mod assets;
 mod client;
 pub mod error;
 pub(crate) mod jwt;
 mod page_client;
 pub mod types;
 
+pub use assets::{ASSET_BTC, ASSET_BTC_TEST, ASSET_SOL, ASSET_SOL_TEST};
 pub use client::{Client, ClientBuilder};
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
 pub const FIREBLOCKS_SANDBOX_API: &str = "https://sandbox-api.fireblocks.io/v1";
 pub type Epoch = DateTime<Utc>;
 pub type Result<T> = std::result::Result<(T, String), FireblocksError>;
+pub use crate::types::PagingVaultRequestBuilder;
 
-#[derive(Debug)]
-#[allow(dead_code)]
-pub struct PagingVaultRequest {
-  pub limit: i32,
-  pub before: Option<String>,
-  pub after: Option<String>,
-  pub name_prefix: Option<String>,
-  pub name_suffix: Option<String>,
-}
+#[macro_export]
+macro_rules! impl_base_query_params {
+  ($struct_name:ident) => {
+    impl $struct_name {
+      pub fn new() -> Self {
+        Self { params: Vec::new(), base: BasePageParams::new() }
+      }
+      pub fn limit(&mut self, limit: u16) -> &mut Self {
+        self.base.limit(limit);
+        self
+      }
 
-impl Default for PagingVaultRequest {
-  fn default() -> Self {
-    Self { limit: 500, before: None, after: None, name_prefix: None, name_suffix: None }
-  }
-}
+      pub fn before(&mut self, t: &Epoch) -> &mut Self {
+        self.base.before(t);
+        self
+      }
 
-impl PagingVaultRequest {
-  pub fn params(&self) -> Vec<(String, String)> {
-    let mut params: Vec<(String, String)> = Vec::new();
-    params.push(("limit".to_owned(), self.limit.to_string()));
-    self.name_prefix.clone().inspect(|v| params.push(("namePrefix".to_owned(), String::from(v))));
-    self.name_suffix.clone().inspect(|v| params.push(("nameSuffix".to_owned(), String::from(v))));
-    params
-  }
+      pub fn after(&mut self, t: &Epoch) -> &mut Self {
+        self.base.after(t);
+        self
+      }
+
+      pub fn build(&self) -> std::result::Result<Vec<(String, String)>, $crate::error::ParamError> {
+        let mut p = Vec::clone(&self.params);
+        let b = self.base.build();
+        p.extend(b);
+        Ok(p)
+      }
+    }
+  };
 }
 
 #[cfg(test)]
 mod tests {
+  use std::str::FromStr;
   use std::sync::{Once, OnceLock};
-  use std::{env, str::FromStr, time::Duration};
+  use std::{env, time::Duration};
 
-  use crate::page_client::PagedClient;
+  use crate::assets::{ASSET_BTC_TEST, ASSET_SOL_TEST};
   use crate::types::*;
-  use crate::{Client, ClientBuilder, PagingVaultRequest};
+  use crate::{Client, ClientBuilder};
   use bigdecimal::BigDecimal;
   use chrono::Utc;
   use color_eyre::eyre::format_err;
-  use futures::StreamExt;
-  use tracing::{error, warn};
+  use tracing::warn;
   use tracing_subscriber::fmt::format::FmtSpan;
   use tracing_subscriber::EnvFilter;
 
   static INIT: Once = Once::new();
-  static FB: OnceLock<Client> = OnceLock::new();
+  static KEYS: OnceLock<(String, String)> = OnceLock::new();
 
   #[allow(clippy::unwrap_used)]
   fn setup() {
@@ -84,22 +93,7 @@ mod tests {
       if api_key.is_none() || path.is_none() {
         return;
       }
-      let path = path.unwrap();
-      let rsa_pem = path.as_bytes().to_vec();
-      match ClientBuilder::new(api_key.as_ref().unwrap(), &rsa_pem)
-        .use_sandbox()
-        .with_user_agent("fireblocks-sdk-rs test")
-        .with_timeout(Duration::from_secs(30))
-        .with_connect_timeout(Duration::from_secs(5))
-        .build()
-      {
-        Ok(fb) => {
-          let _ = FB.set(fb);
-        },
-        Err(e) => {
-          error!("failed to create client {e}");
-        },
-      };
+      let _ = KEYS.set((api_key.unwrap(), path.unwrap()));
     });
   }
 
@@ -115,7 +109,21 @@ mod tests {
 
   impl Config {
     fn new() -> Self {
-      Self { client: FB.get().map_or_else(|| None, |c| Some(c.clone())) }
+      let keys = KEYS.get();
+      let client: Option<Client> = match keys {
+        None => None,
+        Some((api_key, path)) => {
+          let rsa_pem = path.as_bytes().to_vec();
+          ClientBuilder::new(api_key, &rsa_pem)
+            .use_sandbox()
+            .with_user_agent("fireblocks-sdk-rs test")
+            .with_timeout(Duration::from_secs(30))
+            .with_connect_timeout(Duration::from_secs(5))
+            .build()
+            .ok()
+        },
+      };
+      Self { client }
     }
 
     const fn is_ok(&self) -> bool {
@@ -134,19 +142,19 @@ mod tests {
     if !config.is_ok() {
       return Ok(());
     }
-    let (results, id) = config.client().vaults(None, None).await?;
+    let params = PagingVaultRequestBuilder::new().build()?;
+    let (results, id) = config.client().vaults(params).await?;
     assert!(!id.is_empty());
     assert!(!results.accounts.is_empty());
 
-    let min = BigDecimal::from_str("1000000.00")?;
-
-    let (results, id) = config.client().vaults(None, Some(min).as_ref()).await?;
+    let params = PagingVaultRequestBuilder::new().min_threshold(&BigDecimal::from_str("1000000.00")?).build()?;
+    let (results, id) = config.client().vaults(params).await?;
     assert!(!id.is_empty());
     assert!(results.accounts.is_empty());
 
     let _before = &chrono::offset::Utc::now();
-    let page = PagingVaultRequest { limit: 1, ..Default::default() };
-    let (results, id) = config.client().vaults(Some(page).as_ref(), None).await?;
+    let params = PagingVaultRequestBuilder::new().limit(1).build()?;
+    let (results, id) = config.client().vaults(params).await?;
     assert!(!id.is_empty());
     assert_eq!(1, results.accounts.len());
 
@@ -163,6 +171,7 @@ mod tests {
 
   #[rstest::rstest]
   #[tokio::test]
+  #[allow(clippy::unwrap_used)]
   async fn test_transaction_list(config: Config) -> color_eyre::Result<()> {
     let after = Utc::now();
     let before = Utc::now();
@@ -170,12 +179,12 @@ mod tests {
     let options = TransactionListBuilder::new()
       .after(&after)
       .before(&before)
-      .assets(&vec!["BTC_TEST", "SOL_TEST"])
+      .assets(&[ASSET_BTC_TEST, ASSET_SOL_TEST])
       .tx_hash("something")
       .source_id(9)
       .destination_id(19)
       .limit(200)
-      .build();
+      .build()?;
 
     let v = options.iter().find(|(a, _)| *a == "after");
     assert!(v.is_some());
@@ -202,9 +211,9 @@ mod tests {
     let options = TransactionListBuilder::new()
       .after(&after)
       .before(&before)
-      .assets(&vec!["BTC_TEST", "SOL_TEST"])
+      .assets(&[ASSET_BTC_TEST, ASSET_SOL_TEST])
       .limit(200)
-      .build();
+      .build()?;
     if !config.is_ok() {
       return Ok(());
     }
@@ -233,7 +242,7 @@ mod tests {
     assert!(result.hidden_on_ui);
     assert!(result.id > 0);
 
-    let (address_response, id) = config.client().create_address(result.id, "SOL_TEST").await?;
+    let (address_response, id) = config.client().create_address(result.id, ASSET_SOL_TEST).await?;
     assert!(!id.is_empty());
     assert!(!address_response.address.is_empty());
     assert!(!address_response.id.is_empty());
@@ -243,8 +252,8 @@ mod tests {
     assert_eq!(1, address_response.len());
     assert_eq!(addr, address_response[0].address);
 
-    let page = PagingVaultRequest { limit: 10, ..Default::default() };
-    let (container, id) = config.client().addresses_paginated(result.id, "SOL_TEST", Some(page).as_ref()).await?;
+    let page = PagingVaultRequestBuilder::new().limit(10).build()?;
+    let (container, id) = config.client().addresses_paginated(result.id, "SOL_TEST", page).await?;
     assert!(!id.is_empty());
     assert_eq!(1, container.addresses.len());
     Ok(())
@@ -344,20 +353,6 @@ mod tests {
         None => Err(format_err!("client is not configured and you are running in CI")),
       },
     }
-  }
-
-  #[rstest::rstest]
-  #[test]
-  async fn page_transactions(config: Config) -> color_eyre::Result<()> {
-    if !config.is_ok() {
-      return Ok(());
-    }
-    let client = config.client();
-    let pc = PagedClient { client };
-    while let Some(t) = pc.paged_transactions().hnext() {
-      println!(t);
-    }
-    Ok(())
   }
 }
 

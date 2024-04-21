@@ -4,6 +4,12 @@ use url::ParseError;
 use crate::jwt;
 
 #[derive(Debug, Error)]
+pub enum ParamError {
+  #[error("Invalid params for {msg}")]
+  InvalidParams { msg: String },
+}
+
+#[derive(Debug, Error)]
 pub enum ClientError {
   #[error(transparent)]
   /// Thrown when JWT signing fails
