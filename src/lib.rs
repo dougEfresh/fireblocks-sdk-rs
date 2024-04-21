@@ -116,6 +116,7 @@ mod tests {
           let rsa_pem = path.as_bytes().to_vec();
           ClientBuilder::new(api_key, &rsa_pem)
             .use_sandbox()
+            .with_sandbox() // code coverage
             .with_user_agent("fireblocks-sdk-rs test")
             .with_timeout(Duration::from_secs(30))
             .with_connect_timeout(Duration::from_secs(5))
@@ -162,6 +163,24 @@ mod tests {
     assert!(!id.is_empty());
     assert_eq!(0, result.id);
     assert!(!result.assets.is_empty());
+    Ok(())
+  }
+
+  #[rstest::rstest]
+  #[tokio::test]
+  async fn test_vault_names(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    let params = PagingVaultRequestBuilder::new().name_prefix("Default").build()?;
+    let results = config.client().vaults(params).await?.0;
+    assert!(!results.accounts.is_empty());
+    assert_eq!(results.accounts[0].name, "Default");
+
+    let params = PagingVaultRequestBuilder::new().name_suffix("Default").build()?;
+    let results = config.client().vaults(params).await?.0;
+    assert!(!results.accounts.is_empty());
+    assert_eq!(results.accounts[0].name, "Default");
     Ok(())
   }
 
@@ -219,6 +238,18 @@ mod tests {
     }
     let c = config.client();
     c.transactions(options).await?;
+    Ok(())
+  }
+
+  #[rstest::rstest]
+  #[tokio::test]
+  async fn test_assets(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    let c = config.client();
+    let results = c.assets(Vec::<(String, String)>::new()).await?.0;
+    assert!(!results.asset_wallets.is_empty());
     Ok(())
   }
 

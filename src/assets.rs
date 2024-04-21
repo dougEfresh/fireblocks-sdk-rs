@@ -28,6 +28,7 @@ pub enum Network {
 pub enum Asset {
   BTC(Network),
   SOL(Network),
+  Dodge(Network),
   ETH(EthNetwork),
   SolToken(Network, String),
   Unknown(String),
@@ -37,18 +38,23 @@ pub const ASSET_BTC: Asset = Asset::BTC(Network::Main);
 pub const ASSET_BTC_TEST: Asset = Asset::BTC(Network::Test);
 pub const ASSET_SOL: Asset = Asset::SOL(Network::Main);
 pub const ASSET_SOL_TEST: Asset = Asset::SOL(Network::Test);
+pub const ASSET_ETH: Asset = Asset::ETH(EthNetwork::Main);
+pub const ASSET_ETH_TEST: Asset = Asset::ETH(EthNetwork::Test);
+pub const ASSET_DOGE: Asset = Asset::Dodge(Network::Main);
+pub const ASSET_DOGE_TEST: Asset = Asset::Dodge(Network::Test);
 
 impl AsRef<str> for Asset {
-
   #[allow(clippy::match_same_arms)]
   fn as_ref(&self) -> &str {
     match self {
       Self::BTC(Network::Main) => "BTC",
       Self::BTC(Network::Test) => "BTC_TEST",
+      Self::Dodge(Network::Main) => "DOGE",
+      Self::Dodge(Network::Test) => "DOGE_TEST",
       Self::SOL(Network::Main) => "SOL",
       Self::SOL(Network::Test) => "SOL_TEST",
       Self::ETH(EthNetwork::Main) => "ETH",
-      Self::ETH(EthNetwork::Test) => "ETH_TEST_6",
+      Self::ETH(EthNetwork::Test) => "ETH_TEST6",
       Self::SolToken(Network::Main, ref token) => token,
       Self::SolToken(Network::Test, ref token) => token,
       Self::Unknown(ref s) => s,
@@ -77,86 +83,47 @@ impl FromStr for Asset {
       "BTC_TEST" => Ok(ASSET_BTC_TEST),
       "SOL" => Ok(ASSET_SOL),
       "SOL_TEST" => Ok(ASSET_SOL_TEST),
+      "DOGE" => Ok(ASSET_DOGE),
+      "DOGE_TEST" => Ok(ASSET_DOGE_TEST),
+      "ETH" => Ok(ASSET_ETH),
+      "ETH_TEST6" => Ok(ASSET_ETH_TEST),
       _ => Ok(Self::Unknown(String::from(s))),
     }
   }
 }
 
-/*
-impl Into<&str> for Asset {
-  fn into(self) -> &'static str {
-    ""
-  }
-}
- */
-
-impl From<Asset> for String {
-  fn from(value: Asset) -> Self {
-    let a: &str = value.as_ref();
-    Self::from(a)
-  }
-}
-
 #[cfg(test)]
 mod tests {
-  use crate::assets::Asset;
-  use crate::ASSET_BTC;
+  use crate::assets::{Asset, ASSET_DOGE, ASSET_DOGE_TEST, ASSET_ETH, ASSET_ETH_TEST};
+  use crate::{ASSET_BTC, ASSET_BTC_TEST, ASSET_SOL, ASSET_SOL_TEST};
   use std::str::FromStr;
 
   #[test]
   fn asset_from_string() -> color_eyre::Result<()> {
     let a = Asset::from_str("BTC")?;
     assert_eq!(a, ASSET_BTC);
+
+    let a = Asset::from_str("BTC_TEST")?;
+    assert_eq!(a, ASSET_BTC_TEST);
+
+    let a = Asset::from_str("SOL")?;
+    assert_eq!(a, ASSET_SOL);
+
+    let a = Asset::from_str("SOL_TEST")?;
+    assert_eq!(a, ASSET_SOL_TEST);
+
+    let a = Asset::from_str("DOGE")?;
+    assert_eq!(a, ASSET_DOGE);
+
+    let a = Asset::from_str("DOGE_TEST")?;
+    assert_eq!(a, ASSET_DOGE_TEST);
+
+    let a = Asset::from_str("ETH")?;
+    assert_eq!(a, ASSET_ETH);
+
+    let a = Asset::from_str("ETH_TEST6")?;
+    assert_eq!(a, ASSET_ETH_TEST);
+
     Ok(())
   }
 }
-
-/*
-impl Into<&'static str> for Asset {
-  fn into(self) -> &'static str {
-    match self {
-      Asset::BTC(n) => {
-        match n {
-          Network::MAIN => {
-            "BTC"
-          }
-          Network::TEST => {
-            "BTC_TEST"
-          }
-        }
-      },
-      Asset::ETH(n) => {
-        match n {
-          EthNetwork::MAIN => {
-            "ETH"
-          }
-          EthNetwork::TEST => {
-            "ETH_TEST6"
-          }
-        }
-      },
-      Asset::SOL(n) => {
-        match n {
-          Network::MAIN => {
-            "SOL"
-          }
-          Network::TEST => {
-            "SOL_TEST"
-          }
-        }
-      }
-      Asset::SolToken(n, t) => {
-        match n {
-          Network::MAIN => {
-            format!("SOL_{}", t.to_uppercase())
-          }
-          Network::TEST => {
-            format!("SOL_TEST_{}", t.to_uppercase())
-          }
-        }
-      }
-    }
-  }
-}
-
- */

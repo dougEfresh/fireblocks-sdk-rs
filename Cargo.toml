@@ -83,3 +83,4 @@ rstest = { version = "0.18" }
 color-eyre = { version = "0.6" }
 lazy_static = "1.4.0"
 dotenvy = { version = "0.15" }
+ensure = "0.3"
