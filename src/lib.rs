@@ -20,6 +20,7 @@ pub const FIREBLOCKS_SANDBOX_API: &str = "https://sandbox-api.fireblocks.io/v1";
 pub type Epoch = DateTime<Utc>;
 pub type Result<T> = std::result::Result<(T, String), FireblocksError>;
 pub use crate::types::PagingVaultRequestBuilder;
+pub type QueryParams = Vec<(String, String)>;
 
 #[macro_export]
 macro_rules! impl_base_query_params {
@@ -43,9 +44,9 @@ macro_rules! impl_base_query_params {
         self
       }
 
-      pub fn build(&self) -> std::result::Result<Vec<(String, String)>, $crate::error::ParamError> {
+      pub fn build(&self) -> std::result::Result<QueryParams, $crate::error::ParamError> {
         let mut p = Vec::clone(&self.params);
-        let b = self.base.build();
+        let b = self.base.build()?;
         p.extend(b);
         Ok(p)
       }

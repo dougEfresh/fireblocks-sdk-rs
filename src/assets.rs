@@ -1,15 +1,7 @@
+/// A collection of common asset symbols
 use std::borrow::Borrow;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
-
-#[derive(Debug, thiserror::Error)]
-pub struct ParseError;
-
-impl Display for ParseError {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    f.write_str("")
-  }
-}
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum EthNetwork {
@@ -30,7 +22,6 @@ pub enum Asset {
   SOL(Network),
   Dodge(Network),
   ETH(EthNetwork),
-  SolToken(Network, String),
   Unknown(String),
 }
 
@@ -55,8 +46,6 @@ impl AsRef<str> for Asset {
       Self::SOL(Network::Test) => "SOL_TEST",
       Self::ETH(EthNetwork::Main) => "ETH",
       Self::ETH(EthNetwork::Test) => "ETH_TEST6",
-      Self::SolToken(Network::Main, ref token) => token,
-      Self::SolToken(Network::Test, ref token) => token,
       Self::Unknown(ref s) => s,
     }
   }
@@ -74,8 +63,10 @@ impl Display for Asset {
   }
 }
 
+/// Convert a String to an [`Asset`]
+/// Note: This method will never fail
 impl FromStr for Asset {
-  type Err = ParseError;
+  type Err = std::string::ParseError;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
     match s.to_uppercase().as_str() {
@@ -124,6 +115,8 @@ mod tests {
     let a = Asset::from_str("ETH_TEST6")?;
     assert_eq!(a, ASSET_ETH_TEST);
 
+    let a = Asset::from_str("UNKNOWN")?;
+    assert_eq!(a, Asset::Unknown("UNKNOWN".to_string()));
     Ok(())
   }
 }

@@ -1,9 +1,9 @@
-use crate::{impl_base_query_params, Epoch};
+use crate::{impl_base_query_params, Epoch, QueryParams};
 use bigdecimal::BigDecimal;
 
 #[derive(Debug, Default)]
 pub struct BasePageParams {
-  params: Vec<(String, String)>,
+  params: QueryParams,
 }
 
 impl BasePageParams {
@@ -32,17 +32,16 @@ impl BasePageParams {
     format!("{}", before.timestamp_millis())
   }
 
-  pub(crate) fn build(&self) -> Vec<(String, String)> {
-    Vec::clone(&self.params)
+  #[allow(clippy::unnecessary_wraps)]
+  pub(crate) fn build(&self) -> std::result::Result<QueryParams, crate::error::ParamError> {
+    Ok(Vec::clone(&self.params))
   }
 }
 
 #[derive(Debug, Default)]
-#[allow(dead_code)]
 pub struct PagingVaultRequestBuilder {
-  params: Vec<(String, String)>,
+  params: QueryParams,
   base: BasePageParams,
-  // TODO min_threshold: Option<&BigDecimal>,
 }
 
 impl_base_query_params!(PagingVaultRequestBuilder);

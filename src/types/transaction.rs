@@ -1,4 +1,4 @@
-use crate::{impl_base_query_params, Epoch};
+use crate::{impl_base_query_params, Epoch, QueryParams};
 use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
@@ -71,12 +71,12 @@ pub enum TransactionStatus {
 }
 
 pub struct TransactionListOptions {
-  params: Vec<(String, String)>,
+  params: QueryParams,
 }
 
 #[derive(Debug, Default)]
 pub struct TransactionListBuilder {
-  params: Vec<(String, String)>,
+  params: QueryParams,
   base: BasePageParams,
 }
 
@@ -110,7 +110,7 @@ impl TransactionListBuilder {
 }
 
 impl TransactionListOptions {
-  pub const fn new(params: Vec<(String, String)>) -> Self {
+  pub const fn new(params: QueryParams) -> Self {
     Self { params }
   }
 
