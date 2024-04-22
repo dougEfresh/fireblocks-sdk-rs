@@ -22,9 +22,12 @@ impl Signer {
     Self { key, api_key: api_key.to_string() }
   }
 
-  pub fn sign<S: Serialize + Debug>(&self, path: &str, body: S) -> Result<String, JwtError> {
+  pub fn sign<S: Serialize + Debug>(&self, path: &str, body: Option<S>) -> Result<String, JwtError> {
     let header = Header::new(Algorithm::RS256);
-    let claims = Claims::new(path, &self.api_key, body)?;
+    let claims = match body {
+      Some(b) => Claims::new(path, &self.api_key, b)?,
+      None => Claims::new(path, &self.api_key, ())?,
+    };
     let msg = jsonwebtoken::encode(&header, &claims, &self.key)?;
     // debug!("signed message {}", msg);
     Ok(msg)

@@ -1,5 +1,6 @@
 /// A collection of common asset symbols
 use std::borrow::Borrow;
+
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 

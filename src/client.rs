@@ -111,6 +111,80 @@ impl Client {
 
 // This impl block contains the underlying GET/POST helpers for authing to fireblocks
 impl Client {
+  #[allow(clippy::option_if_let_else)]
+  #[tracing::instrument(skip(self, body))]
+  pub(crate) async fn send<T, S>(&self, method: Method, url: Url, body: Option<&S>) -> crate::Result<T>
+  where
+    T: DeserializeOwned + Default,
+    S: Serialize + ?Sized + Debug + Send + Sync,
+  {
+    let mut path = String::from(url.path());
+    if let Some(q) = url.query() {
+      path = format!("{path}?{q}");
+    }
+    debug!("sending request {method} {path}");
+
+    #[cfg(debug_assertions)]
+    match body {
+      None => debug!("sending request {method} {path}"),
+      Some(b) => {
+        if let Ok(s) = serde_json::to_string(b) {
+          debug!("sending request {method} {path} {:#?}", s);
+        }
+      },
+    }
+
+    let req = match method {
+      Method::GET => self.client.get(url),
+      Method::POST => self.client.post(url),
+      Method::DELETE => self.client.delete(url),
+      Method::PATCH => self.client.patch(url),
+      Method::PUT => self.client.put(url),
+      _ => todo!(),
+    };
+    let mut req = self.authed(&path, req, body)?.0;
+    if let Some(b) = body {
+      req = req.json(b);
+    }
+
+    let resp = req.send().await?;
+    let status = resp.status();
+    let request_id =
+      resp.headers().get("x-request-id").and_then(|value| value.to_str().ok()).unwrap_or_default().to_string();
+    let json_response = resp
+      .headers()
+      .get("content-type")
+      .and_then(|value| value.to_str().ok())
+      .unwrap_or_default()
+      .to_string()
+      .contains("json");
+    #[cfg(debug_assertions)]
+    debug!("got response with x-request-id={}", request_id);
+    let text = resp.text().await?;
+
+    let r: crate::Result<T> = match status {
+      StatusCode::OK | StatusCode::ACCEPTED | StatusCode::CREATED => {
+        if text.is_empty() || !json_response {
+          Ok((T::default(), request_id))
+        } else {
+          //debug!("body: {text}");
+          match serde_json::from_str::<T>(&text) {
+            Ok(deserialized) => Ok((deserialized, request_id)),
+            Err(err) => Err(FireblocksError::SerdeJson { request_id, err, text }),
+          }
+        }
+      },
+      StatusCode::NOT_FOUND => Err(FireblocksError::NotFound { request_id, path }),
+      StatusCode::BAD_REQUEST => Err(FireblocksError::BadRequest { request_id, path, text }),
+      StatusCode::UNAUTHORIZED => Err(FireblocksError::Unauthorized { request_id, path, text }),
+      StatusCode::SERVICE_UNAVAILABLE | StatusCode::GATEWAY_TIMEOUT | StatusCode::INTERNAL_SERVER_ERROR => {
+        Err(FireblocksError::InternalError { request_id, code: status.as_u16(), text })
+      },
+      _ => Err(FireblocksError::Unknown { request_id, code: status.as_u16(), text }),
+    };
+    r
+  }
+
   pub(crate) fn build_url(&self, path: &str) -> crate::Result<Url> {
     self.build_url_params::<Vec<(&str, &str)>, &str, &str>(path, None)
   }
@@ -134,112 +208,33 @@ impl Client {
   }
 
   pub(crate) async fn get<R: DeserializeOwned + Default>(&self, url: Url) -> crate::Result<R> {
-    self.send_no_body(url, Method::GET).await
+    self.send(Method::GET, url, None as Option<&()>).await
   }
 
   pub(crate) async fn delete<R: DeserializeOwned + Default>(&self, url: Url) -> crate::Result<R> {
-    self.send_no_body(url, Method::DELETE).await
+    self.send(Method::DELETE, url, None as Option<&()>).await
   }
 
-  pub(crate) async fn post<R: DeserializeOwned + Default>(&self, url: Url) -> crate::Result<R> {
-    self.send_no_body(url, Method::POST).await
-  }
-
-  pub(crate) async fn put<R: DeserializeOwned + Default, S: Serialize + Debug>(
-    &self,
-    url: Url,
-    body: S,
-  ) -> crate::Result<R> {
-    let mut path = String::from(url.path());
-    if let Some(q) = url.query() {
-      path = format!("{path}?{q}");
-    }
-    let req = self.client.put(url).json(&body);
-    self.send(&path, req, body).await
-  }
-
-  pub(crate) async fn post_body<S, R>(&self, url: Url, body: S) -> crate::Result<R>
+  pub(crate) async fn post<R, S>(&self, url: Url, body: Option<&S>) -> crate::Result<R>
   where
-    S: Serialize + Debug,
-    R: DeserializeOwned + Send + Default,
-  {
-    let mut path = String::from(url.path());
-    if let Some(q) = url.query() {
-      path = format!("{path}?{q}");
-    }
-    let req = self.client.post(url).json(&body);
-    self.send(&path, req, body).await
-  }
-
-  pub(crate) async fn send_no_body<R: DeserializeOwned + Default>(&self, url: Url, method: Method) -> crate::Result<R> {
-    let mut path = String::from(url.path());
-    if let Some(q) = url.query() {
-      path = format!("{path}?{q}");
-    }
-    let req = match method {
-      Method::GET => self.client.get(url),
-      Method::POST => self.client.post(url),
-      Method::DELETE => self.client.delete(url),
-      Method::PATCH => self.client.patch(url),
-      _ => todo!(),
-    };
-    self.send(&path, req, ()).await
-  }
-
-  #[tracing::instrument(skip(self, req, body))]
-  pub(crate) async fn send<S, R>(&self, path: &str, req: RequestBuilder, body: S) -> crate::Result<R>
-  where
-    S: Serialize + Debug,
     R: DeserializeOwned + Default,
+    S: Serialize + ?Sized + Debug + Send + Sync,
   {
-    debug!("sending request {}", path);
-    let (req, _) = self.authed(path, req, &body)?;
-    let response = req.send().await?;
-    let status = response.status();
-    let request_id =
-      response.headers().get("x-request-id").and_then(|value| value.to_str().ok()).unwrap_or_default().to_string();
-    debug!("got response with x-request-id={}", request_id);
-    let json_response = response
-      .headers()
-      .get("content-type")
-      .and_then(|value| value.to_str().ok())
-      .unwrap_or_default()
-      .to_string()
-      .contains("json");
-    debug!("got response with x-request-id={}", request_id);
-
-    let text = response.text().await?;
-
-    // debug!("body response {}", text.clone());
-    let r: crate::Result<R> = match status {
-      StatusCode::OK | StatusCode::ACCEPTED | StatusCode::CREATED => {
-        if text.is_empty() || !json_response {
-          Ok((R::default(), request_id))
-        } else {
-          //debug!("body: {text}");
-          match serde_json::from_str::<R>(&text) {
-            Ok(deserialized) => Ok((deserialized, request_id)),
-            Err(err) => Err(FireblocksError::SerdeJson { request_id, err, text }),
-          }
-        }
-      },
-      StatusCode::NOT_FOUND => Err(FireblocksError::NotFound { request_id, path: String::from(path) }),
-      StatusCode::BAD_REQUEST => Err(FireblocksError::BadRequest { request_id, path: String::from(path), text }),
-      StatusCode::UNAUTHORIZED => Err(FireblocksError::Unauthorized { request_id, path: String::from(path), text }),
-      StatusCode::SERVICE_UNAVAILABLE | StatusCode::GATEWAY_TIMEOUT | StatusCode::INTERNAL_SERVER_ERROR => {
-        Err(FireblocksError::InternalError { request_id, code: status.as_u16(), text })
-      },
-      _ => Err(FireblocksError::Unknown { request_id, code: status.as_u16(), text }),
-    };
-    r
+    self.send(Method::POST, url, body).await
   }
 
-  pub(crate) fn authed<S: Serialize + Debug>(
-    &self,
-    url: &str,
-    req: RequestBuilder,
-    body: &S,
-  ) -> crate::Result<RequestBuilder> {
+  pub(crate) async fn put<R, S>(&self, url: Url, body: Option<&S>) -> crate::Result<R>
+  where
+    R: DeserializeOwned + Default,
+    S: Serialize + ?Sized + Debug + Send + Sync,
+  {
+    self.send(Method::PUT, url, body).await
+  }
+
+  pub(crate) fn authed<S>(&self, url: &str, req: RequestBuilder, body: Option<&S>) -> crate::Result<RequestBuilder>
+  where
+    S: Serialize + ?Sized + Debug + Send + Sync,
+  {
     let jwt = self.signer.sign(url, body)?;
     Ok((req.header("X-API-Key", self.signer.api_key()).bearer_auth(jwt), String::new()))
   }

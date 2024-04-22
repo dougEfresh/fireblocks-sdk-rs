@@ -1,9 +1,15 @@
+/*!
+
+`fireblocks_sdk` is an async library for fireblocks [api](https://docs.fireblocks.com/api/swagger-ui/#)
+
+```rust
+
+```
+*/
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use serde_derive::Deserialize;
 use std::fmt::Debug;
-
-use crate::error::FireblocksError;
 
 pub mod api;
 mod assets;
@@ -13,13 +19,15 @@ pub(crate) mod jwt;
 mod page_client;
 pub mod types;
 
-pub use assets::{ASSET_BTC, ASSET_BTC_TEST, ASSET_SOL, ASSET_SOL_TEST};
+pub use crate::error::FireblocksError;
+pub use crate::types::PagingVaultRequestBuilder;
+pub use assets::{ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST};
 pub use client::{Client, ClientBuilder};
+
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
 pub const FIREBLOCKS_SANDBOX_API: &str = "https://sandbox-api.fireblocks.io/v1";
 pub type Epoch = DateTime<Utc>;
 pub type Result<T> = std::result::Result<(T, String), FireblocksError>;
-pub use crate::types::PagingVaultRequestBuilder;
 pub type QueryParams = Vec<(String, String)>;
 
 #[macro_export]

@@ -19,6 +19,10 @@ use crate::{
 };
 
 impl Client {
+  /// Create an asset (address) for a vault account
+  /// See:
+  /// * [`crate::assets`]
+  /// * [createVaultAccountAsset](https://docs.fireblocks.com/api/swagger-ui/#/Vaults/createVaultAccountAsset)
   #[tracing::instrument(skip(self))]
   pub async fn create_address<T>(&self, vault_id: i32, asset_id: T) -> Result<CreateAddressResponse>
   where
@@ -26,7 +30,7 @@ impl Client {
   {
     let p = format!("vault/accounts/{vault_id}/{asset_id}");
     let (u, _) = self.build_url(&p)?;
-    self.post(u).await
+    self.post(u, None as Option<&()>).await
   }
 
   #[tracing::instrument(skip(self))]
@@ -75,7 +79,7 @@ impl Client {
   #[tracing::instrument(skip(self))]
   pub async fn create_vault(&self, account: &CreateAccount) -> Result<Account> {
     let u = self.build_url("vault/accounts")?.0;
-    self.post_body(u, account).await
+    self.post(u, Some(account)).await
   }
 
   #[tracing::instrument(skip(self, page))]
@@ -106,14 +110,14 @@ impl Client {
   pub async fn external_wallet_asset(&self, id: &str, asset: &str, address: &str) -> Result<WalletCreateAssetResponse> {
     let u = self.build_url(&format!("external_wallets/{id}/{asset}"))?.0;
     let w = WalletCreateAsset { address: String::from(address), tag: "fireblocks-sdk-rs".to_string() };
-    self.post_body(u, w).await
+    self.post(u, Some(&w)).await
   }
 
   #[tracing::instrument(skip(self))]
   pub async fn external_wallet_create(&self, name: &str) -> Result<WalletContainer> {
     let u = self.build_url("external_wallets")?.0;
     let w = WalletCreate { name: String::from(name) };
-    self.post_body(u, w).await
+    self.post(u, Some(&w)).await
   }
 
   #[tracing::instrument(skip(self))]
@@ -138,14 +142,14 @@ impl Client {
   pub async fn contract_asset(&self, id: &str, asset: &str, address: &str) -> Result<WalletCreateAssetResponse> {
     let u = self.build_url(&format!("contracts/{id}/{asset}"))?.0;
     let w = WalletCreateAsset { address: String::from(address), tag: "fireblocks-sdk-rs".to_string() };
-    self.post_body(u, w).await
+    self.post(u, Some(&w)).await
   }
 
   #[tracing::instrument(skip(self))]
   pub async fn contract_create(&self, name: &str) -> Result<WalletContainer> {
     let u = self.build_url("contracts")?.0;
     let w = WalletCreate { name: String::from(name) };
-    self.post_body(u, w).await
+    self.post(u, Some(&w)).await
   }
 
   #[tracing::instrument(skip(self))]
@@ -205,7 +209,7 @@ impl Client {
   #[tracing::instrument(skip(self))]
   pub async fn create_transaction(&self, args: &TransactionArguments) -> Result<CreateTransactionResponse> {
     let u = self.build_url("transactions")?.0;
-    self.post_body(u, args).await
+    self.post(u, Some(args)).await
   }
 
   #[tracing::instrument(skip(self))]
@@ -223,7 +227,7 @@ impl Client {
   #[tracing::instrument(skip(self))]
   pub async fn wallet_connect(&self, request: &WalletConnectRequest) -> Result<WalletConnectResponse> {
     let u = self.build_url("connections/wc")?.0;
-    self.post_body(u, request).await
+    self.post(u, Some(request)).await
   }
 
   #[tracing::instrument(skip(self))]
@@ -235,6 +239,6 @@ impl Client {
   #[tracing::instrument(skip(self))]
   pub async fn wallet_connection_approve(&self, id: &str, approve: bool) -> Result<()> {
     let u = self.build_url(&format!("connections/wc/{id}"))?.0;
-    self.put(u, WalletApprove { approve }).await
+    self.put(u, Some(&WalletApprove { approve })).await
   }
 }
