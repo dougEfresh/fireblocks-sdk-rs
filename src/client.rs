@@ -112,7 +112,7 @@ impl Client {
 // This impl block contains the underlying GET/POST helpers for authing to fireblocks
 impl Client {
   #[allow(clippy::option_if_let_else)]
-  #[tracing::instrument(skip(self, body))]
+  #[tracing::instrument(skip(self, url, body), fields(path))]
   pub(crate) async fn send<T, S>(&self, method: Method, url: Url, body: Option<&S>) -> crate::Result<T>
   where
     T: DeserializeOwned + Default,
@@ -122,6 +122,7 @@ impl Client {
     if let Some(q) = url.query() {
       path = format!("{path}?{q}");
     }
+    tracing::Span::current().record("path", &path);
     debug!("sending request {method} {path}");
 
     #[cfg(debug_assertions)]
