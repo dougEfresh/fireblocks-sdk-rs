@@ -11,11 +11,23 @@ use crate::{
     fee::EstimateFee,
     staking::{StakingPosition, StakingPositionsSummary},
     vault::{Account, CreateAccount, VaultAccounts},
-    wallet::{WalletContainer, WalletCreate, WalletCreateAsset, WalletCreateAssetResponse},
+    wallet::{WalletContainer, WalletCreateAssetResponse},
     PaginatedAssetWallet,
   },
   Result,
 };
+
+#[derive(Debug, Serialize)]
+struct WalletCreate {
+  name: String,
+}
+
+#[derive(Debug, Serialize)]
+#[allow(dead_code)]
+pub struct WalletCreateAsset {
+  pub address: String,
+  pub tag: String,
+}
 
 impl Client {
   /// Create an asset (address) for a vault account

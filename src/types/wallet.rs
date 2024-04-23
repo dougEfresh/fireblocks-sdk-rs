@@ -22,18 +22,6 @@ pub struct ExternalWalletAsset {
   pub activation_time: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-#[allow(dead_code)]
-pub struct WalletCreate {
-  pub name: String,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[allow(dead_code)]
-pub struct WalletCreateAsset {
-  pub address: String,
-  pub tag: String,
-}
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[allow(dead_code)]
 pub struct WalletCreateAssetResponse {

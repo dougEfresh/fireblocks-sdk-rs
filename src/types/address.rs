@@ -60,3 +60,22 @@ pub struct Address {
   pub bip44address_index: i32,
   pub user_defined: bool,
 }
+
+mod tests {
+
+  #[test]
+  fn deposit_types() {
+    use super::AddressType;
+    let t: AddressType = serde_json::from_str("\"Change\"").expect("could not find address type");
+    assert_eq!(t, AddressType::Change);
+
+    let t: AddressType = serde_json::from_str("\"Deposit\"").expect("could not find address type");
+    assert_eq!(t, AddressType::Deposit);
+
+    let t: AddressType = serde_json::from_str("\"Address\"").expect("could not find address type");
+    assert_eq!(t, AddressType::Address);
+
+    let t: AddressType = serde_json::from_str("\"Permanent\"").expect("could not find address type");
+    assert_eq!(t, AddressType::Permanent);
+  }
+}
