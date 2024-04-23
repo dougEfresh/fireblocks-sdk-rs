@@ -1,12 +1,13 @@
 use crate::types::deserialize_str_u64;
 use bigdecimal::BigDecimal;
 use serde_derive::{Deserialize, Serialize};
+use crate::assets::Asset;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct SupportedAsset {
-  pub id: String,
+  pub id: Asset,
   pub name: String,
   #[serde(rename = "type")]
   pub asset_type: String,

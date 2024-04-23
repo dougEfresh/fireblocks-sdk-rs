@@ -200,6 +200,22 @@ mod tests {
   #[rstest::rstest]
   #[tokio::test]
   #[allow(clippy::unwrap_used)]
+  async fn test_supported_assets(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    let c = config.client();
+
+    let assets = c.supported_assets().await?.0;
+    assert!(!assets.is_empty());
+    let found = assets.iter().find(|a| a.id == ASSET_BTC_TEST);
+    assert!(found.is_some());
+    Ok(())
+  }
+
+  #[rstest::rstest]
+  #[tokio::test]
+  #[allow(clippy::unwrap_used)]
   async fn test_transaction_list(config: Config) -> color_eyre::Result<()> {
     let after = Utc::now();
     let before = Utc::now();
@@ -336,7 +352,7 @@ mod tests {
 
     let addr_response = c
           .external_wallet_asset(&contract_response.id, "ETH_TEST5", "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
-      .await?.0
+      .await?.0;
     assert!(!addr_response.id.is_empty());
 
     let wallets = c.external_wallets().await?.0;
