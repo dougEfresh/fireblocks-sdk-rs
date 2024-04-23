@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use chrono::{DateTime, LocalResult, TimeZone, Utc};
 use serde::{de::Error as SerdeError, Deserialize, Deserializer};
-use serde_derive::Serialize;
 use serde_json::Value;
 
 pub mod address;
@@ -23,14 +22,6 @@ pub use staking::*;
 pub use transaction::*;
 pub use vault::*;
 pub use wallet::*;
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
-pub struct DeleteResponse {
-  pub message: String,
-  pub code: i32,
-}
 
 fn deserialize_option_empty_object<'de, T, D>(deserializer: D) -> Result<Option<T>, D::Error>
 where
@@ -79,18 +70,4 @@ where
 pub struct PaginatedAssetWallet {
   pub asset_wallets: Vec<AssetResponse>,
   pub paging: Paging,
-}
-
-#[allow(non_camel_case_types)]
-#[derive(Debug, Deserialize)]
-#[allow(clippy::upper_case_acronyms)]
-pub enum PeerType {
-  VAULT_ACCOUNT,
-  EXCHANGE_ACCOUNT,
-  INTERNAL_WALLET,
-  EXTERNAL_WALLET,
-  ONE_TIME_ADDRESS,
-  NETWORK_CONNECTION,
-  FIAT_ACCOUNT,
-  COMPOUND,
 }

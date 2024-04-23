@@ -10,20 +10,6 @@ pub struct Paging {
   pub after: Option<String>,
 }
 
-impl Paging {
-  fn epoch(before: &Epoch) -> String {
-    format!("{}", before.timestamp_millis())
-  }
-
-  pub fn set_before(&mut self, before: &Epoch) {
-    self.before = Some(Self::epoch(before));
-  }
-
-  pub fn set_after(&mut self, after: &Epoch) {
-    self.after = Some(Self::epoch(after));
-  }
-}
-
 #[derive(Debug, Default)]
 pub struct BasePageParams {
   params: QueryParams,
