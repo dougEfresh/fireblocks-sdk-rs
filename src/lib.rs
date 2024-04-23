@@ -335,6 +335,7 @@ mod tests {
     assert_eq!(addr_response.id, ASSET_ETH_TEST);
 
     config.client().contract_delete(&name).await?;
+    config.client().contracts().await?;
     Ok(())
   }
 
@@ -428,6 +429,17 @@ mod tests {
     assert!(!chains.is_empty());
     c.staking_positions().await?;
     c.staking_positions_summary().await?;
+    Ok(())
+  }
+
+  #[rstest::rstest]
+  #[tokio::test]
+  async fn test_internal_wallets(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    let c = config.client();
+    c.internal_wallets().await?;
     Ok(())
   }
 
