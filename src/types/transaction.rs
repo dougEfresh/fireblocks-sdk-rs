@@ -4,6 +4,7 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_derive::Serialize;
 use std::borrow::Borrow;
+use crate::assets::Asset;
 
 use crate::types::page::BasePageParams;
 use crate::types::{deserialize_epoch_time, deserialize_option_empty_object};
@@ -285,7 +286,7 @@ pub struct TransactionDestination {
 #[allow(dead_code)]
 pub struct Transaction {
   pub id: String,
-  pub asset_id: String,
+  pub asset_id: Asset,
   pub status: TransactionStatus,
   pub destination: Option<TransferPeerPath>,
   pub source: Option<TransferPeerPath>,
@@ -347,7 +348,7 @@ pub struct Transaction {
 #[serde(rename_all = "camelCase")]
 pub struct TransactionArguments {
   #[serde(rename = "assetId")]
-  pub asset_id: String,
+  pub asset_id: Asset,
   pub operation: TransactionOperation,
   pub source: TransferPeerPath,
   #[serde(skip_serializing_if = "Option::is_none")]

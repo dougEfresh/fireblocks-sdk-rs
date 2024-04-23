@@ -1,6 +1,7 @@
 use crate::Paging;
 use serde::{de::Error, Deserialize, Deserializer};
 use serde_derive::Serialize;
+use crate::assets::Asset;
 
 use crate::types::deserialize_option_empty_object;
 
@@ -48,7 +49,7 @@ pub struct CreateAddressResponse {
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct Address {
-  pub asset_id: String,
+  pub asset_id: Asset,
   pub address: String,
   #[serde(rename = "type", deserialize_with = "deserialize_addr_type")]
   pub address_type: AddressType,

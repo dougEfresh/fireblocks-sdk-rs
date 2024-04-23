@@ -70,7 +70,7 @@ mod tests {
 
   use crate::assets::{ASSET_BTC_TEST, ASSET_SOL_TEST};
   use crate::types::*;
-  use crate::{Client, ClientBuilder};
+  use crate::{ASSET_ETH_TEST, Client, ClientBuilder};
   use bigdecimal::BigDecimal;
   use chrono::Utc;
   use color_eyre::eyre::format_err;
@@ -329,9 +329,9 @@ mod tests {
 
     let (addr_response, _) = config
       .client()
-      .contract_asset(&contract_response.id, "ETH_TEST3", "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
+      .contract_asset(&contract_response.id, "ETH_TEST5", "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
       .await?;
-    assert!(!addr_response.id.is_empty());
+    assert_eq!(addr_response.id, ASSET_ETH_TEST);
 
     config.client().contract_delete(&name).await?;
     Ok(())
@@ -353,11 +353,11 @@ mod tests {
     let addr_response = c
           .external_wallet_asset(&contract_response.id, "ETH_TEST5", "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
       .await?.0;
-    assert!(!addr_response.id.is_empty());
+    assert_eq!(addr_response.id, ASSET_ETH_TEST);
 
     let wallets = c.external_wallets().await?.0;
     assert!(!wallets.is_empty());
-    c.external_wallet(&addr_response.id).await?;
+    c.external_wallet(&contract_response.id).await?;
     c.external_wallet_delete(&name).await?;
     Ok(())
   }

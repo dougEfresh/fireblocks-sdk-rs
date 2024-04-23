@@ -1,4 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
+use crate::assets::Asset;
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
@@ -36,5 +37,5 @@ pub struct WalletCreateAsset {
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[allow(dead_code)]
 pub struct WalletCreateAssetResponse {
-  pub id: String,
+  pub id: Asset,
 }

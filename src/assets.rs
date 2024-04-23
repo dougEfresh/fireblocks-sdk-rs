@@ -4,8 +4,7 @@
 /// use fireblocks_sdk::ClientBuilder;
 /// use fireblocks_sdk::ASSET_SOL;
 ///
-/// #[tokio:main]
-/// async fn main() {
+/// async fn asset() {
 ///  let api_key = std::env::var("FIREBLOCKS_API_KEY").expect("no api key!");
 ///  let secret = std::env::var("FIREBLOCKS_SECRET").expect("no secret key!");
 ///  let client = ClientBuilder::new(&api_key, &secret.into_bytes()).build().expect("failed to build client");
@@ -85,7 +84,7 @@ impl AsRef<str> for Asset {
       Self::SOL(Network::Main) => "SOL",
       Self::SOL(Network::Test) => "SOL_TEST",
       Self::ETH(EthNetwork::Main) => "ETH",
-      Self::ETH(EthNetwork::Test) => "ETH_TEST6",
+      Self::ETH(EthNetwork::Test) => "ETH_TEST5",
       Self::Unknown(ref s) => s,
     }
   }
@@ -117,7 +116,7 @@ impl FromStr for Asset {
       "DOGE" => Ok(ASSET_DOGE),
       "DOGE_TEST" => Ok(ASSET_DOGE_TEST),
       "ETH" => Ok(ASSET_ETH),
-      "ETH_TEST6" => Ok(ASSET_ETH_TEST),
+      "ETH_TEST5" => Ok(ASSET_ETH_TEST),
       _ => Ok(Self::Unknown(String::from(s))),
     }
   }
@@ -152,7 +151,7 @@ mod tests {
     let a = Asset::from_str("ETH")?;
     assert_eq!(a, ASSET_ETH);
 
-    let a = Asset::from_str("ETH_TEST6")?;
+    let a = Asset::from_str("ETH_TEST5")?;
     assert_eq!(a, ASSET_ETH_TEST);
 
     let a = Asset::from_str("UNKNOWN")?;

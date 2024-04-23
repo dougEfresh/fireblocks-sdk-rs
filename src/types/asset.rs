@@ -22,7 +22,7 @@ pub struct SupportedAsset {
 pub struct AssetResponse {
   #[serde(deserialize_with = "deserialize_str_u64", default)]
   pub vault_id: u64,
-  pub asset_id: String,
+  pub asset_id: Asset,
   pub total: BigDecimal,
   pub locked_amount: BigDecimal,
   pub available: BigDecimal,
