@@ -15,7 +15,6 @@ pub mod transaction;
 pub mod vault;
 pub mod wallet;
 
-use crate::Paging;
 pub use address::*;
 pub use asset::*;
 pub use fee::*;

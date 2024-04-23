@@ -122,4 +122,4 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
       - name: rustdoc
         run: |
-          cargo doc
+          cargo doc --no-deps

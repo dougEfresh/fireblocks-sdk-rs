@@ -1,16 +1,7 @@
 /*!
-
 `fireblocks_sdk` is an async library for fireblocks [api](https://docs.fireblocks.com/api/swagger-ui/#)
-
-```rust
-
-```
 */
 use chrono::{DateTime, Utc};
-use serde::Serialize;
-use serde_derive::Deserialize;
-use std::fmt::Debug;
-
 pub mod api;
 mod assets;
 mod client;
@@ -73,7 +64,7 @@ mod tests {
   use crate::types::*;
   use crate::{Client, ClientBuilder, ASSET_ETH_TEST};
   use bigdecimal::BigDecimal;
-  use chrono::Utc;
+  use chrono::{TimeZone, Utc};
   use color_eyre::eyre::format_err;
   use tracing::warn;
   use tracing_subscriber::fmt::format::FmtSpan;
@@ -310,10 +301,18 @@ mod tests {
     assert_eq!(1, address_response.len());
     assert_eq!(addr, address_response[0].address);
 
-    let page = PagingVaultRequestBuilder::new().limit(10).build()?;
+    let page = PagingAddressRequestBuilder::new().limit(10).build()?;
     let (container, id) = config.client().addresses_paginated(result.id, "SOL_TEST", page).await?;
     assert!(!id.is_empty());
     assert_eq!(1, container.addresses.len());
+
+    let after = &Utc.with_ymd_and_hms(2023, 4, 6, 0, 1, 1).unwrap();
+    let before = &chrono::offset::Utc::now();
+    PagingAddressRequestBuilder::new().limit(10).after(after).build()?;
+    //config.client().addresses_paginated(0, ASSET_BTC_TEST, page).await?;
+
+    PagingAddressRequestBuilder::new().limit(10).before(before).build()?;
+    //config.client().addresses_paginated(0, ASSET_BTC_TEST, page).await?;
     Ok(())
   }
 
@@ -454,27 +453,5 @@ mod tests {
         None => Err(format_err!("client is not configured and you are running in CI")),
       },
     }
-  }
-}
-
-#[derive(Debug, Deserialize, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
-pub struct Paging {
-  pub before: Option<String>,
-  pub after: Option<String>,
-}
-
-impl Paging {
-  fn epoch(before: &DateTime<Utc>) -> String {
-    format!("{}", before.timestamp_millis())
-  }
-
-  pub fn set_before(&mut self, before: &DateTime<Utc>) {
-    self.before = Some(Self::epoch(before));
-  }
-
-  pub fn set_after(&mut self, after: &DateTime<Utc>) {
-    self.after = Some(Self::epoch(after));
   }
 }

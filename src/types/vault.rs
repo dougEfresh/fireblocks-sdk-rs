@@ -1,7 +1,6 @@
-use crate::Paging;
 use serde_derive::{Deserialize, Serialize};
 
-use crate::types::{asset::AccountAsset, deserialize_str_i32};
+use crate::types::{asset::AccountAsset, deserialize_str_i32, Paging};
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]

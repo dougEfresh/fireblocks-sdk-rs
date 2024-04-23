@@ -1,5 +1,28 @@
 use crate::{impl_base_query_params, Epoch, QueryParams};
 use bigdecimal::BigDecimal;
+use serde_derive::{Deserialize, Serialize};
+
+#[derive(Debug, Deserialize, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
+pub struct Paging {
+  pub before: Option<String>,
+  pub after: Option<String>,
+}
+
+impl Paging {
+  fn epoch(before: &Epoch) -> String {
+    format!("{}", before.timestamp_millis())
+  }
+
+  pub fn set_before(&mut self, before: &Epoch) {
+    self.before = Some(Self::epoch(before));
+  }
+
+  pub fn set_after(&mut self, after: &Epoch) {
+    self.after = Some(Self::epoch(after));
+  }
+}
 
 #[derive(Debug, Default)]
 pub struct BasePageParams {
@@ -37,6 +60,14 @@ impl BasePageParams {
     Ok(Vec::clone(&self.params))
   }
 }
+
+#[derive(Debug, Default)]
+pub struct PagingAddressRequestBuilder {
+  params: QueryParams, // this is ignored
+  base: BasePageParams,
+}
+
+impl_base_query_params!(PagingAddressRequestBuilder);
 
 #[derive(Debug, Default)]
 pub struct PagingVaultRequestBuilder {
