@@ -306,6 +306,9 @@ mod tests {
     assert!(!id.is_empty());
     assert_eq!(1, container.addresses.len());
 
+    let rename = format!("{vault_name}-rename");
+    config.client().rename_vault(result.id, &rename).await?;
+
     let after = &Utc.with_ymd_and_hms(2023, 4, 6, 0, 1, 1).unwrap();
     let before = &chrono::offset::Utc::now();
     PagingAddressRequestBuilder::new().limit(10).after(after).build()?;

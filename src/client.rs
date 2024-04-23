@@ -240,3 +240,10 @@ impl Client {
     Ok((req.header("X-API-Key", self.signer.api_key()).bearer_auth(jwt), String::new()))
   }
 }
+
+mod tests {
+  #[test]
+  fn client_builder() {
+    super::ClientBuilder::new("", b"secret").with_client(reqwest::ClientBuilder::new().build().expect("oh no"));
+  }
+}

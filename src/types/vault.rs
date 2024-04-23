@@ -36,3 +36,12 @@ pub struct CreateAccount {
   pub customer_ref_id: Option<String>,
   pub auto_fuel: bool,
 }
+
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
+pub struct VaultRenameResponse {
+  pub name: String,
+  #[serde(deserialize_with = "deserialize_str_i32")]
+  pub id: i32,
+}

@@ -1,7 +1,9 @@
+use serde_derive::Serialize;
 use std::borrow::Borrow;
 use std::fmt::{Debug, Display};
 
 use crate::client::Client;
+use crate::types::VaultRenameResponse;
 use crate::{
   types::{
     address::{Address, AddressContainer, CreateAddressResponse},
@@ -78,6 +80,17 @@ impl Client {
   pub async fn create_vault(&self, account: &CreateAccount) -> Result<Account> {
     let u = self.build_url("vault/accounts")?.0;
     self.post(u, Some(account)).await
+  }
+
+  #[tracing::instrument(level = "debug", skip(self))]
+  pub async fn rename_vault(&self, vault_id: i32, name: &str) -> Result<VaultRenameResponse> {
+    #[derive(Debug, Serialize)]
+    struct Rename {
+      name: String,
+    }
+    let u = self.build_url(&format!("vault/accounts/{vault_id}"))?.0;
+    let name_req = &Rename { name: String::from(name) };
+    self.put(u, Some(name_req)).await
   }
 
   #[tracing::instrument(level = "debug", skip(self, page))]
