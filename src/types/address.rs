@@ -65,17 +65,48 @@ mod tests {
 
   #[test]
   fn deposit_types() {
+    use super::Address;
     use super::AddressType;
-    let t: AddressType = serde_json::from_str("\"Change\"").expect("could not find address type");
-    assert_eq!(t, AddressType::Change);
+    use serde_json::json;
 
-    let t: AddressType = serde_json::from_str("\"Deposit\"").expect("could not find address type");
-    assert_eq!(t, AddressType::Deposit);
+    let v = json!({
+      "assetId": "BTC",
+      "address": "",
+      "type": "change",
+      "bip44AddressIndex": 0,
+      "userDefined": true
+    });
+    let t: Address = serde_json::from_value(v).expect("failed to find address type");
+    assert_eq!(t.address_type, AddressType::Change);
 
-    let t: AddressType = serde_json::from_str("\"Address\"").expect("could not find address type");
-    assert_eq!(t, AddressType::Address);
+    let v = json!({
+      "assetId": "BTC",
+      "address": "",
+      "type": "deposit",
+      "bip44AddressIndex": 0,
+      "userDefined": true
+    });
+    let t: Address = serde_json::from_value(v).expect("failed to find address type");
+    assert_eq!(t.address_type, AddressType::Deposit);
 
-    let t: AddressType = serde_json::from_str("\"Permanent\"").expect("could not find address type");
-    assert_eq!(t, AddressType::Permanent);
+    let v = json!({
+      "assetId": "BTC",
+      "address": "",
+      "type": "address",
+      "bip44AddressIndex": 0,
+      "userDefined": true
+    });
+    let t: Address = serde_json::from_value(v).expect("failed to find address type");
+    assert_eq!(t.address_type, AddressType::Address);
+
+    let v = json!({
+      "assetId": "BTC",
+      "address": "",
+      "type": "permanent",
+      "bip44AddressIndex": 0,
+      "userDefined": true
+    });
+    let t: Address = serde_json::from_value(v).expect("failed to find address type");
+    assert_eq!(t.address_type, AddressType::Permanent);
   }
 }
