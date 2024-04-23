@@ -21,3 +21,11 @@
 # Overview
 
 `fireblocks_sdk` is an async library for the Fireblocks [API](https://docs.fireblocks.com/api/swagger-ui/#)
+
+# Quick Start
+
+```rust
+use fireblocks
+
+
+```

@@ -328,18 +328,21 @@ mod tests {
       return Ok(());
     }
     let name = vault_name();
-    let (contract_response, id) = config.client().external_wallet_create(&name).await?;
+    let c = config.client();
+    let (contract_response, id) = c.external_wallet_create(&name).await?;
     assert!(!id.is_empty());
     assert_eq!(contract_response.name, name);
     assert!(!contract_response.id.is_empty());
 
-    let (addr_response, _) = config
-      .client()
-      .external_wallet_asset(&contract_response.id, "ETH_TEST5", "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
-      .await?;
+    let addr_response = c
+          .external_wallet_asset(&contract_response.id, "ETH_TEST5", "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
+      .await?.0
     assert!(!addr_response.id.is_empty());
 
-    config.client().external_wallet_delete(&name).await?;
+    let wallets = c.external_wallets().await?.0;
+    assert!(!wallets.is_empty());
+    c.external_wallet(&addr_response.id).await?;
+    c.external_wallet_delete(&name).await?;
     Ok(())
   }
 

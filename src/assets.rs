@@ -1,24 +1,42 @@
-/// A collection of common asset symbols
+///
+/// A collection of common asset symbols for convenience
+/// ```rust
+/// use fireblocks_sdk::ClientBuilder;
+/// use fireblocks_sdk::ASSET_SOL;
+///
+/// #[tokio:main]
+/// async fn main() {
+///  let api_key = std::env::var("FIREBLOCKS_API_KEY").expect("no api key!");
+///  let secret = std::env::var("FIREBLOCKS_SECRET").expect("no secret key!");
+///  let client = ClientBuilder::new(&api_key, &secret.into_bytes()).build().expect("failed to build client");
+///  let (response, request_id)  = client.create_address(0, ASSET_SOL ).await.expect("failed to create address");
+///  // same call but with string arg: let (response, request_id)  = client.create_address(0, "SOL" ).await?;
+///  println!("{response:#?}");
+/// }
+/// ```
+///
 use std::borrow::Borrow;
 
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EthNetwork {
   Main,
   Test,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub enum Network {
+  #[default]
   Main,
   Test,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum Asset {
+  #[default]
   BTC(Network),
   SOL(Network),
   Dodge(Network),

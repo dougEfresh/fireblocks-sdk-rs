@@ -20,7 +20,7 @@ use crate::{
 
 impl Client {
   /// Create an asset (address) for a vault account
-  /// See:
+  ///
   /// * [`crate::assets`]
   /// * [createVaultAccountAsset](https://docs.fireblocks.com/api/swagger-ui/#/Vaults/createVaultAccountAsset)
   #[tracing::instrument(level = "debug", skip(self))]
