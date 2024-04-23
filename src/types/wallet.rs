@@ -1,5 +1,5 @@
-use serde_derive::{Deserialize, Serialize};
 use crate::assets::Asset;
+use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]

@@ -16,9 +16,9 @@
 ///
 use std::borrow::Borrow;
 
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EthNetwork {
@@ -33,7 +33,7 @@ pub enum Network {
   Test,
 }
 
-#[derive(Debug,  Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum Asset {
   BTC(Network),
@@ -50,19 +50,24 @@ impl Default for Asset {
 }
 
 impl<'de> Deserialize<'de> for Asset {
-  fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+  fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+  where
+    D: Deserializer<'de>,
+  {
     let a: String = String::deserialize(deserializer)?;
-    Asset::from_str(&a).map_err(|_| serde::de::Error::custom("this should never happen"))
+    Self::from_str(&a).map_err(|_| serde::de::Error::custom("this should never happen"))
   }
 }
 
 impl Serialize for Asset {
-  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
     let a = self.to_string();
     a.serialize(serializer)
   }
 }
-
 
 pub const ASSET_BTC: Asset = Asset::BTC(Network::Main);
 pub const ASSET_BTC_TEST: Asset = Asset::BTC(Network::Test);

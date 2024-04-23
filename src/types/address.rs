@@ -1,7 +1,7 @@
+use crate::assets::Asset;
 use crate::Paging;
 use serde::{de::Error, Deserialize, Deserializer};
 use serde_derive::Serialize;
-use crate::assets::Asset;
 
 use crate::types::deserialize_option_empty_object;
 

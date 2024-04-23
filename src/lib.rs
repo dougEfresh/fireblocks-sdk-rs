@@ -70,7 +70,7 @@ mod tests {
 
   use crate::assets::{ASSET_BTC_TEST, ASSET_SOL_TEST};
   use crate::types::*;
-  use crate::{ASSET_ETH_TEST, Client, ClientBuilder};
+  use crate::{Client, ClientBuilder, ASSET_ETH_TEST};
   use bigdecimal::BigDecimal;
   use chrono::Utc;
   use color_eyre::eyre::format_err;
@@ -114,6 +114,7 @@ mod tests {
 
   pub struct Config {
     client: Option<Client>,
+    create_tx: bool,
   }
 
   impl Config {
@@ -133,7 +134,8 @@ mod tests {
             .ok()
         },
       };
-      Self { client }
+      let create_tx = env::var("FIREBLOCKS_CREATE_TX").ok().is_some();
+      Self { client, create_tx }
     }
 
     const fn is_ok(&self) -> bool {
@@ -252,17 +254,16 @@ mod tests {
     assert!(v.is_some());
     assert_eq!("200", v.unwrap().1);
 
-    let options = TransactionListBuilder::new()
-      .after(&after)
-      .before(&before)
-      .assets(&[ASSET_BTC_TEST, ASSET_SOL_TEST])
-      .limit(200)
-      .build()?;
+    let options = TransactionListBuilder::new().assets(&[ASSET_BTC_TEST, ASSET_SOL_TEST]).limit(200).build()?;
     if !config.is_ok() {
       return Ok(());
     }
     let c = config.client();
-    c.transactions(options).await?;
+    let transactions = c.transactions(options).await?.0;
+    assert!(!transactions.is_empty());
+    let tx_id = &transactions[0].id;
+    let resp = c.get_transaction(tx_id).await?.0;
+    assert_eq!(resp.id, String::from(tx_id));
     Ok(())
   }
 
@@ -351,14 +352,28 @@ mod tests {
     assert!(!contract_response.id.is_empty());
 
     let addr_response = c
-          .external_wallet_asset(&contract_response.id, "ETH_TEST5", "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
-      .await?.0;
+      .external_wallet_asset(&contract_response.id, "ETH_TEST5", "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
+      .await?
+      .0;
     assert_eq!(addr_response.id, ASSET_ETH_TEST);
 
     let wallets = c.external_wallets().await?.0;
     assert!(!wallets.is_empty());
     c.external_wallet(&contract_response.id).await?;
     c.external_wallet_delete(&name).await?;
+    Ok(())
+  }
+
+  #[rstest::rstest]
+  #[tokio::test]
+  async fn test_create_transaction(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    if !config.create_tx {
+      warn!("not testing create transaction");
+      return Ok(());
+    }
     Ok(())
   }
 
