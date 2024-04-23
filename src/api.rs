@@ -2,12 +2,10 @@ use std::borrow::Borrow;
 use std::fmt::{Debug, Display};
 
 use crate::client::Client;
-use crate::types::connect::{WalletApprove, WalletConnectRequest, WalletConnectResponse};
 use crate::{
   types::{
     address::{Address, AddressContainer, CreateAddressResponse},
     asset::SupportedAsset,
-    connect::PagedWalletConnectResponse,
     fee::EstimateFee,
     staking::{StakingPosition, StakingPositionsSummary},
     transaction::{CreateTransactionResponse, Transaction, TransactionArguments},
@@ -216,29 +214,5 @@ impl Client {
   pub async fn get_transaction(&self, id: &str) -> Result<Transaction> {
     let u = self.build_url(&format!("transactions/{id}"))?.0;
     self.get(u).await
-  }
-
-  #[tracing::instrument(level = "debug", skip(self))]
-  pub async fn wallet_connections(&self) -> Result<PagedWalletConnectResponse> {
-    let u = self.build_url("connections")?.0;
-    self.get(u).await
-  }
-
-  #[tracing::instrument(level = "debug", skip(self))]
-  pub async fn wallet_connect(&self, request: &WalletConnectRequest) -> Result<WalletConnectResponse> {
-    let u = self.build_url("connections/wc")?.0;
-    self.post(u, Some(request)).await
-  }
-
-  #[tracing::instrument(level = "debug", skip(self))]
-  pub async fn wallet_connection_delete(&self, id: &str) -> Result<()> {
-    let u = self.build_url(&format!("connections/wc/{id}"))?.0;
-    self.delete(u).await
-  }
-
-  #[tracing::instrument(level = "debug", skip(self))]
-  pub async fn wallet_connection_approve(&self, id: &str, approve: bool) -> Result<()> {
-    let u = self.build_url(&format!("connections/wc/{id}"))?.0;
-    self.put(u, Some(&WalletApprove { approve })).await
   }
 }

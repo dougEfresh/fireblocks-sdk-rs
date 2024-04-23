@@ -161,6 +161,16 @@ mod tests {
 
     let a = Asset::from_str("UNKNOWN")?;
     assert_eq!(a, Asset::Unknown("UNKNOWN".to_string()));
+
+    assert_eq!(Asset::default(), ASSET_BTC);
+
+    assert_eq!("\"SOL\"", serde_json::to_string(&ASSET_SOL)?);
+
+    assert_eq!("BTC", ASSET_BTC.as_ref());
+    assert_eq!("DOGE", ASSET_DOGE.as_ref());
+    assert_eq!("DOGE_TEST", ASSET_DOGE_TEST.as_ref());
+    assert_eq!("ETH", ASSET_ETH.as_ref());
+    assert_eq!("ETH_TEST5", ASSET_ETH_TEST.as_ref());
     Ok(())
   }
 }
