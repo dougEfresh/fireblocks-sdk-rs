@@ -26,7 +26,7 @@ pub struct Account {
   pub auto_fuel: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct CreateAccount {

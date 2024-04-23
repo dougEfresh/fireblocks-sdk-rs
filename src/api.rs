@@ -10,7 +10,6 @@ use crate::{
     asset::SupportedAsset,
     fee::EstimateFee,
     staking::{StakingPosition, StakingPositionsSummary},
-    transaction::{CreateTransactionResponse, Transaction, TransactionArguments},
     vault::{Account, CreateAccount, VaultAccounts},
     wallet::{WalletContainer, WalletCreate, WalletCreateAsset, WalletCreateAssetResponse},
     PaginatedAssetWallet,
@@ -202,30 +201,6 @@ impl Client {
   #[tracing::instrument(level = "debug", skip(self))]
   pub async fn estimate_fee(&self, asset: &str) -> Result<EstimateFee> {
     let u = self.build_url(&format!("estimate_network_fee?assetId={asset}"))?.0;
-    self.get(u).await
-  }
-
-  #[tracing::instrument(level = "debug", skip(self, options))]
-  pub async fn transactions<I, K, V>(&self, options: I) -> Result<Vec<Transaction>>
-  where
-    I: IntoIterator,
-    I::Item: Borrow<(K, V)>,
-    K: AsRef<str>,
-    V: AsRef<str>,
-  {
-    let u = self.build_url_params("transactions", Some(options))?.0;
-    self.get(u).await
-  }
-
-  #[tracing::instrument(level = "debug", skip(self))]
-  pub async fn create_transaction(&self, args: &TransactionArguments) -> Result<CreateTransactionResponse> {
-    let u = self.build_url("transactions")?.0;
-    self.post(u, Some(args)).await
-  }
-
-  #[tracing::instrument(level = "debug", skip(self))]
-  pub async fn get_transaction(&self, id: &str) -> Result<Transaction> {
-    let u = self.build_url(&format!("transactions/{id}"))?.0;
     self.get(u).await
   }
 }

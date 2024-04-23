@@ -8,6 +8,7 @@ mod client;
 pub mod error;
 pub(crate) mod jwt;
 mod page_client;
+mod transactions;
 pub mod types;
 mod wallet_connect;
 
@@ -278,6 +279,7 @@ mod tests {
       return Ok(());
     }
     let vault_name: String = vault_name();
+
     let account = CreateAccount {
       auto_fuel: false,
       customer_ref_id: Some("fireblocks-sdk-rs".to_string()),
