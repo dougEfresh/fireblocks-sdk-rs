@@ -409,11 +409,25 @@ mod tests {
 
   #[rstest::rstest]
   #[tokio::test]
-  async fn test_network(config: Config) -> color_eyre::Result<()> {
+  async fn test_wallet_connections(config: Config) -> color_eyre::Result<()> {
     if !config.is_ok() {
       return Ok(());
     }
     config.client().wallet_connections().await?;
+    Ok(())
+  }
+
+  #[rstest::rstest]
+  #[tokio::test]
+  async fn test_staking(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    let c = config.client();
+    let chains = c.staking_chains().await?.0;
+    assert!(!chains.is_empty());
+    c.staking_positions().await?;
+    c.staking_positions_summary().await?;
     Ok(())
   }
 
