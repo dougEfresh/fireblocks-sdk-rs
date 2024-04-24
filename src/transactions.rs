@@ -1,5 +1,5 @@
 use crate::types::{
-  CreateTransactionResponse, DestinationTransferPeerPath, PeerType, Transaction, TransactionArguments,
+  CreateTransactionResponse, DestinationTransferPeerPath, OneTimeAddress, PeerType, Transaction, TransactionArguments,
   TransactionOperation, TransactionStatus, TransferPeerPath,
 };
 use crate::Client;
@@ -54,16 +54,45 @@ impl Client {
     let args = &TransactionArguments {
       asset_id: format!("{asset_id}"),
       operation: TransactionOperation::TRANSFER,
+      source: TransferPeerPath { id: Some(source_vault.to_string()), ..Default::default() },
+      destination: Some(DestinationTransferPeerPath { id: destination_vault.to_string(), ..Default::default() }),
+      amount: amount.to_string(),
+      gas_price: None,
+      gas_limit: None,
+      note: note.unwrap_or("created by fireblocks-sdk for rust").to_string(),
+    };
+    self.create_transaction(args).await
+  }
+
+  /// Create a transaction to external wallet
+  ///
+  /// [createTransaction](https://docs.fireblocks.com/api/swagger-ui/#/Transactions/createTransaction)
+  #[tracing::instrument(level = "debug", skip(self))]
+  pub async fn create_transaction_external<A, D>(
+    &self,
+    source_vault: i32,
+    destination: D,
+    asset_id: A,
+    amount: BigDecimal,
+    note: Option<&str>,
+  ) -> crate::Result<CreateTransactionResponse>
+  where
+    A: AsRef<str> + Debug + Display,
+    D: AsRef<str> + Debug + Display,
+  {
+    let args = &TransactionArguments {
+      asset_id: format!("{asset_id}"),
+      operation: TransactionOperation::TRANSFER,
       source: TransferPeerPath {
         id: Some(source_vault.to_string()),
         peer_type: PeerType::VAULT_ACCOUNT,
-        name: String::new(),
-        sub_type: None,
-        virtual_type: None,
-        virtual_id: None,
-        wallet_id: None,
+        ..Default::default()
       },
-      destination: Some(DestinationTransferPeerPath { id: destination_vault.to_string(), ..Default::default() }),
+      destination: Some(DestinationTransferPeerPath {
+        peer_type: PeerType::ONE_TIME_ADDRESS,
+        one_time_address: Some(OneTimeAddress { address: destination.to_string(), tag: None }),
+        ..Default::default()
+      }),
       amount: amount.to_string(),
       gas_price: None,
       gas_limit: None,
