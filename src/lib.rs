@@ -386,6 +386,15 @@ mod tests {
     let tx = c.create_transaction_vault(0, 1, ASSET_SOL_TEST, BigDecimal::from_str("0.001")?, None).await?.0;
     assert_eq!(tx.status, TransactionStatus::SUBMITTED);
     c.poll_transaction(&tx.id, time::Duration::from_secs(10), Duration::from_secs(5)).await?;
+
+    c.create_transaction_external(
+      0,
+      "8q1DVf1j5bGCLkQBSrdwQkeJgKUdWjce8W4yab4S7hKR",
+      ASSET_SOL_TEST,
+      BigDecimal::from_str("0.0001")?,
+      None,
+    )
+    .await?;
     Ok(())
   }
 
