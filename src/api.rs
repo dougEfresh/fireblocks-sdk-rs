@@ -32,7 +32,7 @@ pub struct WalletCreateAsset {
 impl Client {
   /// Create an asset (address) for a vault account
   ///
-  /// * [`crate::assets`]
+  /// * [`crate::Asset`]
   /// * [createVaultAccountAsset](https://docs.fireblocks.com/api/swagger-ui/#/Vaults/createVaultAccountAsset)
   #[tracing::instrument(level = "debug", skip(self))]
   pub async fn create_address<T>(&self, vault_id: i32, asset_id: T) -> Result<CreateAddressResponse>

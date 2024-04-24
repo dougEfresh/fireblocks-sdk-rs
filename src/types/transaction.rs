@@ -14,6 +14,7 @@ use crate::types::{deserialize_epoch_time, deserialize_option_empty_object};
 #[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq, Eq)]
 #[allow(dead_code)]
 pub enum PeerType {
+  #[default]
   VAULT_ACCOUNT,
   EXCHANGE_ACCOUNT,
   INTERNAL_WALLET,
@@ -22,7 +23,6 @@ pub enum PeerType {
   NETWORK_CONNECTION,
   COMPOUND,
   CONTRACT,
-  #[default]
   UNKNOWN,
   GAS_STATION,
   END_USER_WALLET,
@@ -71,10 +71,9 @@ pub enum TransactionStatus {
   UNKNOWN,
 }
 
-pub struct TransactionListOptions {
-  params: QueryParams,
-}
-
+/// Search for transactions
+///
+/// [getTransactions](https://docs.fireblocks.com/api/swagger-ui/#/Transactions/getTransactions)
 #[derive(Debug, Default)]
 pub struct TransactionListBuilder {
   params: QueryParams,
@@ -104,19 +103,9 @@ impl TransactionListBuilder {
     self
   }
 
+  /// Alias to [`TransactionListBuilder::hash`]
   pub fn tx_hash(&mut self, tx: &str) -> &mut Self {
-    self.params.push(("txHash".to_owned(), String::from(tx)));
-    self
-  }
-}
-
-impl TransactionListOptions {
-  pub const fn new(params: QueryParams) -> Self {
-    Self { params }
-  }
-
-  pub fn params(&self) -> impl Iterator<Item = &(String, String)> {
-    self.params.iter()
+    self.hash(tx)
   }
 }
 
@@ -244,7 +233,7 @@ pub struct OneTimeAddress {
   pub tag: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct DestinationTransferPeerPath {
@@ -259,19 +248,6 @@ pub struct DestinationTransferPeerPath {
   pub virtual_type: Option<VirtualType>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub one_time_address: Option<OneTimeAddress>,
-}
-
-impl Default for DestinationTransferPeerPath {
-  fn default() -> Self {
-    Self {
-      peer_type: PeerType::VAULT_ACCOUNT,
-      id: String::new(),
-      wallet_id: None,
-      virtual_id: None,
-      virtual_type: None,
-      one_time_address: None,
-    }
-  }
 }
 
 #[derive(Debug, Deserialize)]
@@ -348,7 +324,7 @@ pub struct Transaction {
 #[serde(rename_all = "camelCase")]
 pub struct TransactionArguments {
   #[serde(rename = "assetId")]
-  pub asset_id: Asset,
+  pub asset_id: String,
   pub operation: TransactionOperation,
   pub source: TransferPeerPath,
   #[serde(skip_serializing_if = "Option::is_none")]
