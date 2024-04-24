@@ -109,19 +109,21 @@ impl Client {
     let u = self.build_url(&format!("transactions/{id}"))?.0;
     let mut total_time = time::Duration::from_millis(0);
     loop {
-      let status = self.get::<Transaction>(u.clone()).await?.0.status;
-      debug!("status {:#?}", status);
-      #[allow(clippy::match_same_arms)]
-      match status {
-        TransactionStatus::BLOCKED => break,
-        TransactionStatus::CANCELLING => break,
-        TransactionStatus::CANCELLED => break,
-        TransactionStatus::COMPLETED => break,
-        TransactionStatus::CONFIRMING => break,
-        TransactionStatus::FAILED => break,
-        TransactionStatus::REJECTED => break,
-        TransactionStatus::TIMEOUT => break,
-        _ => {},
+      if let Ok(result) = self.get::<Transaction>(u.clone()).await {
+        let status = result.0.status;
+        debug!("status {:#?}", status);
+        #[allow(clippy::match_same_arms)]
+        match status {
+          TransactionStatus::BLOCKED => break,
+          TransactionStatus::CANCELLING => break,
+          TransactionStatus::CANCELLED => break,
+          TransactionStatus::COMPLETED => break,
+          TransactionStatus::CONFIRMING => break,
+          TransactionStatus::FAILED => break,
+          TransactionStatus::REJECTED => break,
+          TransactionStatus::TIMEOUT => break,
+          _ => {},
+        }
       }
       time::sleep(interval).await;
       total_time = total_time.add(interval);
