@@ -67,6 +67,7 @@ mod tests {
   use bigdecimal::BigDecimal;
   use chrono::{TimeZone, Utc};
   use color_eyre::eyre::format_err;
+  use tokio::time;
   use tracing::warn;
   use tracing_subscriber::fmt::format::FmtSpan;
   use tracing_subscriber::EnvFilter;
@@ -380,6 +381,11 @@ mod tests {
       warn!("not testing create transaction");
       return Ok(());
     }
+
+    let c = config.client();
+    let tx = c.create_transaction_vault(0, 1, ASSET_SOL_TEST, BigDecimal::from_str("0.001")?, None).await?.0;
+    assert_eq!(tx.status, TransactionStatus::SUBMITTED);
+    c.poll_transaction(&tx.id, time::Duration::from_secs(10), Duration::from_secs(5)).await?;
     Ok(())
   }
 
