@@ -14,7 +14,7 @@ mod wallet_connect;
 
 pub use crate::error::FireblocksError;
 pub use crate::types::PagingVaultRequestBuilder;
-pub use assets::{ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST};
+pub use assets::{Asset, ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST};
 pub use client::{Client, ClientBuilder};
 
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
