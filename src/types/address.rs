@@ -108,5 +108,15 @@ mod tests {
     });
     let t: Address = serde_json::from_value(v).expect("failed to find address type");
     assert_eq!(t.address_type, AddressType::Permanent);
+
+    let v = json!({
+      "assetId": "BTC",
+      "address": "",
+      "type": "nothing",
+      "bip44AddressIndex": 0,
+      "userDefined": true
+    });
+    let r = serde_json::from_value::<Address>(v);
+    assert!(r.is_err());
   }
 }
