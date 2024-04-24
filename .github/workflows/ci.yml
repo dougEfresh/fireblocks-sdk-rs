@@ -1,0 +1,125 @@
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  merge_group:
+
+name: Continuous integration
+
+env:
+  RUSTFLAGS: "-Dwarnings"
+  RUSTDOCFLAGS: "-Dwarnings"
+  RUST_BACKTRACE: short
+  RUST_LOG: "info"
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_RETRY: 10
+  RUSTUP_MAX_RETRIES: 10
+  CARGO_TERM_COLOR: always
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  FIREBLOCKS_API_KEY: ${{ secrets.FIREBLOCKS_API_KEY }}
+  FIREBLOCKS_SECRET: ${{ secrets.FIREBLOCKS_SECRET }}
+  FIREBLOCKS_CREATE_TX: "true"
+  CI: 1
+
+jobs:
+  fmt:
+    name: fmt
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: install rust nightly
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Check formatting
+        run: |
+          cargo fmt --all -- --check
+  build:
+    name: Rust project - latest
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+          - beta
+          - nightly
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2        
+      - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - run: cargo build
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-llvm-cov and cargo-make
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov,cargo-make
+      - name: Compile
+        run: |
+          cargo llvm-cov --lcov --output-path target/lcov.info
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          slug: dougEfresh/fireblocks-sdk-rs
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Test documentation tests
+        run: |
+          cargo test --doc
+
+  check-examples:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Check examples
+        run: |
+          cargo check --examples
+
+  clippy:
+    name: Run linter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+      - name: clippy
+        run: |
+          cargo clippy --all-targets
+
+  doc:
+    name: check docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+      - name: rustdoc
+        run: |
+          cargo doc --no-deps
