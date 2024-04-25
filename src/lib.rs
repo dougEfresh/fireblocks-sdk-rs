@@ -8,9 +8,7 @@ mod client;
 pub mod error;
 pub(crate) mod jwt;
 mod page_client;
-mod transactions;
 pub mod types;
-mod wallet_connect;
 
 pub use crate::error::FireblocksError;
 pub use crate::types::PagingVaultRequestBuilder;

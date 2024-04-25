@@ -1,6 +1,6 @@
 use crate::types::{
-  CreateTransactionResponse, DestinationTransferPeerPath, OneTimeAddress, PeerType, Transaction, TransactionArguments,
-  TransactionOperation, TransactionStatus, TransferPeerPath,
+  CreateTransactionResponse, DestinationTransferPeerPath, EstimateFee, OneTimeAddress, PeerType, Transaction,
+  TransactionArguments, TransactionOperation, TransactionStatus, TransferPeerPath,
 };
 use crate::Client;
 use bigdecimal::BigDecimal;
@@ -154,5 +154,11 @@ impl Client {
       }
     }
     self.get(u.clone()).await
+  }
+
+  #[tracing::instrument(level = "debug", skip(self))]
+  pub async fn estimate_fee(&self, asset: &str) -> crate::Result<EstimateFee> {
+    let u = self.build_url(&format!("estimate_network_fee?assetId={asset}"))?.0;
+    self.get(u).await
   }
 }
