@@ -1,12 +1,17 @@
 [package]
+name = "fireblocks-sdk"
 resolver = "2"
 version = "0.1.0"
 authors = ["Doug Chimento <dchimento@gmail.com>"]
+description = "Rust implementation of the Fireblocks SDK"
+readme = "README.md"
 repository = "https://github.com/dougEfresh/fireblocks-sdk-rs"
-documentation = "https://docs.rs/dougEfresh/fireblocks-sdk-rs"
+homepage = "https://github.com/dougEfresh/fireblocks-sdk-rs"
+documentation = "https://docs.rs/fireblocks-sdk"
 license = "MIT"
+keywords = ["fireblocks", "blockchain", "bitcoin", "solana"]
+categories = ["cryptography::cryptocurrencies"]
 edition = "2021"
-name = "fireblocks-sdk"
 
 [lib]
 name = "fireblocks_sdk"
