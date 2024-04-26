@@ -57,6 +57,9 @@ human-panic = { version = "2" }
 sha2 = "0.10"
 rand = "0.8"
 
+[target.'cfg(any())'.dependencies]
+openssl = { version = "0.10.55", optional = true } # needed to allow foo to build with -Zminimal-versions
+
 [dev-dependencies]
 tracing-subscriber = { version = "0.3", features = ["env-filter", "serde"] }
 tokio = { version = "1", features = ["macros", "rt"] }
