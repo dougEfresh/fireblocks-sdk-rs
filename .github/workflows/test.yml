@@ -12,7 +12,7 @@ env:
   FIREBLOCKS_API_KEY: ${{ secrets.FIREBLOCKS_API_KEY }}
   FIREBLOCKS_SECRET: ${{ secrets.FIREBLOCKS_SECRET }}
   FIREBLOCKS_CREATE_TX: "true"
-  CI: 1
+  RUST_LOG: "info"
 
 on:
   push:

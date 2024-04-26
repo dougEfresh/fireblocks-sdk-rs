@@ -3,6 +3,11 @@
 # information about how the concurrency cancellation and workflow triggering works
 permissions:
   contents: read
+env:
+  FIREBLOCKS_API_KEY: ${{ secrets.FIREBLOCKS_API_KEY }}
+  FIREBLOCKS_SECRET: ${{ secrets.FIREBLOCKS_SECRET }}
+  FIREBLOCKS_CREATE_TX: "true"
+  RUST_LOG: "info"
 on:
   push:
     branches: [main]
