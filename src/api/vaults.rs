@@ -54,6 +54,9 @@ impl Client {
     self.get(u).await
   }
 
+  /// Get vault accounts (wallets) by paging
+  ///
+  /// See [`crate::PagingVaultRequestBuilder`]
   #[tracing::instrument(level = "debug", skip(self, page))]
   pub async fn vaults<I, K, V>(&self, page: I) -> Result<VaultAccounts>
   where
