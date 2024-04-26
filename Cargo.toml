@@ -21,7 +21,6 @@ crate-type = ["cdylib", "rlib"]
 [features]
 default = ["native"]
 native = ["reqwest"]
-wasm = ["wasm-bindgen", "js-sys", "wasm-bindgen-futures", "reqwest_wasi", "web-sys"]
 
 [lints.rust]
 unsafe_code = "forbid"
@@ -57,28 +56,6 @@ futures = { version = "0.3" }
 human-panic = { version = "2" }
 sha2 = "0.10"
 rand = "0.8"
-
-### WASM #####
-wasm-bindgen = { version = "0.2", features = ["serde-serialize"], optional = true }
-js-sys = { version = "0.3", optional = true }
-wasm-bindgen-futures = {version = "0.4", optional = true}
-
-[dependencies.reqwest_wasi]
-version = "0.11"
-optional = true
-
-[dependencies.web-sys]
-version = "0.3.4"
-features = [
-    'Headers',
-    'Request',
-    'RequestInit',
-    'RequestMode',
-    'Response',
-    'Window',
-]
-optional = true
-
 
 [dev-dependencies]
 tracing-subscriber = { version = "0.3", features = ["env-filter", "serde"] }
