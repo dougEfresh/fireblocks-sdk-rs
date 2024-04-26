@@ -3,15 +3,15 @@
   <a href="https://docs.rs/fireblocks-sdk/">
     <img src="https://docs.rs/fireblocks-sdk/badge.svg">
   </a>
-  <a href="https://github.com/dougEfresh/fireblocks-sdk/actions">
-    <img src="https://github.com/dougEfresh/fireblocks-sdk/workflows/Continuous%20integration/badge.svg">
+  <a href="https://github.com/dougEfresh/fireblocks-sdk-rs/actions">
+    <img src="https://github.com/dougEfresh/fireblocks-sdk-rs/workflows/Continuous%20integration/badge.svg">
   </a>
-  <a href="https://deps.rs/repo/github/dougEfresh/fireblocks-sdk">
-    <img src="https://deps.rs/repo/github/dougEfresh/fireblocks-sdk/status.svg" >
+  <a href="https://deps.rs/repo/github/dougEfresh/fireblocks-sdk-rs">
+    <img src="https://deps.rs/repo/github/dougEfresh/fireblocks-sdk-rs/status.svg" >
   </a>
-  <a href="https://codecov.io/gh/dougEfresh/fireblocks-sdk" > 
-   <img src="https://codecov.io/gh/dougEfresh/fireblocks-sdk/graph/badge.svg?token=OI06VXUKKJ"/> 
- </a>  
+  <a href="https://codecov.io/github/dougEfresh/fireblocks-sdk-rs" > 
+   <img src="https://codecov.io/github/dougEfresh/fireblocks-sdk-rs/graph/badge.svg?token=dILa1k9tlW"/> 
+ </a>
   <a href="https://crates.io/crates/fireblocks-sdk">
     <img src="https://img.shields.io/crates/v/fireblocks-sdk.svg">
   </a>
@@ -21,6 +21,8 @@
 # Overview
 
 `fireblocks_sdk` is an async library for the Fireblocks [API](https://docs.fireblocks.com/api/swagger-ui/#)
+
+!!!! Note this is community driven project and not affiliated with [Fireblocks](https://fireblocks.io) !!!!! 
 
 # Getting Started 
 
@@ -48,6 +50,20 @@ async fn main() -> color_eyre::Result<()> {
   Ok(())
 }
 ```
+
+# Development
+
+Create a .env file
+```shell
+cp .env-sameple .env
+```
+Edit .env and configure your API and secret key
+
+Run tests:
+```shell
+cargo test
+```
+---
 
 # Supported Endpoints
 
