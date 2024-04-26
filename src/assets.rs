@@ -186,6 +186,8 @@ mod tests {
 
     assert_eq!(Asset::Unknown("blah".to_owned()).to_string(), "blah");
     assert_eq!(ASSET_BTC.to_string(), "BTC");
+
+    assert_eq!("BLAH", Asset::new("BLAH").to_string());
     Ok(())
   }
 }
