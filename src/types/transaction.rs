@@ -12,7 +12,8 @@ use crate::types::{deserialize_epoch_time, deserialize_option_empty_object};
 #[allow(clippy::upper_case_acronyms)]
 #[allow(non_camel_case_types)]
 #[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq, Eq)]
-#[allow(dead_code)]
+#[cfg_attr(feature = "sql", derive(sqlx::Type))]
+#[cfg_attr(feature = "sql", sqlx(type_name = "peer_type", rename_all = "lowercase"))]
 pub enum PeerType {
   #[default]
   VAULT_ACCOUNT,
@@ -33,6 +34,8 @@ pub enum PeerType {
 #[derive(Debug, Deserialize, Serialize, Clone, Default)]
 #[allow(clippy::upper_case_acronyms)]
 #[allow(dead_code)]
+#[cfg_attr(feature = "sql", derive(sqlx::Type))]
+#[cfg_attr(feature = "sql", sqlx(type_name = "transaction_operation_type", rename_all = "lowercase"))]
 pub enum TransactionOperation {
   #[default]
   TRANSFER,
@@ -48,7 +51,8 @@ pub enum TransactionOperation {
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Serialize, Deserialize, Default, Clone, PartialEq, Eq)]
-#[allow(dead_code)]
+#[cfg_attr(feature = "sql", derive(sqlx::Type))]
+#[cfg_attr(feature = "sql", sqlx(type_name = "transaction_status", rename_all = "lowercase"))]
 pub enum TransactionStatus {
   SUBMITTED,
   QUEUED,
@@ -112,6 +116,8 @@ impl TransactionListBuilder {
 #[allow(clippy::upper_case_acronyms)]
 #[allow(non_camel_case_types)]
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "sql", derive(sqlx::Type))]
+#[cfg_attr(feature = "sql", sqlx(type_name = "virtual_type", rename_all = "lowercase"))]
 pub enum VirtualType {
   OFF_EXCHANGE,
   #[default]
@@ -200,6 +206,8 @@ pub struct AuthorizationInfo {
 #[derive(Debug, Deserialize, PartialEq, Eq, Clone, Default)]
 #[allow(dead_code)]
 #[allow(non_camel_case_types)]
+#[cfg_attr(feature = "sql", derive(sqlx::Type))]
+#[cfg_attr(feature = "sql", sqlx(type_name = "signing_algorithm", rename_all = "lowercase"))]
 pub enum SigningAlgorithm {
   #[default]
   MPC_ECDSA_SECP256K1,

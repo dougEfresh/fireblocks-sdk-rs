@@ -43,6 +43,18 @@ pub enum Asset {
   Unknown(String),
 }
 
+impl Asset {
+  /// Return a new asset type enum
+  /// This should never fail
+  #[allow(clippy::missing_panics_doc)]
+  pub fn new(a: &str) -> Self {
+    match Self::from_str(a) {
+      Ok(asset) => asset,
+      Err(e) => panic!("this should never happen! {e}"),
+    }
+  }
+}
+
 impl Default for Asset {
   fn default() -> Self {
     Self::BTC(Network::default())
@@ -171,6 +183,9 @@ mod tests {
     assert_eq!("DOGE_TEST", ASSET_DOGE_TEST.as_ref());
     assert_eq!("ETH", ASSET_ETH.as_ref());
     assert_eq!("ETH_TEST5", ASSET_ETH_TEST.as_ref());
+
+    assert_eq!(Asset::Unknown("blah".to_owned()).to_string(), "blah");
+    assert_eq!(ASSET_BTC.to_string(), "BTC");
     Ok(())
   }
 }

@@ -5,7 +5,8 @@ use serde_derive::Serialize;
 use crate::types::{deserialize_option_empty_object, Paging};
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Default)]
-#[allow(dead_code)]
+#[cfg_attr(feature = "sql", derive(sqlx::Type))]
+#[cfg_attr(feature = "sql", sqlx(type_name = "address_type", rename_all = "lowercase"))]
 pub enum AddressType {
   #[default]
   Permanent,
