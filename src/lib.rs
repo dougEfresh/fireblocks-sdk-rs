@@ -188,7 +188,7 @@ mod tests {
   }
 
   fn vault_name() -> String {
-    format!("z-test-{}", Utc::now().timestamp())
+    format!("z-test-{}", Utc::now().timestamp_millis())
   }
 
   #[rstest::rstest]
