@@ -62,3 +62,5 @@ Run tests:
 cargo test
 ```
 ---
+
+# Supported [Endpoints](./SUPPORTED_ENDPOINTS.md)

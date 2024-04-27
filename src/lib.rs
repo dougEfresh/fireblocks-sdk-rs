@@ -5,13 +5,14 @@ mod assets;
 mod client;
 pub mod error;
 pub(crate) mod jwt;
-mod page_client;
+mod paged_client;
 pub mod types;
 
-pub use crate::error::FireblocksError;
+pub use crate::error::*;
 pub use crate::types::PagingVaultRequestBuilder;
 pub use assets::{Asset, ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST};
 pub use client::{Client, ClientBuilder};
+pub use paged_client::{PagedClient, VaultStream};
 
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
 pub const FIREBLOCKS_SANDBOX_API: &str = "https://sandbox-api.fireblocks.io/v1";
@@ -36,7 +37,7 @@ macro_rules! impl_base_query_params {
         self
       }
 
-      pub fn after(&mut self, t: &Epoch) -> &mut Self {
+      pub fn after(&mut self, t: &str) -> &mut Self {
         self.base.after(t);
         self
       }
@@ -58,10 +59,11 @@ mod tests {
   use std::{env, time::Duration};
 
   use crate::assets::{ASSET_BTC_TEST, ASSET_SOL_TEST};
+  use crate::paged_client::{AsyncIteratorAsyncNext, PagedClient};
   use crate::types::*;
   use crate::{Client, ClientBuilder, ASSET_ETH_TEST};
   use bigdecimal::BigDecimal;
-  use chrono::{TimeZone, Utc};
+  use chrono::Utc;
   use color_eyre::eyre::format_err;
   use tokio::time;
   use tracing::warn;
@@ -209,11 +211,10 @@ mod tests {
   #[tokio::test]
   #[allow(clippy::unwrap_used)]
   async fn test_transaction_list(config: Config) -> color_eyre::Result<()> {
-    let after = Utc::now();
     let before = Utc::now();
     // test all options
     let options = TransactionListBuilder::new()
-      .after(&after)
+      .after("something")
       .before(&before)
       .assets(&[ASSET_BTC_TEST, ASSET_SOL_TEST])
       .tx_hash("something")
@@ -308,9 +309,8 @@ mod tests {
     let rename = format!("{vault_name}-rename");
     c.rename_vault(result.id, &rename).await?;
 
-    let after = &Utc.with_ymd_and_hms(2023, 4, 6, 0, 1, 1).unwrap();
     let before = &chrono::offset::Utc::now();
-    PagingAddressRequestBuilder::new().limit(10).after(after).build()?;
+    PagingAddressRequestBuilder::new().limit(10).after("after").build()?;
     //config.client().addresses_paginated(0, ASSET_BTC_TEST, page).await?;
 
     PagingAddressRequestBuilder::new().limit(10).before(before).build()?;
@@ -459,6 +459,20 @@ mod tests {
     }
     let c = config.client();
     c.internal_wallets().await?;
+    Ok(())
+  }
+  #[rstest::rstest]
+  #[tokio::test]
+  async fn test_paged_vaults(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    let c = config.client();
+    let pc = PagedClient::new(c);
+    let mut vault_stream = pc.vaults(100);
+    while let (Some(result), _) = vault_stream.next().await? {
+      assert!(!result.accounts.is_empty());
+    }
     Ok(())
   }
 

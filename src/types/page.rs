@@ -29,8 +29,9 @@ impl BasePageParams {
     self.add_instant("before", t)
   }
 
-  pub(crate) fn after(&mut self, t: &Epoch) -> &mut Self {
-    self.add_instant("after", t)
+  pub(crate) fn after(&mut self, t: &str) -> &mut Self {
+    self.params.push(("after".to_owned(), String::from(t)));
+    self
   }
 
   fn add_instant(&mut self, param: &str, t: &Epoch) -> &mut Self {

@@ -41,6 +41,9 @@ pub enum FireblocksError {
   #[error(transparent)]
   UrlError(#[from] ParseError),
 
+  #[error(transparent)]
+  QueryParamError(#[from] ParamError),
+
   #[error("Internal Fireblocks Error. HTTP Code {code} {text} request_id:{request_id}")]
   InternalError { request_id: String, path: String, code: u16, text: String },
 
