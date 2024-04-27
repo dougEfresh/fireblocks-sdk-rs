@@ -1,19 +1,3 @@
-///
-/// A collection of common asset symbols for convenience
-/// ```rust
-/// use fireblocks_sdk::ClientBuilder;
-/// use fireblocks_sdk::ASSET_SOL;
-///
-/// async fn asset() {
-///  let api_key = std::env::var("FIREBLOCKS_API_KEY").expect("no api key!");
-///  let secret = std::env::var("FIREBLOCKS_SECRET").expect("no secret key!");
-///  let client = ClientBuilder::new(&api_key, &secret.into_bytes()).build().expect("failed to build client");
-///  let (response, request_id)  = client.create_address(0, ASSET_SOL ).await.expect("failed to create address");
-///  // same call but with string arg: let (response, request_id)  = client.create_address(0, "SOL" ).await?;
-///  println!("{response:#?}");
-/// }
-/// ```
-///
 use std::borrow::Borrow;
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -33,6 +17,26 @@ pub enum Network {
   Test,
 }
 
+///
+/// A collection of common asset symbols for convenience
+///
+/// ```rust
+/// use fireblocks_sdk::Client;
+/// use fireblocks_sdk::{ASSET_SOL, Asset};
+///
+/// async fn asset(client: Client) -> color_eyre::Result<()> {
+///  let (response, request_id)  = client.create_address(0, ASSET_SOL ).await?;
+///  // same call but with string arg: let (response, request_id)  = client.create_address(0, "SOL" ).await?;
+///  println!("Requst id: {request_id}, {response:#?}");
+///
+/// // create a new sh*tcoin
+/// assert_eq!("sh*tcoin", Asset::new("sh*tcoin").to_string());
+/// Ok(())
+/// }
+/// ```
+///
+/// See
+/// [getSupportedAssets](https://docs.fireblocks.com/api/swagger-ui/#/Blockchains%20%26%20assets/getSupportedAssets)
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum Asset {
