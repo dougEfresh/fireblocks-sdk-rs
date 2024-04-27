@@ -1,6 +1,4 @@
-/*!
-`fireblocks_sdk` is an async library for fireblocks [api](https://docs.fireblocks.com/api/swagger-ui/#)
-*/
+#![doc = include_str!("../README.md")]
 use chrono::{DateTime, Utc};
 pub mod api;
 mod assets;
@@ -285,30 +283,30 @@ mod tests {
       hidden_on_ui: true,
       name: vault_name.clone(),
     };
-
-    let (result, id) = config.client().create_vault(&account).await?;
+    let c = config.client();
+    let (result, id) = c.create_vault(&account).await?;
     assert!(!id.is_empty());
     assert_eq!(account.name, result.name);
     assert!(result.hidden_on_ui);
     assert!(result.id > 0);
 
-    let (address_response, id) = config.client().create_address(result.id, ASSET_SOL_TEST).await?;
+    let (address_response, id) = c.create_address(result.id, ASSET_SOL_TEST).await?;
     assert!(!id.is_empty());
     assert!(!address_response.address.is_empty());
     assert!(!address_response.id.is_empty());
     let addr = address_response.address.clone();
-    let (address_response, id) = config.client().addresses(result.id, "SOL_TEST").await?;
+    let (address_response, id) = c.addresses(result.id, "SOL_TEST").await?;
     assert!(!id.is_empty());
     assert_eq!(1, address_response.len());
     assert_eq!(addr, address_response[0].address);
 
     let page = PagingAddressRequestBuilder::new().limit(10).build()?;
-    let (container, id) = config.client().addresses_paginated(result.id, "SOL_TEST", page).await?;
+    let (container, id) = c.addresses_paginated(result.id, "SOL_TEST", page).await?;
     assert!(!id.is_empty());
     assert_eq!(1, container.addresses.len());
 
     let rename = format!("{vault_name}-rename");
-    config.client().rename_vault(result.id, &rename).await?;
+    c.rename_vault(result.id, &rename).await?;
 
     let after = &Utc.with_ymd_and_hms(2023, 4, 6, 0, 1, 1).unwrap();
     let before = &chrono::offset::Utc::now();
@@ -317,6 +315,9 @@ mod tests {
 
     PagingAddressRequestBuilder::new().limit(10).before(before).build()?;
     //config.client().addresses_paginated(0, ASSET_BTC_TEST, page).await?;
+
+    c.vault_hide(result.id, false).await?;
+    c.vault_hide(result.id, true).await?;
     Ok(())
   }
 
