@@ -34,8 +34,7 @@ See developer [portal](https://developers.fireblocks.com/docs/introduction) and 
 use fireblocks_sdk::{ClientBuilder, PagingVaultRequestBuilder};
 use std::time::Duration;
 
-#[tokio::main]
-async fn main() -> color_eyre::Result<()> {
+async fn vaults() -> color_eyre::Result<()> {
   let api_key = std::env::var("FIREBLOCKS_API_KEY")?;
   let secret = std::env::var("FIREBLOCKS_SECRET")?;
   let client = ClientBuilder::new(&api_key, &secret.into_bytes())
