@@ -178,10 +178,11 @@ impl Client {
       StatusCode::NOT_FOUND => Err(FireblocksError::NotFound { request_id, path }),
       StatusCode::BAD_REQUEST => Err(FireblocksError::BadRequest { request_id, path, text }),
       StatusCode::UNAUTHORIZED => Err(FireblocksError::Unauthorized { request_id, path, text }),
+      StatusCode::FORBIDDEN => Err(FireblocksError::Forbidden { request_id, path, text }),
       StatusCode::SERVICE_UNAVAILABLE | StatusCode::GATEWAY_TIMEOUT | StatusCode::INTERNAL_SERVER_ERROR => {
-        Err(FireblocksError::InternalError { request_id, code: status.as_u16(), text })
+        Err(FireblocksError::InternalError { request_id, path, code: status.as_u16(), text })
       },
-      _ => Err(FireblocksError::Unknown { request_id, code: status.as_u16(), text }),
+      _ => Err(FireblocksError::Unknown { request_id, path, code: status.as_u16(), text }),
     };
     r
   }
