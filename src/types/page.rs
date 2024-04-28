@@ -1,4 +1,4 @@
-use crate::{impl_base_query_params, Epoch, QueryParams};
+use crate::{impl_base_query_params, QueryParams};
 use bigdecimal::BigDecimal;
 use serde_derive::{Deserialize, Serialize};
 
@@ -25,22 +25,6 @@ impl BasePageParams {
     self
   }
 
-  pub(crate) fn before(&mut self, t: &Epoch) -> &mut Self {
-    self.add_instant("before", t)
-  }
-
-  pub(crate) fn after(&mut self, t: &Epoch) -> &mut Self {
-    self.add_instant("after", t)
-  }
-
-  fn add_instant(&mut self, param: &str, t: &Epoch) -> &mut Self {
-    self.params.push((param.to_owned(), Self::epoch(t)));
-    self
-  }
-  fn epoch(before: &Epoch) -> String {
-    format!("{}", before.timestamp_millis())
-  }
-
   #[allow(clippy::unnecessary_wraps)]
   pub(crate) fn build(&self) -> std::result::Result<QueryParams, crate::error::ParamError> {
     Ok(Vec::clone(&self.params))
@@ -49,7 +33,7 @@ impl BasePageParams {
 
 #[derive(Debug, Default)]
 pub struct PagingAddressRequestBuilder {
-  params: QueryParams, // this is ignored
+  params: QueryParams,
   base: BasePageParams,
 }
 
@@ -62,6 +46,18 @@ pub struct PagingVaultRequestBuilder {
 }
 
 impl_base_query_params!(PagingVaultRequestBuilder);
+
+impl PagingAddressRequestBuilder {
+  pub fn before(&mut self, t: &str) -> &mut Self {
+    self.params.push(("before".to_owned(), String::from(t)));
+    self
+  }
+
+  pub fn after(&mut self, t: &str) -> &mut Self {
+    self.params.push(("before".to_owned(), String::from(t)));
+    self
+  }
+}
 
 impl PagingVaultRequestBuilder {
   pub fn min_threshold(&mut self, min: &BigDecimal) -> &mut Self {
@@ -76,6 +72,18 @@ impl PagingVaultRequestBuilder {
 
   pub fn name_suffix(&mut self, n: &str) -> &mut Self {
     self.params.push(("nameSuffix".to_owned(), String::from(n)));
+    self
+  }
+
+  pub fn before(&mut self, t: &str) -> &mut Self {
+    self.params.push(("before".to_owned(), String::from(t)));
+    self
+  }
+
+  pub fn after(&mut self, t: &str) -> &mut Self {
+    if !t.is_empty() {
+      self.params.push(("after".to_owned(), String::from(t)));
+    }
     self
   }
 }

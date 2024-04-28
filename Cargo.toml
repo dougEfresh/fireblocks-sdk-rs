@@ -44,7 +44,8 @@ serde = "1.0.195"
 serde_derive = { version = "1"}
 jsonwebtoken = "9"
 reqwest = { version = "0.12", default-features = true, features = ["json"] }
-tokio = { version = "1", features = ["full", "tracing"] }
+tokio = { version = "1", default-features = false,  features = ["time"] }
+tokio-stream = {version = "0.1" }
 thiserror = "1"
 bigdecimal = { version = "^0.3", features = ["serde"] }
 url = "2"
@@ -58,12 +59,13 @@ sha2 = "0.10"
 rand = "0.8"
 sqlx = { version = "0.7", features = ["postgres"], optional = true }
 
+
 [target.'cfg(any())'.dependencies]
 openssl = { version = "0.10.55", optional = true } # needed to allow foo to build with -Zminimal-versions
 
 [dev-dependencies]
 tracing-subscriber = { version = "0.3", features = ["env-filter", "serde"] }
-tokio = { version = "1", features = ["macros", "rt"] }
+tokio = { version = "1", features = [ "full", "macros", "rt"] }
 rstest = { version = "0.19" }
 color-eyre = { version = "0.6" }
 lazy_static = "1.4.0"

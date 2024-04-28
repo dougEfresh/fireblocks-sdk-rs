@@ -13,8 +13,9 @@ use tracing::debug;
 impl Client {
   /// Query transactions
   ///
-  /// [getTransactions](https://docs.fireblocks.com/api/swagger-ui/#/Transactions/getTransactions)
-  ///
+  /// See
+  /// * [getTransactions](https://docs.fireblocks.com/api/swagger-ui/#/Transactions/getTransactions)
+  /// * [`crate::types::transaction::TransactionListBuilder`]
   #[tracing::instrument(level = "debug", skip(self, options))]
   pub async fn transactions<I, K, V>(&self, options: I) -> crate::Result<Vec<Transaction>>
   where

@@ -92,6 +92,26 @@ impl TransactionListBuilder {
     self
   }
 
+  pub fn sort_desc(&mut self) -> &mut Self {
+    self.params.push(("sort".to_string(), String::from("DESC")));
+    self
+  }
+
+  pub fn sort_asc(&mut self) -> &mut Self {
+    self.params.push(("sort".to_string(), String::from("ASC")));
+    self
+  }
+
+  pub fn order_created_at(&mut self) -> &mut Self {
+    self.params.push(("orderBy".to_string(), String::from("createdAt")));
+    self
+  }
+
+  pub fn order_last_updated(&mut self) -> &mut Self {
+    self.params.push(("orderBy".to_string(), String::from("lastUpdated")));
+    self
+  }
+
   pub fn hash(&mut self, s: &str) -> &mut Self {
     self.params.push(("txHash".to_string(), String::from(s)));
     self
@@ -105,6 +125,22 @@ impl TransactionListBuilder {
   pub fn assets<T: Borrow<str>>(&mut self, a: &[T]) -> &mut Self {
     self.params.push(("assets".to_owned(), a.join(",")));
     self
+  }
+
+  pub(crate) fn before(&mut self, t: &Epoch) -> &mut Self {
+    self.add_instant("before", t)
+  }
+
+  pub(crate) fn after(&mut self, t: &Epoch) -> &mut Self {
+    self.add_instant("after", t)
+  }
+
+  fn add_instant(&mut self, param: &str, t: &Epoch) -> &mut Self {
+    self.params.push((param.to_owned(), Self::epoch(t)));
+    self
+  }
+  fn epoch(before: &Epoch) -> String {
+    format!("{}", before.timestamp_millis())
   }
 
   /// Alias to [`TransactionListBuilder::hash`]

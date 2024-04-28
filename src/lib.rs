@@ -5,13 +5,14 @@ mod assets;
 mod client;
 pub mod error;
 pub(crate) mod jwt;
-mod page_client;
+mod paged_client;
 pub mod types;
 
-pub use crate::error::FireblocksError;
+pub use crate::error::*;
 pub use crate::types::PagingVaultRequestBuilder;
 pub use assets::{Asset, ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST};
 pub use client::{Client, ClientBuilder};
+pub use paged_client::{PagedClient, VaultStream};
 
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
 pub const FIREBLOCKS_SANDBOX_API: &str = "https://sandbox-api.fireblocks.io/v1";
@@ -31,16 +32,6 @@ macro_rules! impl_base_query_params {
         self
       }
 
-      pub fn before(&mut self, t: &Epoch) -> &mut Self {
-        self.base.before(t);
-        self
-      }
-
-      pub fn after(&mut self, t: &Epoch) -> &mut Self {
-        self.base.after(t);
-        self
-      }
-
       pub fn build(&self) -> std::result::Result<QueryParams, $crate::error::ParamError> {
         let mut p = Vec::clone(&self.params);
         let b = self.base.build()?;
@@ -54,16 +45,18 @@ macro_rules! impl_base_query_params {
 #[cfg(test)]
 mod tests {
   use std::str::FromStr;
-  use std::sync::{Once, OnceLock};
-  use std::{env, time::Duration};
+  use std::sync::{Arc, Once, OnceLock};
+  use std::time::Duration;
 
   use crate::assets::{ASSET_BTC_TEST, ASSET_SOL_TEST};
+  use crate::paged_client::{PagedClient, TransactionStream};
   use crate::types::*;
   use crate::{Client, ClientBuilder, ASSET_ETH_TEST};
   use bigdecimal::BigDecimal;
   use chrono::{TimeZone, Utc};
   use color_eyre::eyre::format_err;
   use tokio::time;
+  use tokio_stream::StreamExt;
   use tracing::warn;
   use tracing_subscriber::fmt::format::FmtSpan;
   use tracing_subscriber::EnvFilter;
@@ -124,7 +117,7 @@ mod tests {
             .ok()
         },
       };
-      let create_tx = env::var("FIREBLOCKS_CREATE_TX").ok().is_some();
+      let create_tx = std::env::var("FIREBLOCKS_CREATE_TX").ok().is_some();
       Self { client, create_tx }
     }
 
@@ -154,7 +147,6 @@ mod tests {
     assert!(!id.is_empty());
     assert!(results.accounts.is_empty());
 
-    let _before = &chrono::offset::Utc::now();
     let params = PagingVaultRequestBuilder::new().limit(1).build()?;
     let (results, id) = config.client().vaults(params).await?;
     assert!(!id.is_empty());
@@ -164,6 +156,8 @@ mod tests {
     assert!(!id.is_empty());
     assert_eq!(0, result.id);
     assert!(!result.assets.is_empty());
+
+    let _ = PagingVaultRequestBuilder::new().before("before").build(); // code coverage
     Ok(())
   }
 
@@ -308,14 +302,7 @@ mod tests {
     let rename = format!("{vault_name}-rename");
     c.rename_vault(result.id, &rename).await?;
 
-    let after = &Utc.with_ymd_and_hms(2023, 4, 6, 0, 1, 1).unwrap();
-    let before = &chrono::offset::Utc::now();
-    PagingAddressRequestBuilder::new().limit(10).after(after).build()?;
-    //config.client().addresses_paginated(0, ASSET_BTC_TEST, page).await?;
-
-    PagingAddressRequestBuilder::new().limit(10).before(before).build()?;
-    //config.client().addresses_paginated(0, ASSET_BTC_TEST, page).await?;
-
+    PagingAddressRequestBuilder::new().limit(10).after("after").before("before").build()?; // code coverage
     c.vault_hide(result.id, false).await?;
     c.vault_hide(result.id, true).await?;
     Ok(())
@@ -463,9 +450,58 @@ mod tests {
   }
 
   #[rstest::rstest]
+  #[tokio::test]
+  async fn test_paged_vaults(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    let c = config.client();
+    let pc = PagedClient::new(Arc::new(c));
+    let mut vs = pc.vaults(100);
+
+    while let Ok(Some(result)) = vs.try_next().await {
+      tracing::info!("accounts {}", result.0.accounts.len());
+      time::sleep(Duration::from_millis(200)).await;
+    }
+    Ok(())
+  }
+
+  async fn transaction_stream(mut ts: TransactionStream) -> color_eyre::Result<()> {
+    let mut counter = 0;
+    let mut after = Utc.with_ymd_and_hms(2022, 4, 6, 0, 1, 1).unwrap();
+    while let Some(result) = ts.try_next().await? {
+      tracing::info!("transactions {}", result.0.len());
+      counter += 1;
+      if counter > 5 {
+        break;
+      }
+      if let Some(last) = result.0.last() {
+        assert!(after < last.created_at);
+        after = last.created_at;
+      }
+      time::sleep(Duration::from_millis(100)).await;
+    }
+    Ok(())
+  }
+
+  #[rstest::rstest]
+  #[tokio::test]
+  async fn test_paged_transactions(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    let c = config.client();
+    let pc = PagedClient::new(Arc::new(c));
+    let ts = pc.transactions_from_source(0, 100, None);
+    transaction_stream(ts).await?;
+    let ts = pc.transactions_from_destination(0, 100, None);
+    transaction_stream(ts).await
+  }
+
+  #[rstest::rstest]
   #[test]
   fn check_ci(config: Config) -> color_eyre::Result<()> {
-    match env::var("CI") {
+    match std::env::var("CI") {
       Err(_) => Ok(()),
       Ok(_) => match config.client {
         Some(_) => Ok(()),
