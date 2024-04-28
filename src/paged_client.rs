@@ -153,8 +153,7 @@ impl Stream for TransactionStream {
               }
               if let Some(last) = va.last() {
                 tracing::debug!("1st after {:#?} last after {:#?}", va[0].created_at, last.created_at);
-                self.after = last.created_at + chrono::Duration::milliseconds(100);
-                //TODO possible to miss a transaction
+                self.after = last.created_at + chrono::Duration::milliseconds(1);
               }
             },
             Err(e) => {
