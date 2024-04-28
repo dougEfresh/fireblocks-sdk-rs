@@ -122,18 +122,19 @@ impl Client {
   /// * [`TransactionStatus::CONFIRMING`]
   ///
   /// [getTransaction](https://docs.fireblocks.com/api/swagger-ui/#/Transactions/getTransaction)
-  #[tracing::instrument(level = "debug", skip(self))]
+  #[tracing::instrument(level = "debug", skip(self, callback))]
   pub async fn poll_transaction(
     &self,
     id: &str,
     timeout: time::Duration,
     interval: time::Duration,
+    callback: impl Fn(&Transaction) + Send + Sync,
   ) -> crate::Result<Transaction> {
     let u = self.build_url(&format!("transactions/{id}"))?.0;
     let mut total_time = time::Duration::from_millis(0);
     loop {
       if let Ok(result) = self.get::<Transaction>(u.clone()).await {
-        let status = result.0.status;
+        let status = result.0.status.clone();
         debug!("status {:#?}", status);
         #[allow(clippy::match_same_arms)]
         match status {
@@ -145,7 +146,9 @@ impl Client {
           TransactionStatus::FAILED => break,
           TransactionStatus::REJECTED => break,
           TransactionStatus::TIMEOUT => break,
-          _ => {},
+          _ => {
+            callback(&result.0);
+          },
         }
       }
       time::sleep(interval).await;
