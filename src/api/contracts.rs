@@ -2,6 +2,7 @@ use crate::api::{WalletCreate, WalletCreateAsset};
 use crate::types::{WalletContainer, WalletCreateAssetResponse};
 use crate::Client;
 use crate::Result;
+use std::fmt::{Debug, Display};
 
 impl Client {
   #[tracing::instrument(level = "debug", skip(self))]
@@ -12,13 +13,16 @@ impl Client {
 
   #[tracing::instrument(level = "debug", skip(self))]
   pub async fn contract(&self, id: &str) -> Result<WalletContainer> {
-    let u = self.build_url(&format!("contracts/{id}"))?.0;
+    let u = self.build_url(format!("contracts/{id}"))?.0;
     self.get(u).await
   }
 
   #[tracing::instrument(level = "debug", skip(self))]
-  pub async fn contract_asset(&self, id: &str, asset: &str, address: &str) -> Result<WalletCreateAssetResponse> {
-    let u = self.build_url(&format!("contracts/{id}/{asset}"))?.0;
+  pub async fn contract_asset<T>(&self, id: &str, asset: T, address: &str) -> Result<WalletCreateAssetResponse>
+  where
+    T: AsRef<str> + Display + Debug,
+  {
+    let u = self.build_url(format!("contracts/{id}/{asset}"))?.0;
     let w = WalletCreateAsset { address: String::from(address), tag: "fireblocks-sdk-rs".to_string() };
     self.post(u, Some(&w)).await
   }
@@ -32,7 +36,7 @@ impl Client {
 
   #[tracing::instrument(level = "debug", skip(self))]
   pub async fn contract_delete(&self, id: &str) -> Result<()> {
-    let u = self.build_url(&format!("contracts/{id}"))?.0;
+    let u = self.build_url(format!("contracts/{id}"))?.0;
     self.delete(u).await
   }
 }

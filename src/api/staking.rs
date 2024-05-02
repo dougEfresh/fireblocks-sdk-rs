@@ -2,10 +2,11 @@ use crate::client::Client;
 use crate::{
   types::{
     asset::SupportedAsset,
-    staking::{StakingPosition, StakingPositionsSummary},
+    staking::{StakingChainInfo, StakingPosition, StakingPositionsSummary},
   },
-  Result,
+  Asset, Result,
 };
+use std::fmt::{Debug, Display};
 
 impl Client {
   #[tracing::instrument(level = "debug", skip(self))]
@@ -15,8 +16,23 @@ impl Client {
   }
 
   #[tracing::instrument(level = "debug", skip(self))]
-  pub async fn staking_chains(&self) -> Result<Vec<String>> {
+  pub async fn staking_chains(&self) -> Result<Vec<Asset>> {
     let u = self.build_url("staking/chains")?.0;
+    self.get(u).await
+  }
+
+  /// Get info about your stake
+  ///
+  /// See
+  ///
+  /// * [`StakingChainInfo`]
+  /// * [getChainInfo](https://docs.fireblocks.com/api/swagger-ui/#/Staking%20(Beta)/getChainInfo)
+  #[tracing::instrument(level = "debug", skip(self))]
+  pub async fn staking_chain_info<T>(&self, chain: T) -> Result<StakingChainInfo>
+  where
+    T: AsRef<str> + Display + Debug,
+  {
+    let u = self.build_url(format!("staking/chains/{chain}/chainInfo"))?.0;
     self.get(u).await
   }
 

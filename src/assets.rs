@@ -105,7 +105,7 @@ impl AsRef<str> for Asset {
       Self::SOL(Network::Main) => "SOL",
       Self::SOL(Network::Test) => "SOL_TEST",
       Self::ETH(EthNetwork::Main) => "ETH",
-      Self::ETH(EthNetwork::Test) => "ETH_TEST5",
+      Self::ETH(EthNetwork::Test) => "ETH_TEST6",
       Self::Unknown(ref s) => s,
     }
   }
@@ -137,7 +137,7 @@ impl FromStr for Asset {
       "DOGE" => Ok(ASSET_DOGE),
       "DOGE_TEST" => Ok(ASSET_DOGE_TEST),
       "ETH" => Ok(ASSET_ETH),
-      "ETH_TEST5" => Ok(ASSET_ETH_TEST),
+      "ETH_TEST6" => Ok(ASSET_ETH_TEST),
       _ => Ok(Self::Unknown(String::from(s))),
     }
   }
@@ -172,7 +172,7 @@ mod tests {
     let a = Asset::from_str("ETH")?;
     assert_eq!(a, ASSET_ETH);
 
-    let a = Asset::from_str("ETH_TEST5")?;
+    let a = Asset::from_str("ETH_TEST6")?;
     assert_eq!(a, ASSET_ETH_TEST);
 
     let a = Asset::from_str("UNKNOWN")?;
@@ -186,7 +186,7 @@ mod tests {
     assert_eq!("DOGE", ASSET_DOGE.as_ref());
     assert_eq!("DOGE_TEST", ASSET_DOGE_TEST.as_ref());
     assert_eq!("ETH", ASSET_ETH.as_ref());
-    assert_eq!("ETH_TEST5", ASSET_ETH_TEST.as_ref());
+    assert_eq!("ETH_TEST6", ASSET_ETH_TEST.as_ref());
 
     assert_eq!(Asset::Unknown("blah".to_owned()).to_string(), "blah");
     assert_eq!(ASSET_BTC.to_string(), "BTC");
