@@ -6,7 +6,7 @@ use reqwest::{Method, RequestBuilder, StatusCode};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::borrow::Borrow;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 use std::sync::Arc;
 use std::time::Duration;
 use tracing::debug;
@@ -187,11 +187,15 @@ impl Client {
     r
   }
 
-  pub(crate) fn build_url(&self, path: &str) -> crate::Result<Url> {
+  pub(crate) fn build_url(&self, path: impl AsRef<str> + Display) -> crate::Result<Url> {
     self.build_url_params::<Vec<(&str, &str)>, &str, &str>(path, None)
   }
 
-  pub(crate) fn build_url_params<I, K, V>(&self, path: &str, params: Option<I>) -> crate::Result<Url>
+  pub(crate) fn build_url_params<I, K, V>(
+    &self,
+    path: impl AsRef<str> + Display,
+    params: Option<I>,
+  ) -> crate::Result<Url>
   where
     I: IntoIterator,
     I::Item: Borrow<(K, V)>,

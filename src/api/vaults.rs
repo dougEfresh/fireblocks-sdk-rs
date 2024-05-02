@@ -34,7 +34,7 @@ impl Client {
     T: AsRef<str> + Display + Debug,
   {
     let p = format!("vault/accounts/{vault_id}/{asset_id}");
-    let u = self.build_url(&p)?.0;
+    let u = self.build_url(p)?.0;
     self.post(u, None as Option<&()>).await
   }
 
@@ -44,7 +44,7 @@ impl Client {
     T: AsRef<str> + Display + Debug,
   {
     let p = format!("vault/accounts/{vault_id}/{asset_id}/addresses");
-    let u = self.build_url(&p)?.0;
+    let u = self.build_url(p)?.0;
     self.get(u).await
   }
 
@@ -58,14 +58,14 @@ impl Client {
     V: AsRef<str>,
   {
     let p = format!("vault/accounts/{vault_id}/{asset_id}/addresses_paginated");
-    let u = self.build_url_params(&p, Some(paging))?.0;
+    let u = self.build_url_params(p, Some(paging))?.0;
     self.get(u).await
   }
 
   #[tracing::instrument(level = "debug", skip(self))]
   pub async fn vault(&self, vault_id: i32) -> Result<Account> {
     let p = format!("vault/accounts/{vault_id}");
-    let u = self.build_url(&p)?.0;
+    let u = self.build_url(p)?.0;
     self.get(u).await
   }
 
@@ -110,7 +110,7 @@ impl Client {
     struct Rename {
       name: String,
     }
-    let u = self.build_url(&format!("vault/accounts/{vault_id}"))?.0;
+    let u = self.build_url(format!("vault/accounts/{vault_id}"))?.0;
     let name_req = &Rename { name: String::from(name) };
     self.put(u, Some(name_req)).await
   }
@@ -118,9 +118,9 @@ impl Client {
   #[tracing::instrument(level = "debug", skip(self))]
   pub async fn vault_hide(&self, vault_id: i32, hide: bool) -> Result<()> {
     let u = if hide {
-      self.build_url(&format!("vault/accounts/{vault_id}/hide"))?.0
+      self.build_url(format!("vault/accounts/{vault_id}/hide"))?.0
     } else {
-      self.build_url(&format!("vault/accounts/{vault_id}/unhide"))?.0
+      self.build_url(format!("vault/accounts/{vault_id}/unhide"))?.0
     };
     let (_, id) = self.post::<Success, ()>(u, None).await?;
     Ok(((), id))

@@ -1,12 +1,11 @@
+use crate::types::deserialize_str_u64;
+use crate::Asset;
 use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
-use crate::types::deserialize_str_u64;
-
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct StakingPosition {
   /// The unique identifier of the staking position
   pub id: String,
@@ -64,7 +63,6 @@ pub struct StakingPosition {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct StakingAmountSummary {
   #[serde(rename = "chainDescriptor")]
   pub chain: String,
@@ -73,8 +71,32 @@ pub struct StakingAmountSummary {
 
 #[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct StakingPositionsSummary {
   pub active: Vec<StakingAmountSummary>,
   pub inactive: Vec<StakingAmountSummary>,
+}
+
+#[derive(Debug, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct StakingAmounts {
+  pub active: Vec<StakingAmountSummary>,
+  pub inactive: Vec<StakingAmountSummary>,
+}
+
+#[derive(Debug, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct StakingAdditionalInfo {
+  estimated_annual_reward: BigDecimal,
+  lockup_period: u64,
+  activation_period: u64,
+}
+
+#[derive(Debug, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct StakingChainInfo {
+  chain_descriptor: Asset,
+  current_epoch: u64,
+  epoch_elapsed: f64,
+  epoch_duration: u64,
+  additional_info: StakingAdditionalInfo,
 }

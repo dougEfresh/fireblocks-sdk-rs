@@ -107,7 +107,7 @@ impl Client {
   /// [getTransaction](https://docs.fireblocks.com/api/swagger-ui/#/Transactions/getTransaction)
   #[tracing::instrument(level = "debug", skip(self))]
   pub async fn get_transaction(&self, id: &str) -> crate::Result<Transaction> {
-    let u = self.build_url(&format!("transactions/{id}"))?.0;
+    let u = self.build_url(format!("transactions/{id}"))?.0;
     self.get(u).await
   }
 
@@ -130,7 +130,7 @@ impl Client {
     interval: time::Duration,
     callback: impl Fn(&Transaction) + Send + Sync,
   ) -> crate::Result<Transaction> {
-    let u = self.build_url(&format!("transactions/{id}"))?.0;
+    let u = self.build_url(format!("transactions/{id}"))?.0;
     let mut total_time = time::Duration::from_millis(0);
     loop {
       if let Ok(result) = self.get::<Transaction>(u.clone()).await {
@@ -162,7 +162,7 @@ impl Client {
 
   #[tracing::instrument(level = "debug", skip(self))]
   pub async fn estimate_fee(&self, asset: &str) -> crate::Result<EstimateFee> {
-    let u = self.build_url(&format!("estimate_network_fee?assetId={asset}"))?.0;
+    let u = self.build_url(format!("estimate_network_fee?assetId={asset}"))?.0;
     self.get(u).await
   }
 }

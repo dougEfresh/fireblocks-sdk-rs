@@ -16,13 +16,13 @@ impl Client {
 
   #[tracing::instrument(level = "debug", skip(self))]
   pub async fn wallet_connection_delete(&self, id: &str) -> crate::Result<()> {
-    let u = self.build_url(&format!("connections/wc/{id}"))?.0;
+    let u = self.build_url(format!("connections/wc/{id}"))?.0;
     self.delete(u).await
   }
 
   #[tracing::instrument(level = "debug", skip(self))]
   pub async fn wallet_connection_approve(&self, id: &str, approve: bool) -> crate::Result<()> {
-    let u = self.build_url(&format!("connections/wc/{id}"))?.0;
+    let u = self.build_url(format!("connections/wc/{id}"))?.0;
     self.put(u, Some(&WalletApprove { approve })).await
   }
 }

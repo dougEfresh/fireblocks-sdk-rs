@@ -51,7 +51,7 @@ mod tests {
   use crate::assets::{ASSET_BTC_TEST, ASSET_SOL_TEST};
   use crate::paged_client::{PagedClient, TransactionStream};
   use crate::types::*;
-  use crate::{Client, ClientBuilder, ASSET_ETH_TEST};
+  use crate::{Client, ClientBuilder, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL};
   use bigdecimal::BigDecimal;
   use chrono::{TimeZone, Utc};
   use color_eyre::eyre::format_err;
@@ -322,7 +322,7 @@ mod tests {
 
     let (addr_response, _) = config
       .client()
-      .contract_asset(&contract_response.id, "ETH_TEST5", "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
+      .contract_asset(&contract_response.id, ASSET_ETH_TEST, "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
       .await?;
     assert_eq!(addr_response.id, ASSET_ETH_TEST);
 
@@ -345,7 +345,7 @@ mod tests {
     assert!(!contract_response.id.is_empty());
 
     let addr_response = c
-      .external_wallet_asset(&contract_response.id, "ETH_TEST5", "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
+      .external_wallet_asset(&contract_response.id, ASSET_ETH_TEST, "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
       .await?
       .0;
     assert_eq!(addr_response.id, ASSET_ETH_TEST);
@@ -438,6 +438,10 @@ mod tests {
     assert!(!chains.is_empty());
     c.staking_positions().await?;
     c.staking_positions_summary().await?;
+
+    for chain in [ASSET_SOL, ASSET_SOL_TEST, ASSET_ETH, ASSET_ETH_TEST] {
+      c.staking_chain_info(&chain).await?;
+    }
     Ok(())
   }
 
