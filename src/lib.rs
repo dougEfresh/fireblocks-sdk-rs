@@ -438,6 +438,11 @@ mod tests {
     assert!(!chains.is_empty());
     c.staking_positions().await?;
     c.staking_positions_summary().await?;
+    let providers = c.staking_providers().await?.0;
+    assert!(!providers.is_empty());
+    for p in providers {
+      c.staking_accept_terms(&p.id).await?;
+    }
 
     for chain in [ASSET_SOL, ASSET_SOL_TEST, ASSET_ETH, ASSET_ETH_TEST] {
       c.staking_chain_info(&chain).await?;

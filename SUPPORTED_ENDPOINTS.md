@@ -48,8 +48,8 @@
 | GET /staking/positions/summary                             | &check; |
 | GET /staking/positions/summary/vaults                      | &cross; |
 | GET /staking/positions/{id}                                | &cross; |
-| GET /staking/providers                                     | &cross; |
-| POST /staking/providers/{providerId}/approveTermsOfService | &cross; |
+| GET /staking/providers                                     | &check; |
+| POST /staking/providers/{providerId}/approveTermsOfService | &check; |
 
 
 ## Exchange accounts
