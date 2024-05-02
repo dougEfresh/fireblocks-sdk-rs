@@ -86,17 +86,29 @@ pub struct StakingAmounts {
 #[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct StakingAdditionalInfo {
-  estimated_annual_reward: BigDecimal,
-  lockup_period: u64,
-  activation_period: u64,
+  pub estimated_annual_reward: BigDecimal,
+  pub lockup_period: u64,
+  pub activation_period: u64,
 }
 
 #[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct StakingChainInfo {
-  chain_descriptor: Asset,
-  current_epoch: u64,
-  epoch_elapsed: f64,
-  epoch_duration: u64,
-  additional_info: StakingAdditionalInfo,
+  pub chain_descriptor: Asset,
+  pub current_epoch: u64,
+  pub epoch_elapsed: f64,
+  pub epoch_duration: u64,
+  pub additional_info: StakingAdditionalInfo,
+}
+
+#[derive(Debug, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct StakingProvider {
+  pub id: String,
+  #[serde(rename = "providerName")]
+  pub name: String,
+  pub icon_url: String,
+  pub terms_of_service_url: String,
+  #[serde(rename = "isTermsOfServiceApproved")]
+  pub terms_of_service_approved: bool,
 }
