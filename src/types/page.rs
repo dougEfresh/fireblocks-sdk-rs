@@ -4,7 +4,6 @@ use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct Paging {
   pub before: Option<String>,
   pub after: Option<String>,

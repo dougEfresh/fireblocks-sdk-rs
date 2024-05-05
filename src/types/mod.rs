@@ -8,6 +8,7 @@ pub mod address;
 pub mod asset;
 pub mod connect;
 pub mod fee;
+pub mod hooks;
 mod page;
 pub mod staking;
 pub mod transaction;
@@ -66,7 +67,6 @@ where
 
 #[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct PaginatedAssetWallet {
   pub asset_wallets: Vec<AssetResponse>,
   pub paging: Paging,

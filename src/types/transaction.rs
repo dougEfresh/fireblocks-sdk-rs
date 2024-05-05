@@ -33,7 +33,6 @@ pub enum PeerType {
 #[allow(non_camel_case_types)]
 #[derive(Debug, Deserialize, Serialize, Clone, Default)]
 #[allow(clippy::upper_case_acronyms)]
-#[allow(dead_code)]
 #[cfg_attr(feature = "sql", derive(sqlx::Type))]
 #[cfg_attr(feature = "sql", sqlx(type_name = "transaction_operation_type", rename_all = "lowercase"))]
 pub enum TransactionOperation {
@@ -127,11 +126,11 @@ impl TransactionListBuilder {
     self
   }
 
-  pub(crate) fn before(&mut self, t: &Epoch) -> &mut Self {
+  pub fn before(&mut self, t: &Epoch) -> &mut Self {
     self.add_instant("before", t)
   }
 
-  pub(crate) fn after(&mut self, t: &Epoch) -> &mut Self {
+  pub fn after(&mut self, t: &Epoch) -> &mut Self {
     self.add_instant("after", t)
   }
 
@@ -139,6 +138,7 @@ impl TransactionListBuilder {
     self.params.push((param.to_owned(), Self::epoch(t)));
     self
   }
+
   fn epoch(before: &Epoch) -> String {
     format!("{}", before.timestamp_millis())
   }
@@ -161,9 +161,8 @@ pub enum VirtualType {
   OEC_FEE_BANK,
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct TransferPeerPath {
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
   pub id: Option<String>,
@@ -181,9 +180,8 @@ pub struct TransferPeerPath {
   pub wallet_id: Option<i32>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct AmountInfo {
   amount: Option<BigDecimal>,
   requested_amount: Option<BigDecimal>,
@@ -192,9 +190,8 @@ pub struct AmountInfo {
   amount_usd: Option<BigDecimal>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct BlockInfo {
   pub block_hash: Option<String>,
   //#[serde(deserialize_with = "deserialize_str_u64_opt")]
@@ -202,45 +199,40 @@ pub struct BlockInfo {
   pub block_height: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct FeeInfo {
-  network_fee: Option<BigDecimal>,
-  service_fee: Option<BigDecimal>,
-  gas_price: Option<BigDecimal>,
+  pub network_fee: Option<BigDecimal>,
+  pub service_fee: Option<BigDecimal>,
+  pub gas_price: Option<BigDecimal>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct RewardInfo {
   src_rewards: Option<String>,
   dest_rewards: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct FeePayerInfo {
   fee_payer_account_id: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub enum Logic {
   OR,
   AND,
 }
-#[derive(Debug, Deserialize)]
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct AuthorizationInfo {
   allow_operator_as_authorizer: bool,
   logic: Logic,
 }
-#[derive(Debug, Deserialize, PartialEq, Eq, Clone, Default)]
-#[allow(dead_code)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Clone, Default)]
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "sql", derive(sqlx::Type))]
 #[cfg_attr(feature = "sql", sqlx(type_name = "signing_algorithm", rename_all = "lowercase"))]
@@ -251,16 +243,14 @@ pub enum SigningAlgorithm {
   MPC_EDDSA_ED25519,
 }
 
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct Signature {
   pub full_sig: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct SignedMessage {
   pub derivation_path: Vec<u64>,
   pub algorithm: SigningAlgorithm,
@@ -270,7 +260,6 @@ pub struct SignedMessage {
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct OneTimeAddress {
   pub address: String,
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -279,7 +268,6 @@ pub struct OneTimeAddress {
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct DestinationTransferPeerPath {
   #[serde(rename = "type")]
   pub peer_type: PeerType,
@@ -294,16 +282,14 @@ pub struct DestinationTransferPeerPath {
   pub one_time_address: Option<OneTimeAddress>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct TransactionDestination {
   amount: BigDecimal,
 }
 
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct Transaction {
   pub id: String,
   pub asset_id: Asset,
@@ -413,8 +399,21 @@ pub struct UnsignedMessage {
 
 #[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct CreateTransactionResponse {
   pub id: String,
   pub status: TransactionStatus,
+}
+
+#[cfg(test)]
+mod test {
+  use crate::types::TransactionListBuilder;
+  use chrono::Utc;
+
+  #[test]
+  fn transaction_builder() -> color_eyre::Result<()> {
+    let request = TransactionListBuilder::new().sort_desc().order_last_updated().before(&Utc::now()).build()?;
+    let found = request.into_iter().find(|v| v.0 == "before");
+    assert!(found.is_some());
+    Ok(())
+  }
 }

@@ -5,7 +5,6 @@ use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct SupportedAsset {
   pub id: Asset,
   pub name: String,
@@ -18,7 +17,6 @@ pub struct SupportedAsset {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct AssetResponse {
   #[serde(deserialize_with = "deserialize_str_u64", default)]
   pub vault_id: u64,
@@ -34,7 +32,6 @@ pub struct AssetResponse {
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct AccountAsset {
   pub id: String,
   pub total: BigDecimal,

@@ -314,20 +314,19 @@ mod tests {
     if !config.is_ok() {
       return Ok(());
     }
+    let c = config.client();
     let name = format!("c-{}", vault_name());
-    let (contract_response, id) = config.client().contract_create(&name).await?;
+    let (contract_response, id) = c.contract_create(&name).await?;
     assert!(!id.is_empty());
     assert_eq!(contract_response.name, name);
     assert!(!contract_response.id.is_empty());
 
-    let (addr_response, _) = config
-      .client()
-      .contract_asset(&contract_response.id, ASSET_ETH_TEST, "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
-      .await?;
+    let (addr_response, _) =
+      c.contract_asset(&contract_response.id, ASSET_ETH_TEST, "0x9bb4d44e6963260a1850926e8f6beb8d5803836f").await?;
     assert_eq!(addr_response.id, ASSET_ETH_TEST);
-
-    config.client().contract_delete(&name).await?;
-    config.client().contracts().await?;
+    c.contract(&contract_response.id).await?;
+    c.contract_delete(&name).await?;
+    c.contracts().await?;
     Ok(())
   }
 
@@ -423,7 +422,15 @@ mod tests {
     if !config.is_ok() {
       return Ok(());
     }
-    config.client().wallet_connections().await?;
+    let c = config.client();
+    c.wallet_connections().await?;
+    if let Err(e) = c.wallet_connection_delete("wallet-connect-id").await {
+      assert!(e.to_string().contains("wallet-connect-id not found"));
+    }
+
+    if let Err(e) = c.wallet_connection_approve("wallet-connect-id", true).await {
+      assert!(e.to_string().contains("wallet-connect-id not found"));
+    }
     Ok(())
   }
 
@@ -492,6 +499,33 @@ mod tests {
         after = last.created_at;
       }
       time::sleep(Duration::from_millis(100)).await;
+    }
+    Ok(())
+  }
+
+  #[rstest::rstest]
+  #[tokio::test]
+  async fn test_hooks(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    let c = config.client();
+    match c.hooks_resend().await {
+      Ok(result) => {
+        assert!(result.0.message_count > 0);
+      },
+      Err(e) => {
+        assert!(e.to_string().contains("Internal Fireblocks Error"));
+      },
+    };
+
+    match c.hooks_resend_tx("e01b1c68-2d26-45dc-bb02-4cc9152295e1", true, true).await {
+      Err(e) => {
+        assert!(e.to_string().contains("Internal Fireblocks Error"));
+      },
+      Ok(result) => {
+        assert!(result.0.success);
+      },
     }
     Ok(())
   }

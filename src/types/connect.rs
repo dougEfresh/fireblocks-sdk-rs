@@ -3,7 +3,6 @@ use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct Metadata {
   pub app_url: String,
   pub app_name: String,
@@ -14,7 +13,6 @@ pub struct Metadata {
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct WalletConnection {
   pub id: String,
   #[serde(rename = "userId")]
@@ -33,14 +31,12 @@ pub struct WalletConnection {
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct NextPage {
   pub next: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct PagedWalletConnectResponse {
   pub data: Vec<WalletConnection>,
   pub page: Option<NextPage>,
@@ -48,7 +44,6 @@ pub struct PagedWalletConnectResponse {
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-#[allow(dead_code)]
 pub enum FeeLevel {
   #[default]
   Medium,
@@ -56,7 +51,6 @@ pub enum FeeLevel {
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct WalletConnectRequest {
   pub fee_level: FeeLevel,
   pub vault_account_id: i32,
@@ -66,14 +60,12 @@ pub struct WalletConnectRequest {
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct WalletConnectResponse {
   pub id: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct WalletApprove {
   pub approve: bool,
 }

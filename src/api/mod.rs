@@ -1,7 +1,8 @@
-use serde_derive::Serialize;
+use serde_derive::{Deserialize, Serialize};
 
 mod contracts;
 mod external_wallets;
+mod hooks;
 mod internal_wallets;
 mod staking;
 mod transactions;
@@ -18,4 +19,9 @@ struct WalletCreate {
 pub struct WalletCreateAsset {
   pub address: String,
   pub tag: String,
+}
+
+#[derive(Debug, Deserialize, Default)]
+pub struct Success {
+  pub success: bool,
 }
