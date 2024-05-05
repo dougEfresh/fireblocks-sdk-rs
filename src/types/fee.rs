@@ -3,7 +3,6 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct Fee {
   pub network_fee: Option<BigDecimal>,
   pub gas_price: Option<BigDecimal>,
@@ -14,7 +13,6 @@ pub struct Fee {
 
 #[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct EstimateFee {
   pub low: Fee,
   pub medium: Fee,

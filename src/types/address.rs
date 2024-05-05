@@ -31,7 +31,6 @@ where
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct AddressContainer {
   pub addresses: Vec<Address>,
   pub paging: Option<Paging>,
@@ -39,7 +38,6 @@ pub struct AddressContainer {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct CreateAddressResponse {
   pub id: String,
   pub address: String,
@@ -47,7 +45,6 @@ pub struct CreateAddressResponse {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct Address {
   pub asset_id: Asset,
   pub address: String,

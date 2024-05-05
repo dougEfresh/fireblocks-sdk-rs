@@ -1,17 +1,13 @@
+use crate::api::Success;
 use crate::types::{
   Account, Address, AddressContainer, CreateAccount, CreateAddressResponse, PaginatedAssetWallet, VaultAccounts,
   VaultRenameResponse,
 };
 use crate::Client;
 use crate::Result;
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::Serialize;
 use std::borrow::Borrow;
 use std::fmt::{Debug, Display};
-
-#[derive(Debug, Deserialize, Default)]
-struct Success {
-  success: bool,
-}
 
 impl Client {
   /// Create an asset (address) for a vault account
