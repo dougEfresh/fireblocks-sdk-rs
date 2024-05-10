@@ -165,4 +165,10 @@ impl Client {
     let u = self.build_url(format!("estimate_network_fee?assetId={asset}"))?.0;
     self.get(u).await
   }
+
+  #[tracing::instrument(level = "debug", skip(self))]
+  pub async fn estimate_fee_transaction(&self, t: &TransactionArguments) -> crate::Result<EstimateFee> {
+    let u = self.build_url("transactions/estimate_fee")?.0;
+    self.post(u, Some(t)).await
+  }
 }
