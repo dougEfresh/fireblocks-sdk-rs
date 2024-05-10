@@ -368,6 +368,7 @@ mod tests {
     }
 
     let c = config.client();
+
     let tx = c.create_transaction_vault(0, 1, ASSET_SOL_TEST, BigDecimal::from_str("0.001")?, None).await?.0;
     assert_eq!(tx.status, TransactionStatus::SUBMITTED);
     c.poll_transaction(&tx.id, Duration::from_secs(10), Duration::from_secs(5), |t: &Transaction| {
@@ -383,6 +384,19 @@ mod tests {
       None,
     )
     .await?;
+
+    let args = &TransactionArguments {
+      asset_id: "SOL_TEST".to_string(),
+      operation: TransactionOperation::TRANSFER,
+      source: TransferPeerPath { id: Some("0".to_string()), ..Default::default() },
+      destination: Some(DestinationTransferPeerPath { id: "4".to_string(), ..Default::default() }),
+      amount: "0.001".to_string(),
+      gas_price: None,
+      gas_limit: None,
+      note: "created by fireblocks-sdk for rust".to_string(),
+    };
+
+    c.estimate_fee_transaction(args).await?;
     Ok(())
   }
 
