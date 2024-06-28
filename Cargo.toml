@@ -1,7 +1,7 @@
 [package]
 name = "fireblocks-sdk"
 resolver = "2"
-version = "0.3.2"
+version = "0.4.0"
 authors = ["Doug Chimento <dchimento@gmail.com>"]
 description = "Rust implementation of the Fireblocks SDK"
 readme = "README.md"
@@ -21,7 +21,6 @@ crate-type = ["cdylib", "rlib"]
 [lints.rust]
 unsafe_code = "forbid"
 
-
 [lints.clippy]
 enum_glob_use = "deny"
 pedantic = "deny"
@@ -34,7 +33,8 @@ return_self_not_must_use = "allow"
 missing_errors_doc = "allow"
 
 [features]
-default = []
+default = ["reqwest/default-tls"]
+rustls-tls = ["reqwest/rustls-tls"]
 sql = ["sqlx"]
 
 [dependencies]
