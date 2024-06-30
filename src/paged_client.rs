@@ -85,7 +85,7 @@ impl Stream for VaultStream {
     }
 
     // Try to resolve any existing futures first
-    tracing::debug!("check future poll");
+    tracing::trace!("check future poll");
     match self.fut.poll_next_unpin(cx) {
       Poll::Ready(opt) => {
         if let Some(result) = opt {
@@ -101,13 +101,13 @@ impl Stream for VaultStream {
         }
       },
       Poll::Pending => {
-        tracing::debug!("still pending");
+        tracing::trace!("still pending");
         cx.waker().wake_by_ref();
         return Poll::Pending;
       },
     };
 
-    tracing::debug!("checking after {:#?}", self.after);
+    tracing::trace!("checking after {:#?}", self.after);
     // If there are no more pages to fetch and no pending futures, end the stream
     if self.after.is_none() {
       return Poll::Ready(None);
@@ -152,7 +152,7 @@ impl Stream for TransactionStream {
                 return Poll::Ready(None);
               }
               if let Some(last) = va.last() {
-                tracing::debug!("1st after {:#?} last after {:#?}", va[0].created_at, last.created_at);
+                tracing::trace!("1st after {:#?} last after {:#?}", va[0].created_at, last.created_at);
                 self.after = last.created_at + chrono::Duration::milliseconds(1);
               }
             },
