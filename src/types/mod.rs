@@ -1,3 +1,4 @@
+use std::fmt;
 use std::str::FromStr;
 
 use chrono::{DateTime, LocalResult, TimeZone, Utc};
@@ -53,8 +54,38 @@ fn deserialize_str_i32<'de, D>(deserializer: D) -> Result<i32, D::Error>
 where
   D: Deserializer<'de>,
 {
-  let s = String::deserialize(deserializer)?;
-  i32::from_str(&s).map_err(SerdeError::custom)
+  struct Visitor;
+
+  impl<'de> serde::de::Visitor<'de> for Visitor {
+    type Value = i32;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+      formatter.write_str("an integer or a string representing an integer")
+    }
+
+    fn visit_i64<E>(self, value: i64) -> Result<i32, E>
+    where
+      E: serde::de::Error,
+    {
+      i32::try_from(value).map_err(E::custom)
+    }
+
+    fn visit_u64<E>(self, value: u64) -> Result<i32, E>
+    where
+      E: serde::de::Error,
+    {
+      i32::try_from(value).map_err(E::custom)
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<i32, E>
+    where
+      E: serde::de::Error,
+    {
+      value.parse::<i32>().map_err(E::custom)
+    }
+  }
+
+  deserializer.deserialize_any(Visitor)
 }
 
 fn deserialize_str_u64<'de, D>(deserializer: D) -> Result<u64, D::Error>
@@ -70,4 +101,44 @@ where
 pub struct PaginatedAssetWallet {
   pub asset_wallets: Vec<AssetResponse>,
   pub paging: Paging,
+}
+
+#[cfg(test)]
+mod test {
+  use crate::types::Account;
+  use serde_json::json;
+
+  #[test]
+  fn test_i32() {
+    let j = json!(
+        {
+        "id": 483,
+        "name": "z-test-1719791845664-rename",
+        "hiddenOnUI": true,
+        "assets": [
+        {
+        "id": "SOL_TEST",
+        "total": "0",
+        "available": "0",
+        "pending": "0",
+        "frozen": "0",
+        "lockedAmount": "0",
+        "staked": "0",
+        "totalStakedCPU": null,
+        "totalStakedNetwork": null,
+        "selfStakedCPU": null,
+        "selfStakedNetwork": null,
+        "pendingRefundCPU": null,
+        "pendingRefundNetwork": null,
+        "blockHeight": "30",
+        "blockHash": ""
+        }
+        ],
+        "customerRefId": "",
+        "autoFuel": false
+      }
+    );
+    let a: Account = serde_json::from_value(j).unwrap();
+    assert_eq!(a.id, 483);
+  }
 }
