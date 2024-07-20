@@ -358,6 +358,32 @@ mod tests {
 
   #[rstest::rstest]
   #[tokio::test]
+  async fn test_internal_wallet(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    let name = vault_name();
+    let c = config.client();
+    let (contract_response, id) = c.internal_wallet_create(&name).await?;
+    assert!(!id.is_empty());
+    assert_eq!(contract_response.name, name);
+    assert!(!contract_response.id.is_empty());
+
+    let addr_response = c
+      .internal_wallet_asset(&contract_response.id, ASSET_ETH_TEST, "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
+      .await?
+      .0;
+    assert_eq!(addr_response.id, ASSET_ETH_TEST);
+
+    let wallets = c.internal_wallets().await?.0;
+    assert!(!wallets.is_empty());
+    c.internal_wallet(&contract_response.id).await?;
+    c.internal_wallet_delete(&name).await?;
+    Ok(())
+  }
+
+  #[rstest::rstest]
+  #[tokio::test]
   async fn test_create_transaction(config: Config) -> color_eyre::Result<()> {
     if !config.is_ok() {
       return Ok(());
@@ -524,15 +550,10 @@ mod tests {
       return Ok(());
     }
     let c = config.client();
-    match c.hooks_resend().await {
-      Ok(result) => {
-        assert!(result.0.messages_count >= 0);
-      },
-      Err(e) => {
-        assert!(e.to_string().contains("Internal Fireblocks Error"), "{}", e.to_string());
-      },
-    };
-
+    let result = c.hooks_resend().await;
+    if let Err(e) = result {
+      assert!(e.to_string().contains("Internal Fireblocks Error"), "{}", e.to_string());
+    }
     match c.hooks_resend_tx("e01b1c68-2d26-45dc-bb02-4cc9152295e1", true, true).await {
       Err(e) => {
         assert!(e.to_string().contains("Internal Fireblocks Error"), "{}", e.to_string());
