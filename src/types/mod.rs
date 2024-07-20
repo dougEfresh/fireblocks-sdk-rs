@@ -138,7 +138,14 @@ mod test {
         "autoFuel": false
       }
     );
-    let a: Account = serde_json::from_value(j).unwrap();
-    assert_eq!(a.id, 483);
+
+    match serde_json::from_value::<Account>(j) {
+      Err(e) => {
+        assert_eq!("error! ", e.to_string());
+      },
+      Ok(a) => {
+        assert_eq!(a.id, 483);
+      },
+    };
   }
 }
