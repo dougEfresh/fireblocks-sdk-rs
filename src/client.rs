@@ -159,8 +159,8 @@ impl Client {
       .unwrap_or_default()
       .to_string()
       .contains("json");
-    #[cfg(debug_assertions)]
-    debug!("got response with x-request-id={}", request_id);
+    //#[cfg(debug_assertions)]
+    debug!("got response with x-request-id={} http status={status}", request_id);
     let text = resp.text().await?;
 
     let r: crate::Result<T> = match status {
