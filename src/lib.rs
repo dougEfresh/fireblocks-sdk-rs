@@ -384,6 +384,46 @@ mod tests {
 
   #[rstest::rstest]
   #[tokio::test]
+  async fn test_create_transaction_whitelist(config: Config) -> color_eyre::Result<()> {
+    if !config.is_ok() {
+      return Ok(());
+    }
+    /*
+    if !config.create_tx {
+      warn!("not testing create transaction");
+      return Ok(());
+    }
+     */
+    let c = config.client();
+    let wallet = c.internal_wallets().await?.0.into_iter().find(|w| w.name == "test-whitelist");
+    let id: String = match wallet {
+      None => {
+        let id = c.internal_wallet_create("test-whitelist").await?.0.id;
+        c.internal_wallet_asset(&id, ASSET_SOL_TEST, "E4SfgGV2v9GLYsEkCQhrrnFbBcYmAiUZZbJ7swKGzZHJ").await?;
+        id
+      },
+      Some(w) => w.id,
+    };
+    let tx = c
+      .create_transaction_peer(
+        0,
+        &id,
+        PeerType::INTERNAL_WALLET,
+        ASSET_SOL_TEST,
+        BigDecimal::from_str("0.00001")?,
+        None,
+      )
+      .await?
+      .0;
+    c.poll_transaction(&tx.id, Duration::from_secs(50), Duration::from_secs(5), |t: &Transaction| {
+      tracing::info!("{:#?}", t.status);
+    })
+    .await?;
+    Ok(())
+  }
+
+  #[rstest::rstest]
+  #[tokio::test]
   async fn test_create_transaction(config: Config) -> color_eyre::Result<()> {
     if !config.is_ok() {
       return Ok(());

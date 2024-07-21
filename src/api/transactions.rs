@@ -37,6 +37,44 @@ impl Client {
     self.post(u, Some(args)).await
   }
 
+  /// Create a vault-to-peer destination transaction (e.g. INTERNAL_WALLET)
+  /// create_transaction_whitelist(0, &id, PeerType::INTERNAL_WALLET, "SOL_TEST", BigDecimal::from_str("0.00001")?, None).await?
+  ///
+  /// [createTransaction](https://docs.fireblocks.com/api/swagger-ui/#/Transactions/createTransaction)
+  #[tracing::instrument(level = "debug", skip(self))]
+  pub async fn create_transaction_peer<T>(
+    &self,
+    source_vault: i32,
+    destination_wallet_id: &str,
+    peer_type: PeerType,
+    asset_id: T,
+    amount: BigDecimal,
+    note: Option<&str>,
+  ) -> crate::Result<CreateTransactionResponse>
+  where
+    T: AsRef<str> + Debug + Display,
+  {
+    let dest = DestinationTransferPeerPath {
+      peer_type,
+      id: String::from(destination_wallet_id),
+      wallet_id: Some(String::from(destination_wallet_id)),
+      virtual_id: None,
+      virtual_type: None,
+      one_time_address: None,
+    };
+    let args = &TransactionArguments {
+      asset_id: format!("{asset_id}"),
+      operation: TransactionOperation::TRANSFER,
+      source: TransferPeerPath { id: Some(source_vault.to_string()), ..Default::default() },
+      destination: Some(dest),
+      amount: amount.to_string(),
+      gas_price: None,
+      gas_limit: None,
+      note: note.unwrap_or("created by fireblocks-sdk for rust").to_string(),
+    };
+    self.create_transaction(args).await
+  }
+
   /// Create a vault-to-vault transaction
   ///
   /// [createTransaction](https://docs.fireblocks.com/api/swagger-ui/#/Transactions/createTransaction)
