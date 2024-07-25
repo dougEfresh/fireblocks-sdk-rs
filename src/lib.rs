@@ -388,12 +388,10 @@ mod tests {
     if !config.is_ok() {
       return Ok(());
     }
-    /*
     if !config.create_tx {
       warn!("not testing create transaction");
       return Ok(());
     }
-     */
     let c = config.client();
     let wallet = c.internal_wallets().await?.0.into_iter().find(|w| w.name == "test-whitelist");
     let id: String = match wallet {
