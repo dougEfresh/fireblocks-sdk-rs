@@ -325,7 +325,7 @@ mod tests {
       c.contract_asset(&contract_response.id, ASSET_ETH_TEST, "0x9bb4d44e6963260a1850926e8f6beb8d5803836f").await?;
     assert_eq!(addr_response.id, ASSET_ETH_TEST);
     c.contract(&contract_response.id).await?;
-    c.contract_delete(&name).await?;
+    c.contract_delete(&id).await?;
     c.contracts().await?;
     Ok(())
   }
@@ -352,7 +352,9 @@ mod tests {
     let wallets = c.external_wallets().await?.0;
     assert!(!wallets.is_empty());
     c.external_wallet(&contract_response.id).await?;
-    c.external_wallet_delete(&name).await?;
+    c.external_wallet_delete(&contract_response.id).await?;
+    let found = c.internal_wallets().await?.0.into_iter().find(|w| w.id == contract_response.id);
+    assert!(found.is_none());
     Ok(())
   }
 
@@ -364,21 +366,33 @@ mod tests {
     }
     let name = vault_name();
     let c = config.client();
-    let (contract_response, id) = c.internal_wallet_create(&name).await?;
+    let w = c.internal_wallets().await?.0;
+    for mine in &w {
+      if mine.name.starts_with("z-test-") {
+        c.internal_wallet_delete(&mine.id).await?;
+      }
+    }
+    let w = c.external_wallets().await?.0;
+    for mine in &w {
+      if mine.name.starts_with("z-test-") {
+        c.external_wallet_delete(&mine.id).await?;
+      }
+    }
+    let (wallet, id) = c.internal_wallet_create(&name).await?;
     assert!(!id.is_empty());
-    assert_eq!(contract_response.name, name);
-    assert!(!contract_response.id.is_empty());
+    assert_eq!(wallet.name, name);
+    assert!(!wallet.id.is_empty());
 
-    let addr_response = c
-      .internal_wallet_asset(&contract_response.id, ASSET_ETH_TEST, "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
-      .await?
-      .0;
+    let addr_response =
+      c.internal_wallet_asset(&wallet.id, ASSET_ETH_TEST, "0x9bb4d44e6963260a1850926e8f6beb8d5803836f").await?.0;
     assert_eq!(addr_response.id, ASSET_ETH_TEST);
 
     let wallets = c.internal_wallets().await?.0;
     assert!(!wallets.is_empty());
-    c.internal_wallet(&contract_response.id).await?;
-    c.internal_wallet_delete(&name).await?;
+    c.internal_wallet(&wallet.id).await?;
+    c.internal_wallet_delete(&wallet.id).await?;
+    let found = c.internal_wallets().await?.0.into_iter().find(|w| w.id == wallet.id);
+    assert!(found.is_none());
     Ok(())
   }
 
@@ -532,17 +546,6 @@ mod tests {
     for chain in [ASSET_SOL, ASSET_SOL_TEST, ASSET_ETH, ASSET_ETH_TEST] {
       c.staking_chain_info(&chain).await?;
     }
-    Ok(())
-  }
-
-  #[rstest::rstest]
-  #[tokio::test]
-  async fn test_internal_wallets(config: Config) -> color_eyre::Result<()> {
-    if !config.is_ok() {
-      return Ok(());
-    }
-    let c = config.client();
-    c.internal_wallets().await?;
     Ok(())
   }
 
