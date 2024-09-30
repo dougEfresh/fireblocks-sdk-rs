@@ -62,7 +62,7 @@ openssl = { version = "0.10.55", optional = true } # needed to allow foo to buil
 [dev-dependencies]
 tracing-subscriber = { version = "0.3", features = ["env-filter", "serde"] }
 tokio = { version = "1", features = [ "full", "macros", "rt"] }
-rstest = { version = "0.21" }
+rstest = { version = "0.23" }
 color-eyre = { version = "0.6" }
 lazy_static = "1.4.0"
 dotenvy = { version = "0.15" }
