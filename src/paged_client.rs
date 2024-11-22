@@ -60,11 +60,6 @@ impl TransactionStream {
   }
 }
 
-pub trait AsyncIteratorAsyncNext {
-  type Item;
-  async fn next(&mut self) -> Result<Option<Self::Item>>;
-}
-
 impl Stream for VaultStream {
   type Item = Result<VaultAccounts>;
 

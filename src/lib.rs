@@ -284,10 +284,10 @@ mod tests {
     assert!(result.hidden_on_ui);
     assert!(result.id > 0);
 
-    let (address_response, id) = c.create_address(result.id, ASSET_SOL_TEST).await?;
+    let (address_response, id) = c.create_address(result.id, ASSET_SOL_TEST, None).await?;
     assert!(!id.is_empty());
     assert!(!address_response.address.is_empty());
-    assert!(!address_response.id.is_empty());
+    assert!(!address_response.legacy_address.is_empty());
     let addr = address_response.address.clone();
     let (address_response, id) = c.addresses(result.id, "SOL_TEST").await?;
     assert!(!id.is_empty());

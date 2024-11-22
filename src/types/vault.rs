@@ -41,3 +41,10 @@ pub struct VaultRenameResponse {
   #[serde(deserialize_with = "deserialize_str_i32")]
   pub id: i32,
 }
+
+#[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateAddress {
+  pub description: Option<String>,
+  pub customer_ref_id: Option<String>,
+}

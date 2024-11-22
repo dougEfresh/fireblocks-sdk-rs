@@ -1,7 +1,7 @@
 use crate::api::Success;
 use crate::types::{
-  Account, Address, AddressContainer, CreateAccount, CreateAddressResponse, PaginatedAssetWallet, VaultAccounts,
-  VaultRenameResponse,
+  Account, Address, AddressContainer, CreateAccount, CreateAddress, CreateAddressResponse, PaginatedAssetWallet,
+  VaultAccounts, VaultRenameResponse,
 };
 use crate::Client;
 use crate::Result;
@@ -16,7 +16,7 @@ impl Client {
   /// use fireblocks_sdk::{ASSET_SOL_TEST, Client};
   ///
   /// async fn vault_accounts(c: Client) -> color_eyre::Result<()> {
-  ///  let (result, id) = c.create_address(0, ASSET_SOL_TEST).await?;
+  ///  let (result, id) = c.create_address(0, ASSET_SOL_TEST, None).await?;
   ///  println!("request id {id}");
   ///  println!("Address {result:#?}");
   ///  Ok(())
@@ -25,13 +25,18 @@ impl Client {
   /// * [`crate::Asset`]
   /// * [createVaultAccountAsset](https://docs.fireblocks.com/api/swagger-ui/#/Vaults/createVaultAccountAsset)
   #[tracing::instrument(level = "debug", skip(self))]
-  pub async fn create_address<T>(&self, vault_id: i32, asset_id: T) -> Result<CreateAddressResponse>
+  pub async fn create_address<T>(
+    &self,
+    vault_id: i32,
+    asset_id: T,
+    address: Option<&CreateAddress>,
+  ) -> Result<CreateAddressResponse>
   where
     T: AsRef<str> + Display + Debug,
   {
-    let p = format!("vault/accounts/{vault_id}/{asset_id}");
+    let p = format!("vault/accounts/{vault_id}/{asset_id}/addresses");
     let u = self.build_url(p)?.0;
-    self.post(u, None as Option<&()>).await
+    self.post(u, address).await
   }
 
   #[tracing::instrument(level = "debug", skip(self))]
