@@ -53,7 +53,7 @@ impl PagingAddressRequestBuilder {
   }
 
   pub fn after(&mut self, t: &str) -> &mut Self {
-    self.params.push(("before".to_owned(), String::from(t)));
+    self.params.push(("after".to_owned(), String::from(t)));
     self
   }
 }
