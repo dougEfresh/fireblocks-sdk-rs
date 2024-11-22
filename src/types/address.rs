@@ -39,8 +39,11 @@ pub struct AddressContainer {
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateAddressResponse {
-  pub id: String,
   pub address: String,
+  pub legacy_address: String,
+  pub enterprise_address: Option<String>,
+  #[serde(rename = "bip44AddressIndex")]
+  pub bip44address_index: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
