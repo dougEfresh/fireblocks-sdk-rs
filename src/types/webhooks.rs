@@ -219,3 +219,22 @@ pub struct NetworkRecord {
   pub destination_address: Option<String>,
   pub source_address: Option<String>,
 }
+
+#[cfg(test)]
+mod test {
+  use super::*;
+  use std::fs;
+
+  #[test]
+  fn test_transaction_details_deserialization() {
+    for dir_result in fs::read_dir("./data/webhooks/transactions").unwrap() {
+      let path = dir_result.unwrap().path();
+
+      let data = fs::read_to_string(path.clone()).expect("Unable to read file");
+
+      let webhook_entry: WebhookEntry = serde_json::from_str(&data).unwrap();
+      let _webhook_data: TransactionDetails = serde_json::from_value(webhook_entry.data.clone())
+        .expect(&format!("deserialization failed for path: {}", path.to_str().unwrap()));
+    }
+  }
+}
