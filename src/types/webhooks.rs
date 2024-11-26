@@ -12,7 +12,8 @@ use super::TransactionStatus;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WebhookEntry {
-  pub r#type: String,
+  #[serde(rename = "type")]
+  pub webhook_type: String,
   pub tenant_id: String,
   pub timestamp: i64,
   pub data: serde_json::Value,
@@ -22,9 +23,12 @@ pub struct WebhookEntry {
 #[serde(rename_all = "camelCase")]
 pub struct TransactionDetails {
   pub id: String,
+  #[serde(deserialize_with = "deserialize_option_empty_object", default)]
   pub external_tx_id: Option<String>,
   pub status: TransactionStatus,
+  #[serde(deserialize_with = "deserialize_option_empty_object", default)]
   pub sub_status: Option<String>,
+  #[serde(deserialize_with = "deserialize_option_empty_object", default)]
   pub tx_hash: Option<String>,
   pub operation: TransactionOperation,
   pub note: String,
@@ -47,14 +51,15 @@ pub struct TransactionDetails {
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
   pub fee_info: Option<FeeInfo>,
   pub fee_currency: String,
-  pub network_records: Vec<serde_json::Value>,
+  pub network_records: Option<Vec<serde_json::Value>>,
   #[serde(deserialize_with = "deserialize_epoch_time")]
   pub created_at: DateTime<Utc>,
   #[serde(deserialize_with = "deserialize_epoch_time")]
   pub last_updated: DateTime<Utc>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
   pub created_by: Option<String>,
-  pub signed_by: Vec<String>,
+  #[serde(deserialize_with = "deserialize_option_empty_object", default)]
+  pub signed_by: Option<Vec<String>>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
   pub rejected_by: Option<String>,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]

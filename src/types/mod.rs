@@ -36,7 +36,9 @@ where
 
   match v {
     Ok(Value::Object(ref map)) if map.is_empty() => Ok(None),
+    Ok(Value::Array(ref arr)) if arr.is_empty() => Ok(None),
     Ok(Value::String(ref s)) if s.is_empty() => Ok(None),
+    Ok(Value::Null) => Ok(None),
     Ok(val) => T::deserialize(val).map(Some).map_err(SerdeError::custom),
     Err(_) => Ok(None), // Assume field is missing and return None
   }
