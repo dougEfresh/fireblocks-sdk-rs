@@ -1,0 +1,10 @@
+{
+  "type": "VAULT_ACCOUNT_ASSET_ADDED",
+  "tenantId": "6a7dd9a4-ad21-4fc7-b925-6174689f00aa",
+  "timestamp": 1732305280498,
+  "data": {
+    "accountId": "0",
+    "accountName": "Default",
+    "assetId": "BASECHAIN_ETH_TEST5"
+  }
+}

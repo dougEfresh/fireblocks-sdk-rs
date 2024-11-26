@@ -1,0 +1,53 @@
+{
+  "type": "TRANSACTION_CREATED",
+  "tenantId": "6a7dd9a4-ad21-4fc7-b925-6174689f00aa",
+  "timestamp": 1732553666240,
+  "data": {
+    "id": "d9e919a4-654f-46ec-b28a-0376a6a810aa",
+    "createdAt": 1732553656057,
+    "lastUpdated": 1732553656057,
+    "assetId": "BTC_TEST",
+    "source": {
+      "id": "1",
+      "type": "VAULT_ACCOUNT",
+      "name": "Knox's EQX Omnibus Vault",
+      "subType": ""
+    },
+    "destination": {
+      "id": "",
+      "type": "ONE_TIME_ADDRESS",
+      "name": "N/A",
+      "subType": ""
+    },
+    "amount": 0.000002,
+    "sourceAddress": "",
+    "destinationAddress": "tb1qlj64u6fqutr0xue85kl55fx0gt4m4urun25p7q",
+    "destinationAddressDescription": "",
+    "destinationTag": "",
+    "status": "SUBMITTED",
+    "txHash": "",
+    "subStatus": "",
+    "signedBy": [],
+    "createdBy": "7a1dfd5f-2fbd-4e19-855c-4501897794ef",
+    "rejectedBy": "",
+    "amountUSD": 0.19,
+    "addressType": "",
+    "note": "test btc transfer out",
+    "exchangeTxId": "",
+    "requestedAmount": 0.000002,
+    "feeCurrency": "BTC_TEST",
+    "operation": "TRANSFER",
+    "customerRefId": null,
+    "amountInfo": {
+      "amount": "0.00000200",
+      "requestedAmount": "0.00000200",
+      "amountUSD": "0.19"
+    },
+    "feeInfo": {},
+    "destinations": [],
+    "externalTxId": null,
+    "blockInfo": {},
+    "signedMessages": [],
+    "assetType": "BASE_ASSET"
+  }
+}

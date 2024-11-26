@@ -1,0 +1,63 @@
+{
+  "type": "TRANSACTION_STATUS_UPDATED",
+  "tenantId": "6a7dd9a4-ad21-4fc7-b925-6174689f00aa",
+  "timestamp": 1732318609256,
+  "data": {
+    "id": "f48caad7-9f18-4838-9d96-e6b8f0cdf0ef",
+    "createdAt": 1732318508302,
+    "lastUpdated": 1732318598773,
+    "assetId": "BTC_TEST",
+    "source": {
+      "id": "",
+      "type": "UNKNOWN",
+      "name": "External",
+      "subType": ""
+    },
+    "destination": {
+      "id": "1",
+      "type": "VAULT_ACCOUNT",
+      "name": "Knox's EQX Omnibus Vault",
+      "subType": ""
+    },
+    "amount": 0.00001,
+    "networkFee": 0.0002807,
+    "netAmount": 0.00001,
+    "sourceAddress": "tb1qeugx69fhxhvrtgjx5tqkmcf7m9vtdscz8pua4v",
+    "destinationAddress": "tb1q3dnkwcwd0hpnmltvmhukh495gp59v928ceg97y",
+    "destinationAddressDescription": "api test2",
+    "destinationTag": "",
+    "status": "COMPLETED",
+    "txHash": "51a64a7b9f0264ae2580ce1197f0eaa10a09a0fcbc116d74918b20e4d7098f31",
+    "subStatus": "CONFIRMED",
+    "signedBy": [],
+    "createdBy": "",
+    "rejectedBy": "",
+    "amountUSD": 0.99,
+    "addressType": "",
+    "note": "",
+    "exchangeTxId": "",
+    "requestedAmount": 0.00001,
+    "feeCurrency": "BTC_TEST",
+    "operation": "TRANSFER",
+    "customerRefId": null,
+    "numOfConfirmations": 1,
+    "amountInfo": {
+      "amount": "0.00001",
+      "requestedAmount": "0.00001",
+      "netAmount": "0.00001",
+      "amountUSD": "0.99"
+    },
+    "feeInfo": {
+      "networkFee": "0.0002807"
+    },
+    "destinations": [],
+    "externalTxId": null,
+    "blockInfo": {
+      "blockHeight": "3487172",
+      "blockHash": "0000000000000021fa3db9d8440275cf35e82575c6e2cb18e1fb891c87450782"
+    },
+    "signedMessages": [],
+    "index": 0,
+    "assetType": "BASE_ASSET"
+  }
+}

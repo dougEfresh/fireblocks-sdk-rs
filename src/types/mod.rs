@@ -15,6 +15,7 @@ pub mod staking;
 pub mod transaction;
 pub mod vault;
 pub mod wallet;
+pub mod webhooks;
 
 pub use address::*;
 pub use asset::*;
@@ -24,6 +25,7 @@ pub use staking::*;
 pub use transaction::*;
 pub use vault::*;
 pub use wallet::*;
+pub use webhooks::*;
 
 fn deserialize_option_empty_object<'de, T, D>(deserializer: D) -> Result<Option<T>, D::Error>
 where

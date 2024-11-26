@@ -1,0 +1,53 @@
+{
+  "type": "TRANSACTION_STATUS_UPDATED",
+  "tenantId": "6a7dd9a4-ad21-4fc7-b925-6174689f00aa",
+  "timestamp": 1732556324027,
+  "data": {
+    "id": "f9d50c81-ed58-4fd6-9d42-48173a9df6d3",
+    "createdAt": 1732556312802,
+    "lastUpdated": 1732556314713,
+    "assetId": "ETH_TEST5",
+    "source": {
+      "id": "1",
+      "type": "VAULT_ACCOUNT",
+      "name": "Knox's EQX Omnibus Vault",
+      "subType": ""
+    },
+    "destination": {
+      "id": "",
+      "type": "ONE_TIME_ADDRESS",
+      "name": "N/A",
+      "subType": ""
+    },
+    "amount": 0.001112,
+    "sourceAddress": "",
+    "destinationAddress": "0xA2FAc4f77b4d668fd38495a52b5650A01E3Fc875",
+    "destinationAddressDescription": "",
+    "destinationTag": "",
+    "status": "QUEUED",
+    "txHash": "",
+    "subStatus": "",
+    "signedBy": [],
+    "createdBy": "7a1dfd5f-2fbd-4e19-855c-4501897794ef",
+    "rejectedBy": "",
+    "amountUSD": 3.82,
+    "addressType": "",
+    "note": "test eth transfer out",
+    "exchangeTxId": "",
+    "requestedAmount": 0.001112,
+    "feeCurrency": "ETH_TEST5",
+    "operation": "TRANSFER",
+    "customerRefId": null,
+    "amountInfo": {
+      "amount": "0.00111200",
+      "requestedAmount": "0.00111200",
+      "amountUSD": "3.82"
+    },
+    "feeInfo": {},
+    "destinations": [],
+    "externalTxId": null,
+    "blockInfo": {},
+    "signedMessages": [],
+    "assetType": "BASE_ASSET"
+  }
+}
