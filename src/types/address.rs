@@ -44,6 +44,8 @@ pub struct CreateAddressResponse {
   pub enterprise_address: Option<String>,
   #[serde(rename = "bip44AddressIndex")]
   pub bip44address_index: i32,
+  #[serde(deserialize_with = "deserialize_option_empty_object", default)]
+  pub tag: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
