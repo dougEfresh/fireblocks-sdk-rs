@@ -4,3 +4,4 @@ target/
 nohup.out
 .data/
 .env
+generated/
