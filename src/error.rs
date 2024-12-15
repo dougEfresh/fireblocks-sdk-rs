@@ -1,7 +1,7 @@
 use thiserror::Error;
 use url::ParseError;
 
-use crate::jwt;
+//use crate::jwt;
 
 #[derive(Debug, Error)]
 pub enum ParamError {
@@ -10,25 +10,10 @@ pub enum ParamError {
 }
 
 #[derive(Debug, Error)]
-pub enum ClientError {
-  #[error(transparent)]
-  /// Thrown when JWT signing fails
-  JwtError(#[from] jwt::JwtError),
-
-  #[error(transparent)]
-  /// Thrown when Token fails
-  TokenError(#[from] jsonwebtoken::errors::Error),
-
-  #[error(transparent)]
-  /// Thrown when submitting a POST/GET request fails
-  ReqwestError(#[from] reqwest::Error),
-}
-
-#[derive(Debug, Error)]
 pub enum FireblocksError {
-  #[error(transparent)]
+  //#[error(transparent)]
   /// Thrown when JWT signing fails
-  JwtError(#[from] jwt::JwtError),
+  //JwtError(#[from] jwt::JwtError),
 
   #[error("Deserialization Error: {err}. Response: {text}")]
   /// Serde JSON Error

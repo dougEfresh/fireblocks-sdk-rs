@@ -1,18 +1,18 @@
 #![doc = include_str!("../README.md")]
 use chrono::{DateTime, Utc};
-pub mod api;
+//pub mod api;
 mod assets;
-mod client;
+//mod client;
 pub mod error;
-pub(crate) mod jwt;
-mod paged_client;
-pub mod types;
+//pub(crate) mod jwt;
+//mod paged_client;
+//pub mod types;
 
 pub use crate::error::*;
-pub use crate::types::PagingVaultRequestBuilder;
+//pub use crate::types::PagingVaultRequestBuilder;
 pub use assets::{Asset, ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST};
-pub use client::{Client, ClientBuilder};
-pub use paged_client::{PagedClient, VaultStream};
+//pub use client::{Client, ClientBuilder};
+//pub use paged_client::{PagedClient, VaultStream};
 
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
 pub const FIREBLOCKS_SANDBOX_API: &str = "https://sandbox-api.fireblocks.io/v1";
@@ -20,6 +20,8 @@ pub type Epoch = DateTime<Utc>;
 pub type Result<T> = std::result::Result<(T, String), FireblocksError>;
 pub type QueryParams = Vec<(String, String)>;
 
+pub mod apis;
+pub mod models;
 #[macro_export]
 macro_rules! impl_base_query_params {
   ($struct_name:ident) => {
@@ -44,7 +46,6 @@ macro_rules! impl_base_query_params {
 
 #[cfg(test)]
 mod tests {
-  use std::str::FromStr;
   use std::sync::{Arc, Once, OnceLock};
   use std::time::Duration;
 
