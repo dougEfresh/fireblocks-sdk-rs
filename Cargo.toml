@@ -39,6 +39,7 @@ rustls-tls = ["reqwest/rustls-tls"]
 bon = ["dep:bon"]
 
 [dependencies]
+typed-builder = { version = "0.20"}
 serde = { version = "^1.0", features = ["derive"] }
 serde_with = { version = "^3.8", default-features = false, features = ["base64", "std", "macros"] }
 serde_json = "^1.0"
@@ -48,6 +49,8 @@ uuid = { version = "^1.8", features = ["serde", "v4"] }
 async-trait = "^0.1"
 reqwest = { version = "^0.12", features = ["json", "multipart"] }
 reqwest-middleware = { version = "^0.4", features = ["json", "multipart"] }
+reqwest-retry = "0.7"
+reqwest-tracing = "0.5"
 bon = { version = "2.3", optional = true }
 tokio = { version = "1", default-features = false,  features = ["time"] }
 thiserror = "1"
@@ -57,13 +60,15 @@ tokio-util = { version = "0.7", features = ["rt"] }
 futures = { version = "0.3" }
 
 [target.'cfg(any())'.dependencies]
-openssl = { version = "0.10.55", optional = true } # needed to allow foo to build with -Zminimal-versions
+openssl = { version = "0.10", optional = true } # needed to allow foo to build with -Zminimal-versions
 
 [dev-dependencies]
+anyhow = "1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "serde"] }
-tokio = { version = "1", features = [ "full", "macros", "rt"] }
-rstest = { version = "0.21" }
-color-eyre = { version = "0.6" }
+tokio = { version = "1", features = [ "full"] }
 lazy_static = "1.4.0"
 dotenvy = { version = "0.15" }
 tokio-stream = {version = "0.1" }
+
+[[test]]
+name = "vaults_api"

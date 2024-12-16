@@ -1,5 +1,5 @@
-gitUserId: fireblocks
-gitRepoId: rust-sdk
+gitUserId: dougEfresh
+gitRepoId: fireblock-sdk-rs
 templateDir: ./templates
 # library: reqwest
 library: reqwest-trait
