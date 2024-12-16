@@ -1,4 +1,4 @@
-use crate::assets::Asset;
+use crate::{assets::Asset, types::deserialize_str_i32};
 use serde::{de::Error, Deserialize, Deserializer};
 use serde_derive::Serialize;
 
@@ -44,6 +44,17 @@ pub struct CreateAddressResponse {
   pub enterprise_address: Option<String>,
   #[serde(rename = "bip44AddressIndex")]
   pub bip44address_index: i32,
+  #[serde(deserialize_with = "deserialize_option_empty_object", default)]
+  pub tag: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ActivateAddressResponse {
+  #[serde(rename = "id", deserialize_with = "deserialize_str_i32")]
+  pub vault_account_id: i32,
+  pub address: String,
+  pub legacy_address: String,
   #[serde(deserialize_with = "deserialize_option_empty_object", default)]
   pub tag: Option<String>,
 }
