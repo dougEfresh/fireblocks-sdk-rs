@@ -9,7 +9,7 @@ use crate::types::{
 
 use super::TransactionStatus;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WebhookEntry {
   #[serde(rename = "type")]
@@ -19,7 +19,7 @@ pub struct WebhookEntry {
   pub data: serde_json::Value,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionDetails {
   pub id: String,
