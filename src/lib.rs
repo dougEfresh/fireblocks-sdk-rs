@@ -1,12 +1,11 @@
 #![doc = include_str!("../README.md")]
 use chrono::{DateTime, Utc};
-//pub mod api;
 mod assets;
-//mod client;
+mod client;
 pub mod error;
 pub(crate) mod jwt;
+mod log;
 //mod paged_client;
-//pub mod types;
 
 pub use crate::error::*;
 //pub use crate::types::PagingVaultRequestBuilder;
@@ -15,7 +14,7 @@ pub use assets::{
 };
 
 pub use apis::{configuration::ApiKey, configuration::Configuration, ApiClient};
-//pub use client::{Client, ClientBuilder};
+pub use client::{Client, ClientBuilder};
 //pub use paged_client::{PagedClient, VaultStream};
 
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";

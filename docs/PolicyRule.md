@@ -32,7 +32,7 @@ Name | Type | Description | Notes
 **raw_message_signing** | Option<[**models::PolicyRuleRawMessageSigning**](PolicyRule_rawMessageSigning.md)> |  | [optional]
 **apply_for_approve** | Option<**bool**> | Applying this rule over APPROVE type transactions (can only be enabled when rule's transaction type is TRANSFER) | [optional]
 **apply_for_typed_message** | Option<**bool**> | Applying this rule over TYPED_MESSAGE type transactions (can only be enabled when rule's transaction type is CONTRACT_CALL) | [optional]
-**external_descriptor** | **String** | A unique id identifying the rule | 
+**external_descriptor** | Option<**String**> | A unique id identifying the rule | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

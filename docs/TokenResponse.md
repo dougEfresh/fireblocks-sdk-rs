@@ -13,8 +13,8 @@ Name | Type | Description | Notes
 **spam** | Option<[**models::SpamTokenResponse**](SpamTokenResponse.md)> | Token spam status | [optional]
 **collection** | Option<[**models::TokenCollectionResponse**](TokenCollectionResponse.md)> | Parent collection information | [optional]
 **blockchain_descriptor** | **String** |  | 
-**description** | Option<**String**> |  | [optional]
-**name** | Option<**String**> |  | [optional]
+**description** | Option<**String**> | Token's metadata description | [optional]
+**name** | Option<**String**> | Token's metadata name | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

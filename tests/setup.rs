@@ -1,12 +1,5 @@
 use std::sync::{Arc, Once, OnceLock};
 use std::time::Duration;
-//  use crate::assets::{ASSET_BTC_TEST, ASSET_SOL_TEST};
-//  use crate::paged_client::{PagedClient, TransactionStream};
-//  use crate::types::*;
-//  use crate::{Client, ClientBuilder, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL};
-//  use bigdecimal::BigDecimal;
-//  use chrono::{TimeZone, Utc};
-//  use color_eyre::eyre::format_err;
 use tokio::time;
 use tokio_stream::StreamExt;
 use tracing::warn;
@@ -14,7 +7,7 @@ use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::EnvFilter;
 
 static INIT: Once = Once::new();
-static KEYS: OnceLock<(String, String)> = OnceLock::new();
+pub static CLIENT: OnceLock<fireblocks_sdk::Client> = OnceLock::new();
 
 #[allow(clippy::unwrap_used)]
 pub fn setup() {
@@ -32,10 +25,17 @@ pub fn setup() {
         }
 
         let api_key: Option<String> = std::env::var("FIREBLOCKS_API_KEY").ok();
-        let path: Option<String> = std::env::var("FIREBLOCKS_SECRET").ok();
-        if api_key.is_none() || path.is_none() {
+        let key: Option<String> = std::env::var("FIREBLOCKS_SECRET").ok();
+        if api_key.is_none() || key.is_none() {
             return;
         }
-        let _ = KEYS.set((api_key.unwrap(), path.unwrap()));
+        let api_key = api_key.unwrap();
+        let rsa_pem = key.unwrap().as_bytes().to_vec();
+        if let Ok(c) = fireblocks_sdk::ClientBuilder::new(&api_key, &rsa_pem)
+            .use_sandbox()
+            .build()
+        {
+            let _ = CLIENT.set(c);
+        }
     });
 }

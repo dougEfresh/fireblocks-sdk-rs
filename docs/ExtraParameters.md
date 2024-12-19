@@ -4,6 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**node_controls** | Option<[**models::NodeControls**](NodeControls.md)> |  | [optional]
 **raw_message_data** | Option<[**models::ExtraParametersRawMessageData**](ExtraParameters_rawMessageData.md)> |  | [optional]
 **contract_call_data** | Option<**String**> | Hex encoded contract call data as a string. | [optional]
 **inputs_selection** | Option<[**models::ExtraParametersInputsSelection**](ExtraParameters_inputsSelection.md)> |  | [optional]

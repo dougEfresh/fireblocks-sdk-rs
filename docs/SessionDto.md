@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** | Id of the connection | 
 **user_id** | **String** | Id of the user that created the connection | 
-**session_metadata** | [**models::SessionMetadata**](SessionMetadata.md) | Metadata of the connection (provided by the dApp) | 
+**session_metadata** | [**models::SessionMetadata**](SessionMetadata.md) | Metadata of the connection (provided by the dapp) | 
 **vault_account_id** | **f64** | The vault to connect | 
 **fee_level** | **String** | The default fee level | 
 **chain_ids** | **Vec<String>** | The chains approved for the connection | 

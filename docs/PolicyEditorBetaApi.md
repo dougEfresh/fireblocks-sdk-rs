@@ -4,17 +4,17 @@ All URIs are relative to *https://api.fireblocks.io/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**tap_active_policy_get**](PolicyEditorBetaApi.md#tap_active_policy_get) | **GET** /tap/active_policy | Get the active policy and its validation
-[**tap_draft_get**](PolicyEditorBetaApi.md#tap_draft_get) | **GET** /tap/draft | Get the active draft
-[**tap_draft_post**](PolicyEditorBetaApi.md#tap_draft_post) | **POST** /tap/draft | Send publish request for a certain draft id
-[**tap_draft_put**](PolicyEditorBetaApi.md#tap_draft_put) | **PUT** /tap/draft | Update the draft with a new set of rules
-[**tap_publish_post**](PolicyEditorBetaApi.md#tap_publish_post) | **POST** /tap/publish | Send publish request for a set of policy rules
+[**get_active_policy**](PolicyEditorBetaApi.md#get_active_policy) | **GET** /tap/active_policy | Get the active policy and its validation
+[**get_draft**](PolicyEditorBetaApi.md#get_draft) | **GET** /tap/draft | Get the active draft
+[**publish_draft**](PolicyEditorBetaApi.md#publish_draft) | **POST** /tap/draft | Send publish request for a certain draft id
+[**publish_policy_rules**](PolicyEditorBetaApi.md#publish_policy_rules) | **POST** /tap/publish | Send publish request for a set of policy rules
+[**update_draft**](PolicyEditorBetaApi.md#update_draft) | **PUT** /tap/draft | Update the draft with a new set of rules
 
 
 
-## tap_active_policy_get
+## get_active_policy
 
-> models::PolicyAndValidationResponse tap_active_policy_get()
+> models::PolicyAndValidationResponse get_active_policy()
 Get the active policy and its validation
 
 Returns the active policy and its validation. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. 
@@ -34,14 +34,14 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: */*, application/json
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 
-## tap_draft_get
+## get_draft
 
-> models::DraftReviewAndValidationResponse tap_draft_get()
+> models::DraftReviewAndValidationResponse get_draft()
 Get the active draft
 
 Returns the active draft and its validation. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. 
@@ -61,14 +61,14 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: */*, application/json
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 
-## tap_draft_post
+## publish_draft
 
-> models::PublishResult tap_draft_post(tap_draft_post_request)
+> models::PublishResult publish_draft(publish_draft_request, idempotency_key)
 Send publish request for a certain draft id
 
 Send publish request of certain draft id and returns the response. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. 
@@ -78,7 +78,8 @@ Send publish request of certain draft id and returns the response. </br> **Note:
 
 Name | Type | Description  | Required | Notes
 ------------- | ------------- | ------------- | ------------- | -------------
-**tap_draft_post_request** | [**TapDraftPostRequest**](TapDraftPostRequest.md) |  | [required] |
+**publish_draft_request** | [**PublishDraftRequest**](PublishDraftRequest.md) |  | [required] |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
 
 ### Return type
 
@@ -91,14 +92,45 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: */*, application/json
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 
-## tap_draft_put
+## publish_policy_rules
 
-> models::DraftReviewAndValidationResponse tap_draft_put(tap_draft_put_request)
+> models::PublishResult publish_policy_rules(policy_rules, idempotency_key)
+Send publish request for a set of policy rules
+
+Send publish request of set of policy rules and returns the response. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. 
+
+### Parameters
+
+
+Name | Type | Description  | Required | Notes
+------------- | ------------- | ------------- | ------------- | -------------
+**policy_rules** | [**PolicyRules**](PolicyRules.md) |  | [required] |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
+
+### Return type
+
+[**models::PublishResult**](PublishResult.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+
+## update_draft
+
+> models::DraftReviewAndValidationResponse update_draft(policy_rules, idempotency_key)
 Update the draft with a new set of rules
 
 Update the draft and return its validation. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. 
@@ -108,7 +140,8 @@ Update the draft and return its validation. </br> **Note:** These endpoints are 
 
 Name | Type | Description  | Required | Notes
 ------------- | ------------- | ------------- | ------------- | -------------
-**tap_draft_put_request** | [**TapDraftPutRequest**](TapDraftPutRequest.md) |  | [required] |
+**policy_rules** | [**PolicyRules**](PolicyRules.md) |  | [required] |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
 
 ### Return type
 
@@ -121,37 +154,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: */*, application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-
-## tap_publish_post
-
-> models::PublishResult tap_publish_post(tap_publish_post_request)
-Send publish request for a set of policy rules
-
-Send publish request of set of policy rules and returns the response. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. 
-
-### Parameters
-
-
-Name | Type | Description  | Required | Notes
-------------- | ------------- | ------------- | ------------- | -------------
-**tap_publish_post_request** | [**TapPublishPostRequest**](TapPublishPostRequest.md) |  | [required] |
-
-### Return type
-
-[**models::PublishResult**](PublishResult.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: */*, application/json
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

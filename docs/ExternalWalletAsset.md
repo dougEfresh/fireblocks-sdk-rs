@@ -7,6 +7,8 @@ Name | Type | Description | Notes
 **id** | Option<**String**> |  | [optional]
 **status** | Option<[**models::ConfigChangeRequestStatus**](ConfigChangeRequestStatus.md)> |  | [optional]
 **address** | Option<**String**> |  | [optional]
+**balance** | Option<**String**> |  | [optional]
+**locked_amount** | Option<**String**> |  | [optional]
 **tag** | Option<**String**> |  | [optional]
 **activation_time** | Option<**String**> |  | [optional]
 **additional_info** | Option<[**Vec<models::WalletAssetAdditionalInfo>**](WalletAssetAdditionalInfo.md)> |  | [optional]

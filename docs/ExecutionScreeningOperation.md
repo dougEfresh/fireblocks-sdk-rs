@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**operation_id** | **String** |  | 
+**operation_id** | **String** | Operation unique identifier | 
 **status** | [**models::ExecutionOperationStatus**](ExecutionOperationStatus.md) |  | 
 **operation_type** | [**models::ScreeningOperationType**](ScreeningOperationType.md) |  | 
 **validation_failure** | Option<[**models::ScreeningValidationFailure**](ScreeningValidationFailure.md)> |  | [optional]

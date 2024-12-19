@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**operation_id** | **String** |  | 
+**operation_id** | **String** | Configuration unique identifier | 
 **status** | [**models::ExecutionOperationStatus**](ExecutionOperationStatus.md) |  | 
 **validation_failure** | Option<[**models::DisbursementValidationFailure**](DisbursementValidationFailure.md)> |  | [optional]
 **operation_type** | [**models::DisbursementOperationType**](DisbursementOperationType.md) |  | 

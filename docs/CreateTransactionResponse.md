@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | Option<**String**> | The ID of the transaction. | [optional]
+**id** | Option<**String**> | Unique Fireblocks identifier of the transaction | [optional]
 **status** | Option<**String**> | The primary status of the transaction. For details, see [Primary transaction statuses.] (https://developers.fireblocks.com/reference/primary-transaction-statuses) | [optional]
 **system_messages** | Option<[**models::SystemMessageInfo**](SystemMessageInfo.md)> |  | [optional]
 

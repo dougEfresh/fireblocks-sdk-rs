@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**operation_id** | **String** |  | 
+**operation_id** | **String** | Operation unique identifier | 
 **status** | [**models::ExecutionOperationStatus**](ExecutionOperationStatus.md) |  | 
 **validation_failure** | Option<[**models::TransferValidationFailure**](TransferValidationFailure.md)> |  | [optional]
 **operation_type** | [**models::TransferOperationType**](TransferOperationType.md) |  | 

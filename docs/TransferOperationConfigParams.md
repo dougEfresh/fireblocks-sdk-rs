@@ -4,8 +4,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**amount** | Option<**String**> |  | [optional]
-**asset_id** | Option<**String**> |  | [optional]
+**amount** | Option<**String**> | The amount to transfer | [optional]
+**asset_id** | Option<**String**> | The assed ID to transfer | [optional]
 **source** | Option<[**models::Account**](Account.md)> |  | [optional]
 **destination** | [**models::Destination**](Destination.md) |  | 
 

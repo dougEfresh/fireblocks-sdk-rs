@@ -4,8 +4,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**r#type** | **String** |  | 
-**sub_type** | Option<**String**> |  | [optional]
+**r#type** | [**models::TransferPeerPathType**](TransferPeerPathType.md) |  | 
+**sub_type** | Option<[**models::TransferPeerPathSubType**](TransferPeerPathSubType.md)> |  | [optional]
 **id** | Option<**String**> |  | [optional]
 **name** | Option<**String**> |  | [optional]
 **wallet_id** | Option<[**uuid::Uuid**](uuid::Uuid.md)> |  | [optional]

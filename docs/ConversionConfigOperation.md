@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**operation_id** | **String** |  | 
+**operation_id** | **String** | Operation unique identifier | 
 **r#type** | [**models::ConversionOperationType**](ConversionOperationType.md) |  | 
 **params** | [**models::ConversionOperationConfigParams**](ConversionOperationConfigParams.md) |  | 
 **status** | [**models::ConfigOperationStatus**](ConfigOperationStatus.md) |  | 

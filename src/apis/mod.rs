@@ -99,28 +99,31 @@ pub fn parse_deep_object(prefix: &str, value: &serde_json::Value) -> Vec<(String
     unimplemented!("Only objects are supported with style=deepObject")
 }
 
-pub mod audit_logs_api;
 pub mod blockchains_assets_api;
-pub mod contracts_api;
+pub mod compliance_api;
+pub mod contract_interactions_api;
+pub mod contract_templates_api;
+pub mod cosigners_beta_api;
+pub mod d_app_connections_api;
+pub mod deployed_contracts_api;
 pub mod exchange_accounts_api;
-pub mod external_wallets_api;
 pub mod fiat_accounts_api;
-pub mod gas_stations_api;
-pub mod internal_wallets_api;
+pub mod fireblocks_network_api;
+pub mod gas_station_api;
+pub mod key_link_beta_api;
 pub mod nfts_api;
-pub mod network_connections_api;
-pub mod off_exchanges_api;
-pub mod payments_cross_border_settlement_api;
+pub mod off_exchange_api;
 pub mod payments_payout_api;
 pub mod policy_editor_beta_api;
-pub mod smart_transfer_api;
+pub mod smart_transfers_api;
 pub mod staking_api;
+pub mod tokenization_api;
 pub mod transactions_api;
-pub mod travel_rule_beta_api;
-pub mod users_api;
 pub mod vaults_api;
-pub mod wallet_link_api;
 pub mod webhooks_api;
+pub mod whitelisted_contracts_api;
+pub mod whitelisted_external_wallets_api;
+pub mod whitelisted_internal_wallets_api;
 pub mod workspace_management_api;
 
 pub mod configuration;
@@ -128,123 +131,138 @@ pub mod configuration;
 use std::sync::Arc;
 
 pub trait Api {
-    fn audit_logs_api(&self) -> &dyn audit_logs_api::AuditLogsApi;
     fn blockchains_assets_api(&self) -> &dyn blockchains_assets_api::BlockchainsAssetsApi;
-    fn contracts_api(&self) -> &dyn contracts_api::ContractsApi;
+    fn compliance_api(&self) -> &dyn compliance_api::ComplianceApi;
+    fn contract_interactions_api(&self) -> &dyn contract_interactions_api::ContractInteractionsApi;
+    fn contract_templates_api(&self) -> &dyn contract_templates_api::ContractTemplatesApi;
+    fn cosigners_beta_api(&self) -> &dyn cosigners_beta_api::CosignersBetaApi;
+    fn d_app_connections_api(&self) -> &dyn d_app_connections_api::DAppConnectionsApi;
+    fn deployed_contracts_api(&self) -> &dyn deployed_contracts_api::DeployedContractsApi;
     fn exchange_accounts_api(&self) -> &dyn exchange_accounts_api::ExchangeAccountsApi;
-    fn external_wallets_api(&self) -> &dyn external_wallets_api::ExternalWalletsApi;
     fn fiat_accounts_api(&self) -> &dyn fiat_accounts_api::FiatAccountsApi;
-    fn gas_stations_api(&self) -> &dyn gas_stations_api::GasStationsApi;
-    fn internal_wallets_api(&self) -> &dyn internal_wallets_api::InternalWalletsApi;
+    fn fireblocks_network_api(&self) -> &dyn fireblocks_network_api::FireblocksNetworkApi;
+    fn gas_station_api(&self) -> &dyn gas_station_api::GasStationApi;
+    fn key_link_beta_api(&self) -> &dyn key_link_beta_api::KeyLinkBetaApi;
     fn nfts_api(&self) -> &dyn nfts_api::NftsApi;
-    fn network_connections_api(&self) -> &dyn network_connections_api::NetworkConnectionsApi;
-    fn off_exchanges_api(&self) -> &dyn off_exchanges_api::OffExchangesApi;
-    fn payments_cross_border_settlement_api(&self) -> &dyn payments_cross_border_settlement_api::PaymentsCrossBorderSettlementApi;
+    fn off_exchange_api(&self) -> &dyn off_exchange_api::OffExchangeApi;
     fn payments_payout_api(&self) -> &dyn payments_payout_api::PaymentsPayoutApi;
     fn policy_editor_beta_api(&self) -> &dyn policy_editor_beta_api::PolicyEditorBetaApi;
-    fn smart_transfer_api(&self) -> &dyn smart_transfer_api::SmartTransferApi;
+    fn smart_transfers_api(&self) -> &dyn smart_transfers_api::SmartTransfersApi;
     fn staking_api(&self) -> &dyn staking_api::StakingApi;
+    fn tokenization_api(&self) -> &dyn tokenization_api::TokenizationApi;
     fn transactions_api(&self) -> &dyn transactions_api::TransactionsApi;
-    fn travel_rule_beta_api(&self) -> &dyn travel_rule_beta_api::TravelRuleBetaApi;
-    fn users_api(&self) -> &dyn users_api::UsersApi;
     fn vaults_api(&self) -> &dyn vaults_api::VaultsApi;
-    fn wallet_link_api(&self) -> &dyn wallet_link_api::WalletLinkApi;
     fn webhooks_api(&self) -> &dyn webhooks_api::WebhooksApi;
+    fn whitelisted_contracts_api(&self) -> &dyn whitelisted_contracts_api::WhitelistedContractsApi;
+    fn whitelisted_external_wallets_api(&self) -> &dyn whitelisted_external_wallets_api::WhitelistedExternalWalletsApi;
+    fn whitelisted_internal_wallets_api(&self) -> &dyn whitelisted_internal_wallets_api::WhitelistedInternalWalletsApi;
     fn workspace_management_api(&self) -> &dyn workspace_management_api::WorkspaceManagementApi;
 }
 
 pub struct ApiClient {
-    audit_logs_api: Box<dyn audit_logs_api::AuditLogsApi>,
     blockchains_assets_api: Box<dyn blockchains_assets_api::BlockchainsAssetsApi>,
-    contracts_api: Box<dyn contracts_api::ContractsApi>,
+    compliance_api: Box<dyn compliance_api::ComplianceApi>,
+    contract_interactions_api: Box<dyn contract_interactions_api::ContractInteractionsApi>,
+    contract_templates_api: Box<dyn contract_templates_api::ContractTemplatesApi>,
+    cosigners_beta_api: Box<dyn cosigners_beta_api::CosignersBetaApi>,
+    d_app_connections_api: Box<dyn d_app_connections_api::DAppConnectionsApi>,
+    deployed_contracts_api: Box<dyn deployed_contracts_api::DeployedContractsApi>,
     exchange_accounts_api: Box<dyn exchange_accounts_api::ExchangeAccountsApi>,
-    external_wallets_api: Box<dyn external_wallets_api::ExternalWalletsApi>,
     fiat_accounts_api: Box<dyn fiat_accounts_api::FiatAccountsApi>,
-    gas_stations_api: Box<dyn gas_stations_api::GasStationsApi>,
-    internal_wallets_api: Box<dyn internal_wallets_api::InternalWalletsApi>,
+    fireblocks_network_api: Box<dyn fireblocks_network_api::FireblocksNetworkApi>,
+    gas_station_api: Box<dyn gas_station_api::GasStationApi>,
+    key_link_beta_api: Box<dyn key_link_beta_api::KeyLinkBetaApi>,
     nfts_api: Box<dyn nfts_api::NftsApi>,
-    network_connections_api: Box<dyn network_connections_api::NetworkConnectionsApi>,
-    off_exchanges_api: Box<dyn off_exchanges_api::OffExchangesApi>,
-    payments_cross_border_settlement_api: Box<dyn payments_cross_border_settlement_api::PaymentsCrossBorderSettlementApi>,
+    off_exchange_api: Box<dyn off_exchange_api::OffExchangeApi>,
     payments_payout_api: Box<dyn payments_payout_api::PaymentsPayoutApi>,
     policy_editor_beta_api: Box<dyn policy_editor_beta_api::PolicyEditorBetaApi>,
-    smart_transfer_api: Box<dyn smart_transfer_api::SmartTransferApi>,
+    smart_transfers_api: Box<dyn smart_transfers_api::SmartTransfersApi>,
     staking_api: Box<dyn staking_api::StakingApi>,
+    tokenization_api: Box<dyn tokenization_api::TokenizationApi>,
     transactions_api: Box<dyn transactions_api::TransactionsApi>,
-    travel_rule_beta_api: Box<dyn travel_rule_beta_api::TravelRuleBetaApi>,
-    users_api: Box<dyn users_api::UsersApi>,
     vaults_api: Box<dyn vaults_api::VaultsApi>,
-    wallet_link_api: Box<dyn wallet_link_api::WalletLinkApi>,
     webhooks_api: Box<dyn webhooks_api::WebhooksApi>,
+    whitelisted_contracts_api: Box<dyn whitelisted_contracts_api::WhitelistedContractsApi>,
+    whitelisted_external_wallets_api: Box<dyn whitelisted_external_wallets_api::WhitelistedExternalWalletsApi>,
+    whitelisted_internal_wallets_api: Box<dyn whitelisted_internal_wallets_api::WhitelistedInternalWalletsApi>,
     workspace_management_api: Box<dyn workspace_management_api::WorkspaceManagementApi>,
 }
 
 impl ApiClient {
     pub fn new(configuration: Arc<configuration::Configuration>) -> Self {
         Self {
-            audit_logs_api: Box::new(audit_logs_api::AuditLogsApiClient::new(configuration.clone())),
             blockchains_assets_api: Box::new(blockchains_assets_api::BlockchainsAssetsApiClient::new(configuration.clone())),
-            contracts_api: Box::new(contracts_api::ContractsApiClient::new(configuration.clone())),
+            compliance_api: Box::new(compliance_api::ComplianceApiClient::new(configuration.clone())),
+            contract_interactions_api: Box::new(contract_interactions_api::ContractInteractionsApiClient::new(configuration.clone())),
+            contract_templates_api: Box::new(contract_templates_api::ContractTemplatesApiClient::new(configuration.clone())),
+            cosigners_beta_api: Box::new(cosigners_beta_api::CosignersBetaApiClient::new(configuration.clone())),
+            d_app_connections_api: Box::new(d_app_connections_api::DAppConnectionsApiClient::new(configuration.clone())),
+            deployed_contracts_api: Box::new(deployed_contracts_api::DeployedContractsApiClient::new(configuration.clone())),
             exchange_accounts_api: Box::new(exchange_accounts_api::ExchangeAccountsApiClient::new(configuration.clone())),
-            external_wallets_api: Box::new(external_wallets_api::ExternalWalletsApiClient::new(configuration.clone())),
             fiat_accounts_api: Box::new(fiat_accounts_api::FiatAccountsApiClient::new(configuration.clone())),
-            gas_stations_api: Box::new(gas_stations_api::GasStationsApiClient::new(configuration.clone())),
-            internal_wallets_api: Box::new(internal_wallets_api::InternalWalletsApiClient::new(configuration.clone())),
+            fireblocks_network_api: Box::new(fireblocks_network_api::FireblocksNetworkApiClient::new(configuration.clone())),
+            gas_station_api: Box::new(gas_station_api::GasStationApiClient::new(configuration.clone())),
+            key_link_beta_api: Box::new(key_link_beta_api::KeyLinkBetaApiClient::new(configuration.clone())),
             nfts_api: Box::new(nfts_api::NftsApiClient::new(configuration.clone())),
-            network_connections_api: Box::new(network_connections_api::NetworkConnectionsApiClient::new(configuration.clone())),
-            off_exchanges_api: Box::new(off_exchanges_api::OffExchangesApiClient::new(configuration.clone())),
-            payments_cross_border_settlement_api: Box::new(payments_cross_border_settlement_api::PaymentsCrossBorderSettlementApiClient::new(configuration.clone())),
+            off_exchange_api: Box::new(off_exchange_api::OffExchangeApiClient::new(configuration.clone())),
             payments_payout_api: Box::new(payments_payout_api::PaymentsPayoutApiClient::new(configuration.clone())),
             policy_editor_beta_api: Box::new(policy_editor_beta_api::PolicyEditorBetaApiClient::new(configuration.clone())),
-            smart_transfer_api: Box::new(smart_transfer_api::SmartTransferApiClient::new(configuration.clone())),
+            smart_transfers_api: Box::new(smart_transfers_api::SmartTransfersApiClient::new(configuration.clone())),
             staking_api: Box::new(staking_api::StakingApiClient::new(configuration.clone())),
+            tokenization_api: Box::new(tokenization_api::TokenizationApiClient::new(configuration.clone())),
             transactions_api: Box::new(transactions_api::TransactionsApiClient::new(configuration.clone())),
-            travel_rule_beta_api: Box::new(travel_rule_beta_api::TravelRuleBetaApiClient::new(configuration.clone())),
-            users_api: Box::new(users_api::UsersApiClient::new(configuration.clone())),
             vaults_api: Box::new(vaults_api::VaultsApiClient::new(configuration.clone())),
-            wallet_link_api: Box::new(wallet_link_api::WalletLinkApiClient::new(configuration.clone())),
             webhooks_api: Box::new(webhooks_api::WebhooksApiClient::new(configuration.clone())),
+            whitelisted_contracts_api: Box::new(whitelisted_contracts_api::WhitelistedContractsApiClient::new(configuration.clone())),
+            whitelisted_external_wallets_api: Box::new(whitelisted_external_wallets_api::WhitelistedExternalWalletsApiClient::new(configuration.clone())),
+            whitelisted_internal_wallets_api: Box::new(whitelisted_internal_wallets_api::WhitelistedInternalWalletsApiClient::new(configuration.clone())),
             workspace_management_api: Box::new(workspace_management_api::WorkspaceManagementApiClient::new(configuration.clone())),
         }
     }
 }
 
 impl Api for ApiClient {
-    fn audit_logs_api(&self) -> &dyn audit_logs_api::AuditLogsApi {
-        self.audit_logs_api.as_ref()
-    }
     fn blockchains_assets_api(&self) -> &dyn blockchains_assets_api::BlockchainsAssetsApi {
         self.blockchains_assets_api.as_ref()
     }
-    fn contracts_api(&self) -> &dyn contracts_api::ContractsApi {
-        self.contracts_api.as_ref()
+    fn compliance_api(&self) -> &dyn compliance_api::ComplianceApi {
+        self.compliance_api.as_ref()
+    }
+    fn contract_interactions_api(&self) -> &dyn contract_interactions_api::ContractInteractionsApi {
+        self.contract_interactions_api.as_ref()
+    }
+    fn contract_templates_api(&self) -> &dyn contract_templates_api::ContractTemplatesApi {
+        self.contract_templates_api.as_ref()
+    }
+    fn cosigners_beta_api(&self) -> &dyn cosigners_beta_api::CosignersBetaApi {
+        self.cosigners_beta_api.as_ref()
+    }
+    fn d_app_connections_api(&self) -> &dyn d_app_connections_api::DAppConnectionsApi {
+        self.d_app_connections_api.as_ref()
+    }
+    fn deployed_contracts_api(&self) -> &dyn deployed_contracts_api::DeployedContractsApi {
+        self.deployed_contracts_api.as_ref()
     }
     fn exchange_accounts_api(&self) -> &dyn exchange_accounts_api::ExchangeAccountsApi {
         self.exchange_accounts_api.as_ref()
     }
-    fn external_wallets_api(&self) -> &dyn external_wallets_api::ExternalWalletsApi {
-        self.external_wallets_api.as_ref()
-    }
     fn fiat_accounts_api(&self) -> &dyn fiat_accounts_api::FiatAccountsApi {
         self.fiat_accounts_api.as_ref()
     }
-    fn gas_stations_api(&self) -> &dyn gas_stations_api::GasStationsApi {
-        self.gas_stations_api.as_ref()
+    fn fireblocks_network_api(&self) -> &dyn fireblocks_network_api::FireblocksNetworkApi {
+        self.fireblocks_network_api.as_ref()
     }
-    fn internal_wallets_api(&self) -> &dyn internal_wallets_api::InternalWalletsApi {
-        self.internal_wallets_api.as_ref()
+    fn gas_station_api(&self) -> &dyn gas_station_api::GasStationApi {
+        self.gas_station_api.as_ref()
+    }
+    fn key_link_beta_api(&self) -> &dyn key_link_beta_api::KeyLinkBetaApi {
+        self.key_link_beta_api.as_ref()
     }
     fn nfts_api(&self) -> &dyn nfts_api::NftsApi {
         self.nfts_api.as_ref()
     }
-    fn network_connections_api(&self) -> &dyn network_connections_api::NetworkConnectionsApi {
-        self.network_connections_api.as_ref()
-    }
-    fn off_exchanges_api(&self) -> &dyn off_exchanges_api::OffExchangesApi {
-        self.off_exchanges_api.as_ref()
-    }
-    fn payments_cross_border_settlement_api(&self) -> &dyn payments_cross_border_settlement_api::PaymentsCrossBorderSettlementApi {
-        self.payments_cross_border_settlement_api.as_ref()
+    fn off_exchange_api(&self) -> &dyn off_exchange_api::OffExchangeApi {
+        self.off_exchange_api.as_ref()
     }
     fn payments_payout_api(&self) -> &dyn payments_payout_api::PaymentsPayoutApi {
         self.payments_payout_api.as_ref()
@@ -252,29 +270,32 @@ impl Api for ApiClient {
     fn policy_editor_beta_api(&self) -> &dyn policy_editor_beta_api::PolicyEditorBetaApi {
         self.policy_editor_beta_api.as_ref()
     }
-    fn smart_transfer_api(&self) -> &dyn smart_transfer_api::SmartTransferApi {
-        self.smart_transfer_api.as_ref()
+    fn smart_transfers_api(&self) -> &dyn smart_transfers_api::SmartTransfersApi {
+        self.smart_transfers_api.as_ref()
     }
     fn staking_api(&self) -> &dyn staking_api::StakingApi {
         self.staking_api.as_ref()
     }
+    fn tokenization_api(&self) -> &dyn tokenization_api::TokenizationApi {
+        self.tokenization_api.as_ref()
+    }
     fn transactions_api(&self) -> &dyn transactions_api::TransactionsApi {
         self.transactions_api.as_ref()
-    }
-    fn travel_rule_beta_api(&self) -> &dyn travel_rule_beta_api::TravelRuleBetaApi {
-        self.travel_rule_beta_api.as_ref()
-    }
-    fn users_api(&self) -> &dyn users_api::UsersApi {
-        self.users_api.as_ref()
     }
     fn vaults_api(&self) -> &dyn vaults_api::VaultsApi {
         self.vaults_api.as_ref()
     }
-    fn wallet_link_api(&self) -> &dyn wallet_link_api::WalletLinkApi {
-        self.wallet_link_api.as_ref()
-    }
     fn webhooks_api(&self) -> &dyn webhooks_api::WebhooksApi {
         self.webhooks_api.as_ref()
+    }
+    fn whitelisted_contracts_api(&self) -> &dyn whitelisted_contracts_api::WhitelistedContractsApi {
+        self.whitelisted_contracts_api.as_ref()
+    }
+    fn whitelisted_external_wallets_api(&self) -> &dyn whitelisted_external_wallets_api::WhitelistedExternalWalletsApi {
+        self.whitelisted_external_wallets_api.as_ref()
+    }
+    fn whitelisted_internal_wallets_api(&self) -> &dyn whitelisted_internal_wallets_api::WhitelistedInternalWalletsApi {
+        self.whitelisted_internal_wallets_api.as_ref()
     }
     fn workspace_management_api(&self) -> &dyn workspace_management_api::WorkspaceManagementApi {
         self.workspace_management_api.as_ref()

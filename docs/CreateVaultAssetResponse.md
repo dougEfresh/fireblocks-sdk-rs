@@ -4,12 +4,12 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | Option<**String**> |  | [optional]
-**address** | Option<**String**> |  | [optional]
-**legacy_address** | Option<**String**> |  | [optional]
-**enterprise_address** | Option<**String**> |  | [optional]
-**tag** | Option<**String**> |  | [optional]
-**eos_account_name** | Option<**String**> |  | [optional]
+**id** | **String** |  | 
+**address** | **String** |  | 
+**legacy_address** | Option<**String**> | For BTC and some BTC forked assets only | [optional]
+**enterprise_address** | Option<**String**> | For ADA (Cardano) only | [optional]
+**tag** | Option<**String**> | For Tag/Memo based assets only | [optional]
+**eos_account_name** | Option<**String**> | For EOS only | [optional]
 **status** | Option<**String**> |  | [optional]
 **activation_tx_id** | Option<**String**> |  | [optional]
 

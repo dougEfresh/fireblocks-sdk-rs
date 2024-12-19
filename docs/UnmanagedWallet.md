@@ -4,8 +4,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **String** |  | 
-**name** | **String** |  | 
+**id** | Option<**String**> |  | [optional]
+**name** | Option<**String**> |  | [optional]
 **customer_ref_id** | Option<**String**> |  | [optional]
 **assets** | Option<[**Vec<models::WalletAsset>**](WalletAsset.md)> |  | [optional]
 

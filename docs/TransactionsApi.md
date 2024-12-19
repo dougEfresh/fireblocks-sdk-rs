@@ -4,33 +4,132 @@ All URIs are relative to *https://api.fireblocks.io/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**transactions_estimate_fee_post**](TransactionsApi.md#transactions_estimate_fee_post) | **POST** /transactions/estimate_fee | Estimate transaction fee
-[**transactions_external_tx_id_external_tx_id_get**](TransactionsApi.md#transactions_external_tx_id_external_tx_id_get) | **GET** /transactions/external_tx_id/{externalTxId}/ | Find a specific transaction by external transaction ID
-[**transactions_get**](TransactionsApi.md#transactions_get) | **GET** /transactions | List transaction history
-[**transactions_post**](TransactionsApi.md#transactions_post) | **POST** /transactions | Create a new transaction
-[**transactions_tx_id_cancel_post**](TransactionsApi.md#transactions_tx_id_cancel_post) | **POST** /transactions/{txId}/cancel | Cancel a transaction
-[**transactions_tx_id_drop_post**](TransactionsApi.md#transactions_tx_id_drop_post) | **POST** /transactions/{txId}/drop | Drop ETH transaction by ID
-[**transactions_tx_id_freeze_post**](TransactionsApi.md#transactions_tx_id_freeze_post) | **POST** /transactions/{txId}/freeze | Freeze a transaction
-[**transactions_tx_id_get**](TransactionsApi.md#transactions_tx_id_get) | **GET** /transactions/{txId} | Find a specific transaction by Fireblocks transaction ID
-[**transactions_tx_id_set_confirmation_threshold_post**](TransactionsApi.md#transactions_tx_id_set_confirmation_threshold_post) | **POST** /transactions/{txId}/set_confirmation_threshold | Set confirmation threshold by transaction ID
-[**transactions_tx_id_unfreeze_post**](TransactionsApi.md#transactions_tx_id_unfreeze_post) | **POST** /transactions/{txId}/unfreeze | Unfreeze a transaction
-[**tx_hash_tx_hash_set_confirmation_threshold_post**](TransactionsApi.md#tx_hash_tx_hash_set_confirmation_threshold_post) | **POST** /txHash/{txHash}/set_confirmation_threshold | Set confirmation threshold by transaction hash
+[**cancel_transaction**](TransactionsApi.md#cancel_transaction) | **POST** /transactions/{txId}/cancel | Cancel a transaction
+[**create_transaction**](TransactionsApi.md#create_transaction) | **POST** /transactions | Create a new transaction
+[**drop_transaction**](TransactionsApi.md#drop_transaction) | **POST** /transactions/{txId}/drop | Drop ETH (EVM) transaction by ID
+[**estimate_transaction_fee**](TransactionsApi.md#estimate_transaction_fee) | **POST** /transactions/estimate_fee | Estimate transaction fee
+[**freeze_transaction**](TransactionsApi.md#freeze_transaction) | **POST** /transactions/{txId}/freeze | Freeze a transaction
+[**get_transaction**](TransactionsApi.md#get_transaction) | **GET** /transactions/{txId} | Get a specific transaction by Fireblocks transaction ID
+[**get_transaction_by_external_id**](TransactionsApi.md#get_transaction_by_external_id) | **GET** /transactions/external_tx_id/{externalTxId} | Get a specific transaction by external transaction ID
+[**get_transactions**](TransactionsApi.md#get_transactions) | **GET** /transactions | Get transaction history
+[**rescan_transactions_beta**](TransactionsApi.md#rescan_transactions_beta) | **POST** /transactions/rescan | Rescan an array of transactions
+[**set_confirmation_threshold_by_transaction_hash**](TransactionsApi.md#set_confirmation_threshold_by_transaction_hash) | **POST** /txHash/{txHash}/set_confirmation_threshold | Set confirmation threshold by transaction hash
+[**set_transaction_confirmation_threshold**](TransactionsApi.md#set_transaction_confirmation_threshold) | **POST** /transactions/{txId}/set_confirmation_threshold | Set confirmation threshold by Fireblocks Transaction ID
+[**unfreeze_transaction**](TransactionsApi.md#unfreeze_transaction) | **POST** /transactions/{txId}/unfreeze | Unfreeze a transaction
 
 
 
-## transactions_estimate_fee_post
+## cancel_transaction
 
-> models::EstimatedTransactionFeeResponse transactions_estimate_fee_post(estimated_fee_request)
-Estimate transaction fee
+> models::CancelTransactionResponse cancel_transaction(tx_id, x_end_user_wallet_id, idempotency_key)
+Cancel a transaction
 
-Estimates the transaction fee for a transaction request.  ***Note:***  -Supports all Fireblocks assets except ZCash (ZEC).  -For XEM and Chiliz assets, 0 will be returned for all three fee levels, as there is no gas or tip price on these blockchains. You can use the POST /v1/transactions/estimate_fee to see what the exact fee will be for a transaction on this network. 
+Cancels a transaction by Fireblocks Transaction ID.  Can be used only for transactions that did not get to the BROADCASTING state. 
 
 ### Parameters
 
 
 Name | Type | Description  | Required | Notes
 ------------- | ------------- | ------------- | ------------- | -------------
-**estimated_fee_request** | Option<[**EstimatedFeeRequest**](EstimatedFeeRequest.md)> |  |  |
+**tx_id** | **String** | The Fireblocks Transaction ID of the transaction to cancel | [required] |
+**x_end_user_wallet_id** | Option<**uuid::Uuid**> | Unique ID of the End-User wallet to the API request. Required for end-user wallet operations. |  |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
+
+### Return type
+
+[**models::CancelTransactionResponse**](CancelTransactionResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+
+## create_transaction
+
+> models::CreateTransactionResponse create_transaction(transaction_request, x_end_user_wallet_id, idempotency_key)
+Create a new transaction
+
+Creates a new transaction. This endpoint can be used for regular Transfers, Contract Calls, Raw & Typed message signing. - For Transfers, the required parameters are: `assetId`, `source`, `destination` and `amount`.  - For Contract Calls, the required parameters are: `operation.CONTRACT_CALL`, `assetId` (Base Asset), `source`, `destination`, `amount` (usually 0) and `extraParameters` object with `contractCallData` string.  - For RAW and Typed messages signing, the required parameters are: `operation.RAW/TYPED_MESSAGE`, `assetId` or `derivationPath`, `source` or `derivationPath`, `extraParameters` with [rawMessageData object](https://developers.fireblocks.com/reference/raw-signing-objects).  - Typed Message Signing is supported for the following asset IDs: 'ETH', 'BTC' and 'TRX'. [Typed Message Signing Guide](https://developers.fireblocks.com/docs/typed-message-signing-overview).  - For MEV Protection configuration the required parameters are:   `extraParameters` with the [`nodeControls` object](https://developers.fireblocks.com/reference/transaction-objects#nodecontrols)   Note: MEV Protection is a premium feature. Please contact your Customer Success Manager or the Fireblocks Support team for more information. 
+
+### Parameters
+
+
+Name | Type | Description  | Required | Notes
+------------- | ------------- | ------------- | ------------- | -------------
+**transaction_request** | [**TransactionRequest**](TransactionRequest.md) |  | [required] |
+**x_end_user_wallet_id** | Option<**uuid::Uuid**> | Unique ID of the End-User wallet to the API request. Required for end-user wallet operations. |  |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
+
+### Return type
+
+[**models::CreateTransactionResponse**](CreateTransactionResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+
+## drop_transaction
+
+> models::DropTransactionResponse drop_transaction(tx_id, x_end_user_wallet_id, idempotency_key, drop_transaction_request)
+Drop ETH (EVM) transaction by ID
+
+Drops a stuck ETH (EVM) transaction and creates a replacement transaction with 0 amount.
+
+### Parameters
+
+
+Name | Type | Description  | Required | Notes
+------------- | ------------- | ------------- | ------------- | -------------
+**tx_id** | **String** | The ID of the transaction | [required] |
+**x_end_user_wallet_id** | Option<**uuid::Uuid**> | Unique ID of the End-User wallet to the API request. Required for end-user wallet operations. |  |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
+**drop_transaction_request** | Option<[**DropTransactionRequest**](DropTransactionRequest.md)> |  |  |
+
+### Return type
+
+[**models::DropTransactionResponse**](DropTransactionResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+
+## estimate_transaction_fee
+
+> models::EstimatedTransactionFeeResponse estimate_transaction_fee(idempotency_key, transaction_request)
+Estimate transaction fee
+
+Estimates the transaction fee for a specific transaction request. This endpoint simulates a transaction which means that the system will expect to have the requested asset and balance in the specified wallet.   * Note: Supports all Fireblocks assets except ZCash (ZEC). 
+
+### Parameters
+
+
+Name | Type | Description  | Required | Notes
+------------- | ------------- | ------------- | ------------- | -------------
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
+**transaction_request** | Option<[**TransactionRequest**](TransactionRequest.md)> |  |  |
 
 ### Return type
 
@@ -43,15 +142,77 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: */*, application/json
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 
-## transactions_external_tx_id_external_tx_id_get
+## freeze_transaction
 
-> models::TransactionResponse transactions_external_tx_id_external_tx_id_get(external_tx_id)
-Find a specific transaction by external transaction ID
+> models::FreezeTransactionResponse freeze_transaction(tx_id, x_end_user_wallet_id, idempotency_key)
+Freeze a transaction
+
+Freezes a transaction by ID.  Usually used for AML integrations when the incoming funds should be quarantined. For account based assets - the entire amount of the transaction is frozen  For UTXO based assets - all UTXOs of the specified transaction are frozen 
+
+### Parameters
+
+
+Name | Type | Description  | Required | Notes
+------------- | ------------- | ------------- | ------------- | -------------
+**tx_id** | **String** | The ID of the transaction to freeze | [required] |
+**x_end_user_wallet_id** | Option<**uuid::Uuid**> | Unique ID of the End-User wallet to the API request. Required for end-user wallet operations. |  |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
+
+### Return type
+
+[**models::FreezeTransactionResponse**](FreezeTransactionResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+
+## get_transaction
+
+> models::TransactionResponse get_transaction(tx_id)
+Get a specific transaction by Fireblocks transaction ID
+
+Get a specific transaction data by Fireblocks Transaction ID
+
+### Parameters
+
+
+Name | Type | Description  | Required | Notes
+------------- | ------------- | ------------- | ------------- | -------------
+**tx_id** | **String** | The ID of the transaction to return | [required] |
+
+### Return type
+
+[**models::TransactionResponse**](TransactionResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+
+## get_transaction_by_external_id
+
+> models::TransactionResponse get_transaction_by_external_id(external_tx_id)
+Get a specific transaction by external transaction ID
 
 Returns transaction by external transaction ID.
 
@@ -73,29 +234,29 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: */*, application/json
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 
-## transactions_get
+## get_transactions
 
-> Vec<models::TransactionResponse> transactions_get(before, after, status, order_by, sort, limit, source_type, source_id, dest_type, dest_id, assets, tx_hash, source_wallet_id, dest_wallet_id)
-List transaction history
+> Vec<models::TransactionResponse> get_transactions(before, after, status, order_by, sort, limit, source_type, source_id, dest_type, dest_id, assets, tx_hash, source_wallet_id, dest_wallet_id)
+Get transaction history
 
-Lists the transaction history for your workspace.
+Get the transaction history for your workspace.
 
 ### Parameters
 
 
 Name | Type | Description  | Required | Notes
 ------------- | ------------- | ------------- | ------------- | -------------
-**before** | Option<**String**> | Unix timestamp in milliseconds. Returns only transactions created before the specified date |  |
-**after** | Option<**String**> | Unix timestamp in milliseconds. Returns only transactions created after the specified date |  |
-**status** | Option<**String**> | You can filter by one of the statuses. |  |
+**before** | Option<**String**> | Unix timestamp in milliseconds. Returns only transactions created before the specified date. Provides an explicit end time. If not provided, default value will be applied, and may change over time.  The current default value is the past 90 days.  |  |
+**after** | Option<**String**> | Unix timestamp in milliseconds. Returns only transactions created after the specified date. Provides an explicit start time. If not provided, default value will be applied, and may change over time.  The current default value is the past 90 days.  |  |
+**status** | Option<[**TransactionStatus**](.md)> | You can filter by one of the statuses. |  |
 **order_by** | Option<**String**> | The field to order the results by  **Note**: Ordering by a field that is not createdAt may result with transactions that receive updates as you request the next or previous pages of results, resulting with missing those transactions. |  |
 **sort** | Option<**String**> | The direction to order the results by |  |
-**limit** | Option<**i32**> | Limits the number of results. If not provided, a limit of 200 will be used. The maximum allowed limit is 500 |  |[default to 200]
+**limit** | Option<**u32**> | Limits the number of results. If not provided, a limit of 200 will be used. The maximum allowed limit is 500 |  |[default to 200]
 **source_type** | Option<**String**> | The source type of the transaction |  |
 **source_id** | Option<**String**> | The source ID of the transaction |  |
 **dest_type** | Option<**String**> | The destination type of the transaction |  |
@@ -116,29 +277,29 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: */*, application/json
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 
-## transactions_post
+## rescan_transactions_beta
 
-> models::CreateTransactionResponse transactions_post(x_end_user_wallet_id, transaction_request)
-Create a new transaction
+> Vec<models::ValidatedTransactionsForRescan> rescan_transactions_beta(rescan_transaction, idempotency_key)
+Rescan an array of transactions
 
-Creates a new transaction. This endpoint can be used for regular Transfers, Contract Calls, Raw & Typed message signing. - For Transfers, the required parameters are: `assetId`, `source`, `destination` and `amount`.   This endpoint is also used for native NFT transfers. For more details, please see the [Transferring NFT](https://developers.fireblocks.com/docs/transferring-nfts) guide.  - For Contract Calls, the required parameters are: `operation.CONTRACT_CALL`, `assetId` (Base Asset), `source`, `destination`, `amount` (usually 0) and `extraParameters` object with `contractCallData` string.  - For RAW and Typed messages signing, the required parameters are: `operation.RAW/TYPED_MESSAGE`, `assetId` or `derivationPath`, `source` or `derivationPath`, `extraParameters` with [rawMessageData object](https://developers.fireblocks.com/reference/raw-signing-objects).  - Typed Message Signing is supported for the following asset IDs: 'ETH', 'BTC' and 'TRX'. [Typed Message Signing Guide](https://developers.fireblocks.com/docs/typed-message-signing-overview). 
+Rescan transaction by running an async job. </br>  **Note**: - These endpoints are currently in beta and might be subject to changes. - We limit the amount of the transaction to 16 per request. 
 
 ### Parameters
 
 
 Name | Type | Description  | Required | Notes
 ------------- | ------------- | ------------- | ------------- | -------------
-**x_end_user_wallet_id** | Option<**uuid::Uuid**> | Unique ID of the End-User wallet to the API request. Required for end-user wallet operations. |  |
-**transaction_request** | Option<[**TransactionRequest**](TransactionRequest.md)> |  |  |
+**rescan_transaction** | [**Vec<models::RescanTransaction>**](RescanTransaction.md) |  | [required] |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
 
 ### Return type
 
-[**models::CreateTransactionResponse**](CreateTransactionResponse.md)
+[**Vec<models::ValidatedTransactionsForRescan>**](ValidatedTransactionsForRescan.md)
 
 ### Authorization
 
@@ -147,148 +308,25 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: */*, application/json
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 
-## transactions_tx_id_cancel_post
+## set_confirmation_threshold_by_transaction_hash
 
-> models::CancelTransactionResponse transactions_tx_id_cancel_post(tx_id, x_end_user_wallet_id)
-Cancel a transaction
+> models::SetConfirmationsThresholdResponse set_confirmation_threshold_by_transaction_hash(tx_hash, idempotency_key, set_confirmations_threshold_request)
+Set confirmation threshold by transaction hash
 
-Cancels a transaction by ID.
+Overrides the required number of confirmations for transaction completion by transaction hash.
 
 ### Parameters
 
 
 Name | Type | Description  | Required | Notes
 ------------- | ------------- | ------------- | ------------- | -------------
-**tx_id** | **String** | The ID of the transaction to cancel | [required] |
-**x_end_user_wallet_id** | Option<**uuid::Uuid**> | Unique ID of the End-User wallet to the API request. Required for end-user wallet operations. |  |
-
-### Return type
-
-[**models::CancelTransactionResponse**](CancelTransactionResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: */*, application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-
-## transactions_tx_id_drop_post
-
-> models::DropTransactionResponse transactions_tx_id_drop_post(tx_id, x_end_user_wallet_id, drop_transaction_request)
-Drop ETH transaction by ID
-
-Drops a stuck ETH transaction and creates a replacement transaction.
-
-### Parameters
-
-
-Name | Type | Description  | Required | Notes
-------------- | ------------- | ------------- | ------------- | -------------
-**tx_id** | **String** | The ID of the transaction | [required] |
-**x_end_user_wallet_id** | Option<**uuid::Uuid**> | Unique ID of the End-User wallet to the API request. Required for end-user wallet operations. |  |
-**drop_transaction_request** | Option<[**DropTransactionRequest**](DropTransactionRequest.md)> |  |  |
-
-### Return type
-
-[**models::DropTransactionResponse**](DropTransactionResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: */*, application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-
-## transactions_tx_id_freeze_post
-
-> models::FreezeTransactionResponse transactions_tx_id_freeze_post(tx_id, x_end_user_wallet_id)
-Freeze a transaction
-
-Freezes a transaction by ID.
-
-### Parameters
-
-
-Name | Type | Description  | Required | Notes
-------------- | ------------- | ------------- | ------------- | -------------
-**tx_id** | **String** | The ID of the transaction to freeze | [required] |
-**x_end_user_wallet_id** | Option<**uuid::Uuid**> | Unique ID of the End-User wallet to the API request. Required for end-user wallet operations. |  |
-
-### Return type
-
-[**models::FreezeTransactionResponse**](FreezeTransactionResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: */*
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-
-## transactions_tx_id_get
-
-> models::TransactionResponse transactions_tx_id_get(tx_id)
-Find a specific transaction by Fireblocks transaction ID
-
-Returns a transaction by ID.
-
-### Parameters
-
-
-Name | Type | Description  | Required | Notes
-------------- | ------------- | ------------- | ------------- | -------------
-**tx_id** | **String** | The ID of the transaction to return | [required] |
-
-### Return type
-
-[**models::TransactionResponse**](TransactionResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: */*, application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-
-## transactions_tx_id_set_confirmation_threshold_post
-
-> models::SetConfirmationsThresholdResponse transactions_tx_id_set_confirmation_threshold_post(tx_id, set_confirmations_threshold_request)
-Set confirmation threshold by transaction ID
-
-Overrides the required number of confirmations for transaction completion by transaction ID.
-
-### Parameters
-
-
-Name | Type | Description  | Required | Notes
-------------- | ------------- | ------------- | ------------- | -------------
-**tx_id** | **String** | The ID of the transaction | [required] |
+**tx_hash** | **String** | The TxHash | [required] |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
 **set_confirmations_threshold_request** | Option<[**SetConfirmationsThresholdRequest**](SetConfirmationsThresholdRequest.md)> |  |  |
 
 ### Return type
@@ -302,17 +340,49 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: */*, application/json
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 
-## transactions_tx_id_unfreeze_post
+## set_transaction_confirmation_threshold
 
-> models::UnfreezeTransactionResponse transactions_tx_id_unfreeze_post(tx_id, x_end_user_wallet_id)
+> models::SetConfirmationsThresholdResponse set_transaction_confirmation_threshold(tx_id, idempotency_key, set_confirmations_threshold_request)
+Set confirmation threshold by Fireblocks Transaction ID
+
+Overrides the required number of confirmations for transaction completion Fireblocks Transaction ID.
+
+### Parameters
+
+
+Name | Type | Description  | Required | Notes
+------------- | ------------- | ------------- | ------------- | -------------
+**tx_id** | **String** | The ID of the transaction | [required] |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
+**set_confirmations_threshold_request** | Option<[**SetConfirmationsThresholdRequest**](SetConfirmationsThresholdRequest.md)> |  |  |
+
+### Return type
+
+[**models::SetConfirmationsThresholdResponse**](SetConfirmationsThresholdResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+
+## unfreeze_transaction
+
+> models::UnfreezeTransactionResponse unfreeze_transaction(tx_id, x_end_user_wallet_id, idempotency_key)
 Unfreeze a transaction
 
-Unfreezes a transaction by ID and makes the transaction available again.
+Unfreezes a transaction by Fireblocks Transaction ID and makes the transaction available again.
 
 ### Parameters
 
@@ -321,6 +391,7 @@ Name | Type | Description  | Required | Notes
 ------------- | ------------- | ------------- | ------------- | -------------
 **tx_id** | **String** | The ID of the transaction to unfreeze | [required] |
 **x_end_user_wallet_id** | Option<**uuid::Uuid**> | Unique ID of the End-User wallet to the API request. Required for end-user wallet operations. |  |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
 
 ### Return type
 
@@ -333,38 +404,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: */*
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-
-## tx_hash_tx_hash_set_confirmation_threshold_post
-
-> models::SetConfirmationsThresholdResponse tx_hash_tx_hash_set_confirmation_threshold_post(tx_hash, set_confirmations_threshold_request)
-Set confirmation threshold by transaction hash
-
-Overrides the required number of confirmations for transaction completion by transaction hash.
-
-### Parameters
-
-
-Name | Type | Description  | Required | Notes
-------------- | ------------- | ------------- | ------------- | -------------
-**tx_hash** | **String** | The TxHash | [required] |
-**set_confirmations_threshold_request** | Option<[**SetConfirmationsThresholdRequest**](SetConfirmationsThresholdRequest.md)> |  |  |
-
-### Return type
-
-[**models::SetConfirmationsThresholdResponse**](SetConfirmationsThresholdResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: */*, application/json
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

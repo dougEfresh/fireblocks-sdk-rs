@@ -5,23 +5,20 @@ All URIs are relative to *https://api.fireblocks.io/v1*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**approve_terms_of_service_by_provider_id**](StakingApi.md#approve_terms_of_service_by_provider_id) | **POST** /staking/providers/{providerId}/approveTermsOfService | Approve staking terms of service
-[**claim_rewards**](StakingApi.md#claim_rewards) | **POST** /staking/chains/{chainDescriptor}/claimRewards | Execute a Claim Rewards operation
+[**execute_action**](StakingApi.md#execute_action) | **POST** /staking/chains/{chainDescriptor}/{actionId} | Execute a staking action
 [**get_all_delegations**](StakingApi.md#get_all_delegations) | **GET** /staking/positions | List staking positions details
 [**get_chain_info**](StakingApi.md#get_chain_info) | **GET** /staking/chains/{chainDescriptor}/chainInfo | Get chain-specific staking summary
-[**get_chains**](StakingApi.md#get_chains) | **GET** /staking/chains | List staking supported chains
+[**get_chains**](StakingApi.md#get_chains) | **GET** /staking/chains | List supported chains for Fireblocks Staking
 [**get_delegation_by_id**](StakingApi.md#get_delegation_by_id) | **GET** /staking/positions/{id} | Get staking position details
 [**get_providers**](StakingApi.md#get_providers) | **GET** /staking/providers | List staking providers details
 [**get_summary**](StakingApi.md#get_summary) | **GET** /staking/positions/summary | Get staking summary details
 [**get_summary_by_vault**](StakingApi.md#get_summary_by_vault) | **GET** /staking/positions/summary/vaults | Get staking summary details by vault
-[**stake**](StakingApi.md#stake) | **POST** /staking/chains/{chainDescriptor}/stake | Initiate Stake Operation
-[**unstake**](StakingApi.md#unstake) | **POST** /staking/chains/{chainDescriptor}/unstake | Execute an Unstake operation
-[**withdraw**](StakingApi.md#withdraw) | **POST** /staking/chains/{chainDescriptor}/withdraw | Execute a Withdraw operation
 
 
 
 ## approve_terms_of_service_by_provider_id
 
-> serde_json::Value approve_terms_of_service_by_provider_id(provider_id)
+> serde_json::Value approve_terms_of_service_by_provider_id(provider_id, idempotency_key)
 Approve staking terms of service
 
 Approve the terms of service of the staking provider. This must be called before performing a staking action for the first time with this provider.
@@ -32,6 +29,7 @@ Approve the terms of service of the staking provider. This must be called before
 Name | Type | Description  | Required | Notes
 ------------- | ------------- | ------------- | ------------- | -------------
 **provider_id** | **String** | The unique identifier of the staking provider | [required] |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
 
 ### Return type
 
@@ -49,24 +47,26 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 
-## claim_rewards
+## execute_action
 
-> serde_json::Value claim_rewards(chain_descriptor, claim_rewards_request_dto)
-Execute a Claim Rewards operation
+> models::ExecuteActionResponse execute_action(chain_descriptor, action_id, execute_action_request, idempotency_key)
+Execute a staking action
 
-Perform a chain-specific Claim Rewards.
+Perform a chain-specific staking action (e.g. stake, unstake, withdraw).
 
 ### Parameters
 
 
 Name | Type | Description  | Required | Notes
 ------------- | ------------- | ------------- | ------------- | -------------
-**chain_descriptor** | **String** | The protocol identifier (e.g. \"MATIC\") to use | [required] |
-**claim_rewards_request_dto** | [**ClaimRewardsRequestDto**](ClaimRewardsRequestDto.md) |  | [required] |
+**chain_descriptor** | **String** | The protocol identifier (e.g. \"ETH\"/\"SOL\") to use | [required] |
+**action_id** | **String** | The operation that can be executed on a vault/position | [required] |
+**execute_action_request** | [**ExecuteActionRequest**](ExecuteActionRequest.md) |  | [required] |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
 
 ### Return type
 
-[**serde_json::Value**](serde_json::Value.md)
+[**models::ExecuteActionResponse**](ExecuteActionResponse.md)
 
 ### Authorization
 
@@ -143,7 +143,7 @@ No authorization required
 ## get_chains
 
 > Vec<String> get_chains()
-List staking supported chains
+List supported chains for Fireblocks Staking
 
 Return an alphabetical list of supported chains.
 
@@ -273,99 +273,6 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-
-## stake
-
-> models::StakeResponseDto stake(chain_descriptor, stake_request_dto)
-Initiate Stake Operation
-
-Perform a chain-specific Stake.
-
-### Parameters
-
-
-Name | Type | Description  | Required | Notes
-------------- | ------------- | ------------- | ------------- | -------------
-**chain_descriptor** | **String** | The protocol identifier (e.g. \"ETH\"/\"SOL\"/\"MATIC\") to use | [required] |
-**stake_request_dto** | [**StakeRequestDto**](StakeRequestDto.md) |  | [required] |
-
-### Return type
-
-[**models::StakeResponseDto**](StakeResponseDto.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-
-## unstake
-
-> serde_json::Value unstake(chain_descriptor, unstake_request_dto)
-Execute an Unstake operation
-
-Perform a chain-specific Unstake.
-
-### Parameters
-
-
-Name | Type | Description  | Required | Notes
-------------- | ------------- | ------------- | ------------- | -------------
-**chain_descriptor** | **String** | The protocol identifier (e.g. \"SOL\"/\"MATIC\") to use | [required] |
-**unstake_request_dto** | [**UnstakeRequestDto**](UnstakeRequestDto.md) |  | [required] |
-
-### Return type
-
-[**serde_json::Value**](serde_json::Value.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-
-## withdraw
-
-> serde_json::Value withdraw(chain_descriptor, withdraw_request_dto)
-Execute a Withdraw operation
-
-Perform a chain-specific Withdraw.
-
-### Parameters
-
-
-Name | Type | Description  | Required | Notes
-------------- | ------------- | ------------- | ------------- | -------------
-**chain_descriptor** | **String** | The protocol identifier (e.g. \"ETH\"/\"SOL\"/\"MATIC\") to use | [required] |
-**withdraw_request_dto** | [**WithdrawRequestDto**](WithdrawRequestDto.md) |  | [required] |
-
-### Return type
-
-[**serde_json::Value**](serde_json::Value.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: application/json
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
