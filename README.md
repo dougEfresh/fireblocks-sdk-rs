@@ -63,4 +63,8 @@ cargo test
 ```
 ---
 
-# Supported [Endpoints](./SUPPORTED_ENDPOINTS.md)
+# Docs 
+ 
+Some of the code was generatered by Fireblocks openapi [spec](https://raw.githubusercontent.com/fireblocks/fireblocks-openapi-spec/refs/heads/main/api-spec-v2.yaml)
+
+See [docs](./docs/README.md)
