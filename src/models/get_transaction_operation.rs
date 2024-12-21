@@ -53,7 +53,7 @@ use {
 ///     transactions
 ///   may have this as their operation, in case users in the workspace have used
 ///   the direct integration between Fireblocks and the Compound DeFI protocol.
-/// *   `APPROVE` - Enables the approve function for a smart contract to
+/// * `APPROVE` - Enables the approve function for a smart contract to
 /// withdraw from   a designated wallet. [Learn more](https://support.fireblocks.io/hc/en-us/articles/4404616097426-Approve-Transaction-Amount-Cap).
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum GetTransactionOperation {

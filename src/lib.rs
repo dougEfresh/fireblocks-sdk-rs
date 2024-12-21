@@ -5,9 +5,12 @@ mod client;
 pub mod error;
 pub(crate) mod jwt;
 mod log;
+#[cfg(feature = "paged")]
 mod paged_client;
 
 // pub use crate::types::PagingVaultRequestBuilder;
+#[cfg(feature = "paged")]
+pub use paged_client::{PagedClient, VaultStream};
 pub use {
     crate::error::*,
     apis::{
@@ -24,7 +27,6 @@ pub use {
         ASSET_SOL_TEST,
     },
     client::{Client, ClientBuilder},
-    paged_client::{PagedClient, VaultStream},
 };
 
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";

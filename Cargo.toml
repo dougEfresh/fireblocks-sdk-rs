@@ -34,9 +34,10 @@ return_self_not_must_use = "allow"
 missing_errors_doc = "allow"
 
 [features]
-default = ["reqwest/default-tls", "bon"]
+default = ["bon", "paged"]
 rustls-tls = ["reqwest/rustls-tls"]
 bon = ["dep:bon"]
+paged = ["dep:bon"]
 
 [dependencies]
 anyhow = "1"
