@@ -5,7 +5,7 @@ mod client;
 pub mod error;
 pub(crate) mod jwt;
 mod log;
-//mod paged_client;
+mod paged_client;
 
 pub use crate::error::*;
 //pub use crate::types::PagingVaultRequestBuilder;
@@ -15,7 +15,7 @@ pub use assets::{
 
 pub use apis::{configuration::ApiKey, configuration::Configuration, ApiClient};
 pub use client::{Client, ClientBuilder};
-//pub use paged_client::{PagedClient, VaultStream};
+pub use paged_client::{PagedClient, VaultStream};
 
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
 pub const FIREBLOCKS_SANDBOX_API: &str = "https://sandbox-api.fireblocks.io/v1";
