@@ -8,20 +8,20 @@ mod log;
 mod paged_client;
 
 // pub use crate::types::PagingVaultRequestBuilder;
-pub use assets::{
-    Asset,
-    ASSET_BTC,
-    ASSET_BTC_TEST,
-    ASSET_ETH,
-    ASSET_ETH_TEST,
-    ASSET_SOL,
-    ASSET_SOL_TEST,
-};
 pub use {
     crate::error::*,
     apis::{
         configuration::{ApiKey, Configuration},
         ApiClient,
+    },
+    assets::{
+        Asset,
+        ASSET_BTC,
+        ASSET_BTC_TEST,
+        ASSET_ETH,
+        ASSET_ETH_TEST,
+        ASSET_SOL,
+        ASSET_SOL_TEST,
     },
     client::{Client, ClientBuilder},
     paged_client::{PagedClient, VaultStream},

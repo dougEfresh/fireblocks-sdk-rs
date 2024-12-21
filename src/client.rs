@@ -1,6 +1,6 @@
 use {
     crate::{
-        apis::{vaults_api::VaultsApi, Api},
+        apis::{transactions_api::TransactionsApi, vaults_api::VaultsApi, Api},
         error::{self, FireblocksError},
         jwt::{JwtSigningMiddleware, Signer},
         ApiClient,
@@ -140,7 +140,15 @@ impl Client {
 }
 
 impl Client {
+    pub fn transactions_api(&self) -> &dyn TransactionsApi {
+        self.api_client.transactions_api()
+    }
+
     pub fn vaults_api(&self) -> &dyn VaultsApi {
         self.api_client.vaults_api()
+    }
+
+    pub fn apis(&self) -> Arc<ApiClient> {
+        self.api_client.clone()
     }
 }

@@ -1,8 +1,15 @@
 use {
     crate::{
-        apis::vaults_api::{GetPagedVaultAccountsError, GetPagedVaultAccountsParams},
-        models::VaultAccountsPagedResponse,
-        Client, Epoch, FireblocksError, ParamError, QueryParams,
+        apis::{
+            transactions_api::{GetTransactionsError, GetTransactionsParams},
+            vaults_api::{GetPagedVaultAccountsError, GetPagedVaultAccountsParams},
+        },
+        models::{TransactionResponse, VaultAccountsPagedResponse},
+        Client,
+        Epoch,
+        FireblocksError,
+        ParamError,
+        QueryParams,
     },
     chrono::{TimeZone, Utc},
     futures::{future::BoxFuture, stream::FuturesUnordered, FutureExt, Stream, StreamExt},
@@ -20,6 +27,8 @@ pub struct PagedClient {
 
 type VaultResult =
     std::result::Result<VaultAccountsPagedResponse, crate::apis::Error<GetPagedVaultAccountsError>>;
+
+type TransactionResult = Result<Vec<TransactionResponse>, crate::apis::Error<GetTransactionsError>>;
 
 pub struct VaultStream {
     client: Arc<Client>,
@@ -47,56 +56,56 @@ impl VaultStream {
             .build()
     }
 }
-// pub struct TransactionStream {
-//    client: Arc<Client>,
-//    batch: u16,
-//    init: bool, // has the stream started?
-//    vault_id: i32,
-//    after: Epoch,
-//    is_source: bool, // are we streaming from source vault account or
-// destination    fut: FuturesUnordered<BoxFuture<'static,
-// Result<Vec<Transaction>>>>,
-//}
-// impl TransactionStream {
-//    fn from_source(client: Arc<Client>, batch: u16, vault_id: i32, after:
-// Epoch) -> Self {        Self {
-//            client,
-//            batch,
-//            init: false,
-//            vault_id,
-//            after,
-//            fut: FuturesUnordered::new(),
-//            is_source: true,
-//        }
-//    }
-//
-//    fn from_dest(client: Arc<Client>, batch: u16, vault_id: i32, after: Epoch)
-// -> Self {        Self {
-//            client,
-//            batch,
-//            init: false,
-//            vault_id,
-//            after,
-//            fut: FuturesUnordered::new(),
-//            is_source: false,
-//        }
-//    }
-//
-//    fn build_params(&self) -> std::result::Result<QueryParams, ParamError> {
-//        let mut builder = TransactionListBuilder::new();
-//        let builder = builder
-//            .limit(self.batch)
-//            .sort_asc()
-//            .order_created_at()
-//            .after(&self.after);
-//
-//        if self.is_source {
-//            return builder.source_id(self.vault_id).build();
-//        }
-//        builder.destination_id(self.vault_id).build()
-//    }
-//}
-//
+pub struct TransactionStream {
+    client: Arc<Client>,
+    batch: u16,
+    init: bool, // has the stream started?
+    vault_id: i32,
+    after: Epoch,
+    is_source: bool, // are we streaming from source vault account or destination
+    fut: FuturesUnordered<BoxFuture<'static, TransactionResult>>,
+}
+impl TransactionStream {
+    fn epoch(ts: &Epoch) -> String {
+        format!("{}", ts.timestamp_millis())
+    }
+
+    fn from_source(client: Arc<Client>, batch: u16, vault_id: i32, after: Epoch) -> Self {
+        Self {
+            client,
+            batch,
+            init: false,
+            vault_id,
+            after,
+            fut: FuturesUnordered::new(),
+            is_source: true,
+        }
+    }
+
+    fn from_dest(client: Arc<Client>, batch: u16, vault_id: i32, after: Epoch) -> Self {
+        Self {
+            client,
+            batch,
+            init: false,
+            vault_id,
+            after,
+            fut: FuturesUnordered::new(),
+            is_source: false,
+        }
+    }
+
+    fn build_params(&self) -> GetTransactionsParams {
+        let builder = GetTransactionsParams::builder()
+            .limit(self.batch.into())
+            .order_by("createdAt".to_owned())
+            .after(Self::epoch(&self.after))
+            .sort("ASC".to_owned());
+        if self.is_source {
+            return builder.source_id(self.vault_id.to_string()).build();
+        }
+        builder.dest_id(self.vault_id.to_string()).build()
+    }
+}
 
 impl Stream for VaultStream {
     type Item = VaultResult;
@@ -155,65 +164,66 @@ impl Stream for VaultStream {
         Poll::Pending
     }
 }
-// impl Stream for TransactionStream {
-//    type Item = Result<Vec<Transaction>>;
-//
-//    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) ->
-// Poll<Option<Self::Item>> {        if !self.init {
-//            tracing::debug!("init tracing stream");
-//            self.init = true;
-//            let client = self.client.clone();
-//            let params = match self.build_params() {
-//                Ok(p) => p,
-//                Err(e) => return
-// Poll::Ready(Some(Err(FireblocksError::from(e)))),            };
-//            let fut = async move { client.transactions(params).await
-// }.boxed();            self.fut.push(fut);
-//            cx.waker().wake_by_ref();
-//            return Poll::Pending;
-//        }
-//
-//        match self.fut.poll_next_unpin(cx) {
-//            Poll::Ready(opt) => {
-//                if let Some(result) = opt {
-//                    match result {
-//                        Ok((ref va, ref _id)) => {
-//                            if va.is_empty() {
-//                                return Poll::Ready(None);
-//                            }
-//                            if let Some(last) = va.last() {
-//                                tracing::trace!(
-//                                    "1st after {:#?} last after {:#?}",
-//                                    va[0].created_at,
-//                                    last.created_at
-//                                );
-//                                self.after = last.created_at +
-// chrono::Duration::milliseconds(1);                            }
-//                        }
-//                        Err(e) => {
-//                            return Poll::Ready(Some(Err(e)));
-//                        }
-//                    }
-//                    return Poll::Ready(Some(result));
-//                }
-//            }
-//            Poll::Pending => {
-//                cx.waker().wake_by_ref();
-//                return Poll::Pending;
-//            }
-//        };
-//
-//        let client = self.client.clone();
-//        let params = match self.build_params() {
-//            Ok(p) => p,
-//            Err(e) => return Poll::Ready(Some(Err(FireblocksError::from(e)))),
-//        };
-//        let fut = async move { client.transactions(params).await }.boxed();
-//        self.fut.push(fut);
-//        cx.waker().wake_by_ref();
-//        Poll::Pending
-//    }
-//}
+
+impl Stream for TransactionStream {
+    type Item = TransactionResult;
+
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        if !self.init {
+            tracing::debug!("init tracing stream");
+            self.init = true;
+            let client = self.client.clone();
+            let params = self.build_params();
+            let fut =
+                async move { client.transactions_api().get_transactions(params).await }.boxed();
+            self.fut.push(fut);
+            cx.waker().wake_by_ref();
+            return Poll::Pending;
+        }
+
+        match self.fut.poll_next_unpin(cx) {
+            Poll::Ready(opt) => {
+                if let Some(result) = opt {
+                    match result {
+                        Ok(ref va) => {
+                            if va.is_empty() {
+                                return Poll::Ready(None);
+                            }
+                            if let Some(last) = va.last() {
+                                tracing::trace!(
+                                    "1st after {:#?} last after {:#?}",
+                                    va[0].created_at,
+                                    last.created_at
+                                );
+                                if let Some(_ca) = last.created_at {
+                                    todo!();
+                                    // self.after =
+                                    // last.created_at +
+                                    // chrono::Duration::milliseconds(1);
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            return Poll::Ready(Some(Err(e)));
+                        }
+                    }
+                    return Poll::Ready(Some(result));
+                }
+            }
+            Poll::Pending => {
+                cx.waker().wake_by_ref();
+                return Poll::Pending;
+            }
+        };
+
+        let client = self.client.clone();
+        let params = self.build_params();
+        let fut = async move { client.transactions_api().get_transactions(params).await }.boxed();
+        self.fut.push(fut);
+        cx.waker().wake_by_ref();
+        Poll::Pending
+    }
+}
 //
 impl PagedClient {
     pub const fn new(client: Arc<Client>) -> Self {

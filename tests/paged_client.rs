@@ -21,7 +21,7 @@ async fn get_paged_vault_accounts() -> anyhow::Result<()> {
     while let Ok(Some(result)) = vs.try_next().await {
         if let Some(accounts) = result.accounts {
             tracing::info!("accounts {}", accounts.len());
-            tokio::time::sleep(Duration::from_millis(200)).await;
+            tokio::time::sleep(Duration::from_millis(50)).await;
         }
     }
     Ok(())
