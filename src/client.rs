@@ -1,18 +1,25 @@
-use crate::apis::vaults_api::VaultsApi;
-use crate::apis::Api;
-use crate::error::FireblocksError;
-use crate::jwt::{JwtSigningMiddleware, Signer};
-use crate::{error, ApiClient, Configuration, FIREBLOCKS_API, FIREBLOCKS_SANDBOX_API};
-use jsonwebtoken::EncodingKey;
-use reqwest::{Method, RequestBuilder, StatusCode};
-use serde::de::DeserializeOwned;
-use serde::Serialize;
-use std::borrow::Borrow;
-use std::fmt::{Debug, Display};
-use std::sync::Arc;
-use std::time::Duration;
-use tracing::debug;
-use url::Url;
+use {
+    crate::{
+        apis::{vaults_api::VaultsApi, Api},
+        error::{self, FireblocksError},
+        jwt::{JwtSigningMiddleware, Signer},
+        ApiClient,
+        Configuration,
+        FIREBLOCKS_API,
+        FIREBLOCKS_SANDBOX_API,
+    },
+    jsonwebtoken::EncodingKey,
+    reqwest::{Method, RequestBuilder, StatusCode},
+    serde::{de::DeserializeOwned, Serialize},
+    std::{
+        borrow::Borrow,
+        fmt::{Debug, Display},
+        sync::Arc,
+        time::Duration,
+    },
+    tracing::debug,
+    url::Url,
+};
 
 #[derive(Clone)]
 pub struct Client {

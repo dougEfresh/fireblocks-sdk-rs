@@ -1,8 +1,11 @@
-use std::borrow::Borrow;
-
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::fmt::{Debug, Display, Formatter};
-use std::str::FromStr;
+use {
+    serde::{Deserialize, Deserializer, Serialize, Serializer},
+    std::{
+        borrow::Borrow,
+        fmt::{Debug, Display, Formatter},
+        str::FromStr,
+    },
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EthNetwork {
@@ -17,7 +20,6 @@ pub enum Network {
     Test,
 }
 
-///
 /// A collection of common asset symbols for convenience
 ///
 /// ```rust
@@ -145,9 +147,16 @@ impl FromStr for Asset {
 
 #[cfg(test)]
 mod tests {
-    use crate::assets::{Asset, ASSET_DOGE, ASSET_DOGE_TEST, ASSET_ETH, ASSET_ETH_TEST};
-    use crate::{ASSET_BTC, ASSET_BTC_TEST, ASSET_SOL, ASSET_SOL_TEST};
-    use std::str::FromStr;
+    use {
+        crate::{
+            assets::{Asset, ASSET_DOGE, ASSET_DOGE_TEST, ASSET_ETH, ASSET_ETH_TEST},
+            ASSET_BTC,
+            ASSET_BTC_TEST,
+            ASSET_SOL,
+            ASSET_SOL_TEST,
+        },
+        std::str::FromStr,
+    };
 
     #[test]
     fn asset_from_string() -> anyhow::Result<()> {

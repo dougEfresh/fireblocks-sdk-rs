@@ -1,10 +1,12 @@
 mod setup;
-use apis::vaults_api::*;
-use fireblocks_sdk::*;
-use setup::CLIENT;
-use std::{sync::Arc, time::Duration};
-use tokio_stream::StreamExt;
-use tracing::info;
+use {
+    apis::vaults_api::*,
+    fireblocks_sdk::*,
+    setup::CLIENT,
+    std::{sync::Arc, time::Duration},
+    tokio_stream::StreamExt,
+    tracing::info,
+};
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 5)]
 async fn get_paged_vault_accounts() -> anyhow::Result<()> {

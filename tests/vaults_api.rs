@@ -1,8 +1,5 @@
 mod setup;
-use apis::vaults_api::*;
-use fireblocks_sdk::*;
-use setup::CLIENT;
-use tracing::info;
+use {apis::vaults_api::*, fireblocks_sdk::*, setup::CLIENT, tracing::info};
 
 #[tokio::test]
 async fn get_vault_account() -> anyhow::Result<()> {

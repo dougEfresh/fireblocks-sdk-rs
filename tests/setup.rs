@@ -1,10 +1,13 @@
-use std::sync::{Arc, Once, OnceLock};
-use std::time::Duration;
-use tokio::time;
-use tokio_stream::StreamExt;
-use tracing::warn;
-use tracing_subscriber::fmt::format::FmtSpan;
-use tracing_subscriber::EnvFilter;
+use {
+    std::{
+        sync::{Arc, Once, OnceLock},
+        time::Duration,
+    },
+    tokio::time,
+    tokio_stream::StreamExt,
+    tracing::warn,
+    tracing_subscriber::{fmt::format::FmtSpan, EnvFilter},
+};
 
 static INIT: Once = Once::new();
 pub static CLIENT: OnceLock<fireblocks_sdk::Client> = OnceLock::new();

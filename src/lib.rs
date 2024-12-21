@@ -7,15 +7,25 @@ pub(crate) mod jwt;
 mod log;
 mod paged_client;
 
-pub use crate::error::*;
-//pub use crate::types::PagingVaultRequestBuilder;
+// pub use crate::types::PagingVaultRequestBuilder;
 pub use assets::{
-    Asset, ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST,
+    Asset,
+    ASSET_BTC,
+    ASSET_BTC_TEST,
+    ASSET_ETH,
+    ASSET_ETH_TEST,
+    ASSET_SOL,
+    ASSET_SOL_TEST,
 };
-
-pub use apis::{configuration::ApiKey, configuration::Configuration, ApiClient};
-pub use client::{Client, ClientBuilder};
-pub use paged_client::{PagedClient, VaultStream};
+pub use {
+    crate::error::*,
+    apis::{
+        configuration::{ApiKey, Configuration},
+        ApiClient,
+    },
+    client::{Client, ClientBuilder},
+    paged_client::{PagedClient, VaultStream},
+};
 
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
 pub const FIREBLOCKS_SANDBOX_API: &str = "https://sandbox-api.fireblocks.io/v1";
@@ -27,7 +37,7 @@ pub mod apis;
 pub mod models;
 
 //#[cfg(test)]
-//mod tests {
+// mod tests {
 //  use std::sync::{Arc, Once, OnceLock};
 //  use std::time::Duration;
 //
@@ -125,9 +135,10 @@ pub mod models;
 //    assert!(!id.is_empty());
 //    assert!(!results.accounts.is_empty());
 //
-//    let params = PagingVaultRequestBuilder::new().min_threshold(&BigDecimal::from_str("1000000.00")?).build()?;
-//    let (results, id) = config.client().vaults(params).await?;
-//    assert!(!id.is_empty());
+//    let params =
+// PagingVaultRequestBuilder::new().min_threshold(&BigDecimal::from_str("
+// 1000000.00")?).build()?;    let (results, id) =
+// config.client().vaults(params).await?;    assert!(!id.is_empty());
 //    assert!(results.accounts.is_empty());
 //
 //    let params = PagingVaultRequestBuilder::new().limit(1).build()?;
@@ -140,8 +151,8 @@ pub mod models;
 //    assert_eq!(0, result.id);
 //    assert!(!result.assets.is_empty());
 //
-//    let _ = PagingVaultRequestBuilder::new().before("before").build(); // code coverage
-//    Ok(())
+//    let _ = PagingVaultRequestBuilder::new().before("before").build(); // code
+// coverage    Ok(())
 //  }
 //
 //  #[rstest::rstest]
@@ -150,12 +161,14 @@ pub mod models;
 //    if !config.is_ok() {
 //      return Ok(());
 //    }
-//    let params = PagingVaultRequestBuilder::new().name_prefix("Default").build()?;
+//    let params =
+// PagingVaultRequestBuilder::new().name_prefix("Default").build()?;
 //    let results = config.client().vaults(params).await?.0;
 //    assert!(!results.accounts.is_empty());
 //    assert_eq!(results.accounts[0].name, "Default");
 //
-//    let params = PagingVaultRequestBuilder::new().name_suffix("Default").build()?;
+//    let params =
+// PagingVaultRequestBuilder::new().name_suffix("Default").build()?;
 //    let results = config.client().vaults(params).await?.0;
 //    assert!(!results.accounts.is_empty());
 //    assert_eq!(results.accounts[0].name, "Default");
@@ -221,8 +234,8 @@ pub mod models;
 //    assert!(v.is_some());
 //    assert_eq!("200", v.unwrap().1);
 //
-//    let options = TransactionListBuilder::new().assets(&[ASSET_BTC_TEST, ASSET_SOL_TEST]).limit(200).build()?;
-//    if !config.is_ok() {
+//    let options = TransactionListBuilder::new().assets(&[ASSET_BTC_TEST,
+// ASSET_SOL_TEST]).limit(200).build()?;    if !config.is_ok() {
 //      return Ok(());
 //    }
 //    let c = config.client();
@@ -267,8 +280,8 @@ pub mod models;
 //    assert!(result.hidden_on_ui);
 //    assert!(result.id > 0);
 //
-//    let (address_response, id) = c.create_address(result.id, ASSET_SOL_TEST).await?;
-//    assert!(!id.is_empty());
+//    let (address_response, id) = c.create_address(result.id,
+// ASSET_SOL_TEST).await?;    assert!(!id.is_empty());
 //    assert!(!address_response.address.is_empty());
 //    assert!(!address_response.id.is_empty());
 //    let addr = address_response.address.clone();
@@ -278,15 +291,15 @@ pub mod models;
 //    assert_eq!(addr, address_response[0].address);
 //
 //    let page = PagingAddressRequestBuilder::new().limit(10).build()?;
-//    let (container, id) = c.addresses_paginated(result.id, "SOL_TEST", page).await?;
-//    assert!(!id.is_empty());
+//    let (container, id) = c.addresses_paginated(result.id, "SOL_TEST",
+// page).await?;    assert!(!id.is_empty());
 //    assert_eq!(1, container.addresses.len());
 //
 //    let rename = format!("{vault_name}-rename");
 //    c.rename_vault(result.id, &rename).await?;
 //
-//    PagingAddressRequestBuilder::new().limit(10).after("after").before("before").build()?; // code coverage
-//    c.vault_hide(result.id, false).await?;
+//    PagingAddressRequestBuilder::new().limit(10).after("after").before("
+// before").build()?; // code coverage    c.vault_hide(result.id, false).await?;
 //    c.vault_hide(result.id, true).await?;
 //    Ok(())
 //  }
@@ -305,10 +318,10 @@ pub mod models;
 //    assert!(!contract_response.id.is_empty());
 //
 //    let (addr_response, _) =
-//      c.contract_asset(&contract_response.id, ASSET_ETH_TEST, "0x9bb4d44e6963260a1850926e8f6beb8d5803836f").await?;
-//    assert_eq!(addr_response.id, ASSET_ETH_TEST);
-//    c.contract(&contract_response.id).await?;
-//    c.contract_delete(&id).await?;
+//      c.contract_asset(&contract_response.id, ASSET_ETH_TEST,
+// "0x9bb4d44e6963260a1850926e8f6beb8d5803836f").await?;    assert_eq!
+// (addr_response.id, ASSET_ETH_TEST);    c.contract(&contract_response.id).
+// await?;    c.contract_delete(&id).await?;
 //    c.contracts().await?;
 //    Ok(())
 //  }
@@ -327,8 +340,8 @@ pub mod models;
 //    assert!(!contract_response.id.is_empty());
 //
 //    let addr_response = c
-//      .external_wallet_asset(&contract_response.id, ASSET_ETH_TEST, "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")
-//      .await?
+//      .external_wallet_asset(&contract_response.id, ASSET_ETH_TEST,
+// "0x9bb4d44e6963260a1850926e8f6beb8d5803836f")      .await?
 //      .0;
 //    assert_eq!(addr_response.id, ASSET_ETH_TEST);
 //
@@ -336,8 +349,8 @@ pub mod models;
 //    assert!(!wallets.is_empty());
 //    c.external_wallet(&contract_response.id).await?;
 //    c.external_wallet_delete(&contract_response.id).await?;
-//    let found = c.internal_wallets().await?.0.into_iter().find(|w| w.id == contract_response.id);
-//    assert!(found.is_none());
+//    let found = c.internal_wallets().await?.0.into_iter().find(|w| w.id ==
+// contract_response.id);    assert!(found.is_none());
 //    Ok(())
 //  }
 //
@@ -367,22 +380,23 @@ pub mod models;
 //    assert!(!wallet.id.is_empty());
 //
 //    let addr_response =
-//      c.internal_wallet_asset(&wallet.id, ASSET_ETH_TEST, "0x9bb4d44e6963260a1850926e8f6beb8d5803836f").await?.0;
-//    assert_eq!(addr_response.id, ASSET_ETH_TEST);
+//      c.internal_wallet_asset(&wallet.id, ASSET_ETH_TEST,
+// "0x9bb4d44e6963260a1850926e8f6beb8d5803836f").await?.0;    assert_eq!
+// (addr_response.id, ASSET_ETH_TEST);
 //
 //    let wallets = c.internal_wallets().await?.0;
 //    assert!(!wallets.is_empty());
 //    c.internal_wallet(&wallet.id).await?;
 //    c.internal_wallet_delete(&wallet.id).await?;
-//    let found = c.internal_wallets().await?.0.into_iter().find(|w| w.id == wallet.id);
-//    assert!(found.is_none());
+//    let found = c.internal_wallets().await?.0.into_iter().find(|w| w.id ==
+// wallet.id);    assert!(found.is_none());
 //    Ok(())
 //  }
 //
 //  #[rstest::rstest]
 //  #[tokio::test]
-//  async fn test_create_transaction_whitelist(config: Config) -> color_eyre::Result<()> {
-//    if !config.is_ok() {
+//  async fn test_create_transaction_whitelist(config: Config) ->
+// color_eyre::Result<()> {    if !config.is_ok() {
 //      return Ok(());
 //    }
 //    if !config.create_tx {
@@ -390,12 +404,12 @@ pub mod models;
 //      return Ok(());
 //    }
 //    let c = config.client();
-//    let wallet = c.internal_wallets().await?.0.into_iter().find(|w| w.name == "test-whitelist");
-//    let id: String = match wallet {
+//    let wallet = c.internal_wallets().await?.0.into_iter().find(|w| w.name ==
+// "test-whitelist");    let id: String = match wallet {
 //      None => {
 //        let id = c.internal_wallet_create("test-whitelist").await?.0.id;
-//        c.internal_wallet_asset(&id, ASSET_SOL_TEST, "E4SfgGV2v9GLYsEkCQhrrnFbBcYmAiUZZbJ7swKGzZHJ").await?;
-//        id
+//        c.internal_wallet_asset(&id, ASSET_SOL_TEST,
+// "E4SfgGV2v9GLYsEkCQhrrnFbBcYmAiUZZbJ7swKGzZHJ").await?;        id
 //      },
 //      Some(w) => w.id,
 //    };
@@ -410,9 +424,9 @@ pub mod models;
 //      )
 //      .await?
 //      .0;
-//    c.poll_transaction(&tx.id, Duration::from_secs(50), Duration::from_secs(5), |t: &Transaction| {
-//      tracing::info!("{:#?}", t.status);
-//    })
+//    c.poll_transaction(&tx.id, Duration::from_secs(50),
+// Duration::from_secs(5), |t: &Transaction| {      tracing::info!("{:#?}",
+// t.status);    })
 //    .await?;
 //    Ok(())
 //  }
@@ -430,9 +444,10 @@ pub mod models;
 //
 //    let c = config.client();
 //
-//    let tx = c.create_transaction_vault(0, 1, ASSET_SOL_TEST, BigDecimal::from_str("0.001")?, None).await?.0;
-//    assert_eq!(tx.status, TransactionStatus::SUBMITTED);
-//    c.poll_transaction(&tx.id, Duration::from_secs(10), Duration::from_secs(5), |t: &Transaction| {
+//    let tx = c.create_transaction_vault(0, 1, ASSET_SOL_TEST,
+// BigDecimal::from_str("0.001")?, None).await?.0;    assert_eq!(tx.status,
+// TransactionStatus::SUBMITTED);    c.poll_transaction(&tx.id,
+// Duration::from_secs(10), Duration::from_secs(5), |t: &Transaction| {
 //      tracing::info!("{:#?}", t.status);
 //    })
 //    .await?;
@@ -449,10 +464,10 @@ pub mod models;
 //    let args = &TransactionArguments {
 //      asset_id: "SOL_TEST".to_string(),
 //      operation: TransactionOperation::TRANSFER,
-//      source: TransferPeerPath { id: Some("0".to_string()), ..Default::default() },
-//      destination: Some(DestinationTransferPeerPath { id: "4".to_string(), ..Default::default() }),
-//      amount: "0.001".to_string(),
-//      gas_price: None,
+//      source: TransferPeerPath { id: Some("0".to_string()),
+// ..Default::default() },      destination: Some(DestinationTransferPeerPath {
+// id: "4".to_string(), ..Default::default() }),      amount:
+// "0.001".to_string(),      gas_price: None,
 //      gas_limit: None,
 //      note: "created by fireblocks-sdk for rust".to_string(),
 //    };
@@ -485,8 +500,8 @@ pub mod models;
 //
 //  #[test]
 //  fn test_handle_not_present() -> color_eyre::Result<()> {
-//    let data = r#"{ "type": "VAULT_ACCOUNT","name": "jupiter","subType": ""}"#;
-//    let result: TransferPeerPath = serde_json::from_str(data)?;
+//    let data = r#"{ "type": "VAULT_ACCOUNT","name": "jupiter","subType":
+// ""}"#;    let result: TransferPeerPath = serde_json::from_str(data)?;
 //    assert!(result.id.is_none());
 //    Ok(())
 //  }
@@ -503,9 +518,9 @@ pub mod models;
 //      assert!(e.to_string().contains("wallet-connect-id not found"));
 //    }
 //
-//    if let Err(e) = c.wallet_connection_approve("wallet-connect-id", true).await {
-//      assert!(e.to_string().contains("wallet-connect-id not found"));
-//    }
+//    if let Err(e) = c.wallet_connection_approve("wallet-connect-id",
+// true).await {      assert!(e.to_string().contains("wallet-connect-id not
+// found"));    }
 //    Ok(())
 //  }
 //
@@ -549,8 +564,8 @@ pub mod models;
 //    Ok(())
 //  }
 //
-//  async fn transaction_stream(mut ts: TransactionStream) -> color_eyre::Result<()> {
-//    let mut counter = 0;
+//  async fn transaction_stream(mut ts: TransactionStream) ->
+// color_eyre::Result<()> {    let mut counter = 0;
 //    let mut after = Utc.with_ymd_and_hms(2022, 4, 6, 0, 1, 1).unwrap();
 //    while let Some(result) = ts.try_next().await? {
 //      tracing::info!("transactions {}", result.0.len());
@@ -576,12 +591,12 @@ pub mod models;
 //    let c = config.client();
 //    let result = c.hooks_resend().await;
 //    if let Err(e) = result {
-//      assert!(e.to_string().contains("Internal Fireblocks Error"), "{}", e.to_string());
-//    }
-//    match c.hooks_resend_tx("e01b1c68-2d26-45dc-bb02-4cc9152295e1", true, true).await {
-//      Err(e) => {
-//        assert!(e.to_string().contains("Internal Fireblocks Error"), "{}", e.to_string());
-//      },
+//      assert!(e.to_string().contains("Internal Fireblocks Error"), "{}",
+// e.to_string());    }
+//    match c.hooks_resend_tx("e01b1c68-2d26-45dc-bb02-4cc9152295e1", true,
+// true).await {      Err(e) => {
+//        assert!(e.to_string().contains("Internal Fireblocks Error"), "{}",
+// e.to_string());      },
 //      Ok(result) => {
 //        assert!(result.0.success);
 //      },
@@ -610,8 +625,8 @@ pub mod models;
 //      Err(_) => Ok(()),
 //      Ok(_) => match config.client {
 //        Some(_) => Ok(()),
-//        None => Err(format_err!("client is not configured and you are running in CI")),
-//      },
+//        None => Err(format_err!("client is not configured and you are running
+// in CI")),      },
 //    }
 //  }
 //}

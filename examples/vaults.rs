@@ -1,5 +1,7 @@
-use fireblocks_sdk::{apis::vaults_api::GetVaultAccountParams, ClientBuilder};
-use std::time::Duration;
+use {
+    fireblocks_sdk::{apis::vaults_api::GetVaultAccountParams, ClientBuilder},
+    std::time::Duration,
+};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

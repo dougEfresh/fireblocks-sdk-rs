@@ -1,6 +1,4 @@
-use crate::jwt;
-use thiserror::Error;
-use url::ParseError;
+use {crate::jwt, thiserror::Error, url::ParseError};
 
 #[derive(Debug, Error)]
 pub enum ParamError {
@@ -11,7 +9,7 @@ pub enum ParamError {
 #[derive(Debug, Error)]
 pub enum FireblocksError {
     //#[error(transparent)]
-    //RequestError(#[from] crate::apis::Error<_>),
+    // RequestError(#[from] crate::apis::Error<_>),
     #[error(transparent)]
     /// Thrown when Token fails
     TokenError(#[from] jsonwebtoken::errors::Error),

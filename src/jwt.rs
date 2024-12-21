@@ -1,17 +1,19 @@
-use async_trait::async_trait;
-use bytes::Bytes;
-use http::Extensions;
-use jsonwebtoken::{errors as jwterrors, Algorithm, EncodingKey, Header};
-use rand::Rng;
-use reqwest::Response;
-use reqwest_middleware::{Middleware, Next};
-use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
-use std::{
-    fmt::Debug,
-    time::{SystemTime, UNIX_EPOCH},
+use {
+    async_trait::async_trait,
+    bytes::Bytes,
+    http::Extensions,
+    jsonwebtoken::{errors as jwterrors, Algorithm, EncodingKey, Header},
+    rand::Rng,
+    reqwest::Response,
+    reqwest_middleware::{Middleware, Next},
+    serde::{Deserialize, Serialize},
+    sha2::{Digest, Sha256},
+    std::{
+        fmt::Debug,
+        time::{SystemTime, UNIX_EPOCH},
+    },
+    thiserror::Error,
 };
-use thiserror::Error;
 
 const EXPIRY: u64 = 55;
 
@@ -58,7 +60,8 @@ struct Claims<'a> {
     nonce: u64,
     /// The time at which the JWT was issued, in seconds since Epoch.
     iat: u64,
-    /// The expiration time on and after which the JWT must not be accepted for processing, in seconds since Epoch. Must be less than iat+30sec.
+    /// The expiration time on and after which the JWT must not be accepted for
+    /// processing, in seconds since Epoch. Must be less than iat+30sec.
     exp: u64,
     /// The API key
     sub: &'a str,

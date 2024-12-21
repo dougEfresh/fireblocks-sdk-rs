@@ -1,13 +1,17 @@
-use crate::apis::vaults_api::{GetPagedVaultAccountsError, GetPagedVaultAccountsParams};
-use crate::models::VaultAccountsPagedResponse;
-use crate::{Client, Epoch, FireblocksError, ParamError, QueryParams};
-use chrono::{TimeZone, Utc};
-use futures::future::BoxFuture;
-use futures::stream::FuturesUnordered;
-use futures::{FutureExt, Stream, StreamExt};
-use std::pin::Pin;
-use std::sync::Arc;
-use std::task::{Context, Poll};
+use {
+    crate::{
+        apis::vaults_api::{GetPagedVaultAccountsError, GetPagedVaultAccountsParams},
+        models::VaultAccountsPagedResponse,
+        Client, Epoch, FireblocksError, ParamError, QueryParams,
+    },
+    chrono::{TimeZone, Utc},
+    futures::{future::BoxFuture, stream::FuturesUnordered, FutureExt, Stream, StreamExt},
+    std::{
+        pin::Pin,
+        sync::Arc,
+        task::{Context, Poll},
+    },
+};
 
 #[derive(Clone)]
 pub struct PagedClient {
@@ -35,6 +39,7 @@ impl VaultStream {
             fut: FuturesUnordered::new(),
         }
     }
+
     fn build_params(&self) -> GetPagedVaultAccountsParams {
         GetPagedVaultAccountsParams::builder()
             .after(self.after.clone())
@@ -42,20 +47,19 @@ impl VaultStream {
             .build()
     }
 }
-//
-//pub struct TransactionStream {
+// pub struct TransactionStream {
 //    client: Arc<Client>,
 //    batch: u16,
 //    init: bool, // has the stream started?
 //    vault_id: i32,
 //    after: Epoch,
-//    is_source: bool, // are we streaming from source vault account or destination
-//    fut: FuturesUnordered<BoxFuture<'static, Result<Vec<Transaction>>>>,
+//    is_source: bool, // are we streaming from source vault account or
+// destination    fut: FuturesUnordered<BoxFuture<'static,
+// Result<Vec<Transaction>>>>,
 //}
-//
-//impl TransactionStream {
-//    fn from_source(client: Arc<Client>, batch: u16, vault_id: i32, after: Epoch) -> Self {
-//        Self {
+// impl TransactionStream {
+//    fn from_source(client: Arc<Client>, batch: u16, vault_id: i32, after:
+// Epoch) -> Self {        Self {
 //            client,
 //            batch,
 //            init: false,
@@ -66,8 +70,8 @@ impl VaultStream {
 //        }
 //    }
 //
-//    fn from_dest(client: Arc<Client>, batch: u16, vault_id: i32, after: Epoch) -> Self {
-//        Self {
+//    fn from_dest(client: Arc<Client>, batch: u16, vault_id: i32, after: Epoch)
+// -> Self {        Self {
 //            client,
 //            batch,
 //            init: false,
@@ -151,21 +155,20 @@ impl Stream for VaultStream {
         Poll::Pending
     }
 }
-//
-//impl Stream for TransactionStream {
+// impl Stream for TransactionStream {
 //    type Item = Result<Vec<Transaction>>;
 //
-//    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-//        if !self.init {
+//    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) ->
+// Poll<Option<Self::Item>> {        if !self.init {
 //            tracing::debug!("init tracing stream");
 //            self.init = true;
 //            let client = self.client.clone();
 //            let params = match self.build_params() {
 //                Ok(p) => p,
-//                Err(e) => return Poll::Ready(Some(Err(FireblocksError::from(e)))),
-//            };
-//            let fut = async move { client.transactions(params).await }.boxed();
-//            self.fut.push(fut);
+//                Err(e) => return
+// Poll::Ready(Some(Err(FireblocksError::from(e)))),            };
+//            let fut = async move { client.transactions(params).await
+// }.boxed();            self.fut.push(fut);
 //            cx.waker().wake_by_ref();
 //            return Poll::Pending;
 //        }
@@ -184,8 +187,8 @@ impl Stream for VaultStream {
 //                                    va[0].created_at,
 //                                    last.created_at
 //                                );
-//                                self.after = last.created_at + chrono::Duration::milliseconds(1);
-//                            }
+//                                self.after = last.created_at +
+// chrono::Duration::milliseconds(1);                            }
 //                        }
 //                        Err(e) => {
 //                            return Poll::Ready(Some(Err(e)));
@@ -220,18 +223,20 @@ impl PagedClient {
     /// Stream the vault accounts based on batch size
     ///
     /// ```
-    /// use std::sync::Arc;
-    /// use futures::TryStreamExt;
-    /// use fireblocks_sdk::{Client, PagedClient};
+    /// use {
+    ///     fireblocks_sdk::{Client, PagedClient},
+    ///     futures::TryStreamExt,
+    ///     std::sync::Arc,
+    /// };
     ///
     /// async fn vault_accounts(c: Client) -> color_eyre::Result<()> {
-    ///   let pc = PagedClient::new(Arc::new(c));
-    ///   let mut vault_stream = pc.vaults(100);
-    ///   while let Ok(Some(result)) = vault_stream.try_next().await {
-    ///     tracing::info!("accounts {}", result.0.accounts.len());
-    ///     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-    ///    }
-    ///   Ok(())
+    ///     let pc = PagedClient::new(Arc::new(c));
+    ///     let mut vault_stream = pc.vaults(100);
+    ///     while let Ok(Some(result)) = vault_stream.try_next().await {
+    ///         tracing::info!("accounts {}", result.0.accounts.len());
+    ///         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+    ///     }
+    ///     Ok(())
     /// }
     /// ```
     /// see [`Client::vaults`]
@@ -244,26 +249,26 @@ impl PagedClient {
     // Default date is 2022-04-06 if None provided
     //
     // ```
-    // use std::sync::Arc;
-    // use futures::TryStreamExt;
-    // use fireblocks_sdk::{Client, PagedClient};
+    // use {
+    //     fireblocks_sdk::{Client, PagedClient},
+    //     futures::TryStreamExt,
+    //     std::sync::Arc,
+    // };
     //
     // async fn transactions_paged(c: Client) -> color_eyre::Result<()> {
-    //   let pc = PagedClient::new(Arc::new(c));
-    //   let mut ts = pc.transactions_from_source(0, 100, None);
-    //   while let Ok(Some(result)) = ts.try_next().await {
-    //     tracing::info!("transactions {}", result.0.len());
-    //    }
-    //   Ok(())
+    //     let pc = PagedClient::new(Arc::new(c));
+    //     let mut ts = pc.transactions_from_source(0, 100, None);
+    //     while let Ok(Some(result)) = ts.try_next().await {
+    //         tracing::info!("transactions {}", result.0.len());
+    //     }
+    //     Ok(())
     // }
     // ```
     //
     // see
     // * [`Client::transactions`]
 
-    //
-    //
-    //pub fn transactions_from_source(
+    // pub fn transactions_from_source(
     //    &self,
     //    vault_id: i32,
     //    batch_size: u16,
@@ -277,10 +282,9 @@ impl PagedClient {
     //        after.unwrap_or(default_after),
     //    )
     //}
-    //
     //  Stream all the transactions from destination vault account id
     //  See [`self.transactions_from_source`]
-    //pub fn transactions_from_destination(
+    // pub fn transactions_from_destination(
     //    &self,
     //    vault_id: i32,
     //    batch_size: u16,
