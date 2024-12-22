@@ -17,7 +17,13 @@ pub use {
         ApiClient,
     },
     assets::{
-        Asset, ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST,
+        Asset,
+        ASSET_BTC,
+        ASSET_BTC_TEST,
+        ASSET_ETH,
+        ASSET_ETH_TEST,
+        ASSET_SOL,
+        ASSET_SOL_TEST,
     },
     client::{Client, ClientBuilder},
 };

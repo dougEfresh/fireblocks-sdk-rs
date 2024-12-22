@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Install stable
+      - name: Install nightl
         uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
