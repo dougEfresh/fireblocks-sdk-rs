@@ -124,7 +124,7 @@ pub struct JwtSigningMiddleware {
 }
 
 impl JwtSigningMiddleware {
-    pub fn new(signer: Signer) -> Self {
+    pub const fn new(signer: Signer) -> Self {
         Self { signer }
     }
 
@@ -143,34 +143,19 @@ impl Middleware for JwtSigningMiddleware {
         extensions: &mut Extensions,
         next: Next<'_>,
     ) -> reqwest_middleware::Result<Response> {
-        let query = if let Some(q) = req.url().query() {
-            format!("?{q}")
-        } else {
-            String::new()
-        };
-        // Get the path from the URL
+        let query = req
+            .url()
+            .query()
+            .map_or_else(String::new, |q| format!("?{q}"));
         let path = format!("{}{}", req.url().path(), query);
 
-        // Extract and hash the body if it exists
-        let body = if let Some(body) = req.body() {
-            if let Some(bytes) = body.as_bytes() {
-                // If body is already in bytes, use it directly
-                let body_hash = Self::calculate_body_hash(bytes);
-                Some(body_hash)
-            } else {
-                // For streaming bodies, we'd need to buffer them first
-                // This is a simplified example - you might want to handle
-                // different body types differently
-                None
-            }
-        } else {
-            None
-        };
-
-        let jwt = match body {
-            Some(body_hash) => self.signer.sign(&path, Some(body_hash)),
-            None => self.signer.sign::<()>(&path, None),
-        };
+        let body = req
+            .body()
+            .and_then(|body| body.as_bytes().map(Self::calculate_body_hash));
+        let jwt = body.map_or_else(
+            || self.signer.sign::<()>(&path, None),
+            |body_hash| self.signer.sign(&path, Some(body_hash)),
+        );
         let jwt = jwt.map_err(|e| {
             anyhow::format_err!("failed to sign payload for path {path} error:'{e}'")
         })?;
