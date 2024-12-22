@@ -5,11 +5,10 @@ mod client;
 pub mod error;
 pub(crate) mod jwt;
 mod log;
-#[cfg(feature = "paged")]
+#[cfg(feature = "page")]
 mod paged_client;
 
-// pub use crate::types::PagingVaultRequestBuilder;
-#[cfg(feature = "paged")]
+#[cfg(feature = "page")]
 pub use paged_client::{PagedClient, VaultStream};
 pub use {
     crate::error::*,
@@ -18,13 +17,7 @@ pub use {
         ApiClient,
     },
     assets::{
-        Asset,
-        ASSET_BTC,
-        ASSET_BTC_TEST,
-        ASSET_ETH,
-        ASSET_ETH_TEST,
-        ASSET_SOL,
-        ASSET_SOL_TEST,
+        Asset, ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST,
     },
     client::{Client, ClientBuilder},
 };
@@ -35,7 +28,9 @@ pub type Epoch = DateTime<Utc>;
 pub type Result<T> = std::result::Result<(T, String), FireblocksError>;
 pub type QueryParams = Vec<(String, String)>;
 
+#[allow(clippy::all, clippy::pedantic, clippy::nursery)]
 pub mod apis;
+#[allow(clippy::all, clippy::pedantic, clippy::nursery)]
 pub mod models;
 
 //#[cfg(test)]

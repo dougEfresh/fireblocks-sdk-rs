@@ -26,8 +26,8 @@ impl Middleware for LoggingMiddleware {
         );
         let _enter = span.enter();
         tracing::debug!("request started {:?}", req);
-        let res = next.run(req, extensions).await;
-        if let Ok(response) = &res {
+        let response = next.run(req, extensions).await;
+        if let Ok(response) = &response {
             let request_id = response
                 .headers()
                 .get("x-request-id")
@@ -36,6 +36,6 @@ impl Middleware for LoggingMiddleware {
                 .to_string();
             span.record("requestId", &request_id);
         }
-        res
+        response
     }
 }

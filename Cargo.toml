@@ -32,12 +32,13 @@ future_not_send = "allow"
 must_use_candidate = "allow"
 return_self_not_must_use = "allow"
 missing_errors_doc = "allow"
+option_if_let_else = "allow"
 
 [features]
-default = ["bon", "paged"]
+default = ["bon", "page"]
 rustls-tls = ["reqwest/rustls-tls"]
 bon = ["dep:bon"]
-paged = ["dep:bon"]
+page = ["bon"]
 
 [dependencies]
 anyhow = "1"

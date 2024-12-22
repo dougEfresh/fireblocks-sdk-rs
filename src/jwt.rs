@@ -175,10 +175,19 @@ impl Middleware for JwtSigningMiddleware {
             anyhow::format_err!("failed to sign payload for path {path} error:'{e}'")
         })?;
         // Add the Authorization header
-        req.headers_mut()
-            .insert("Authorization", format!("Bearer {}", jwt).parse().unwrap());
-        req.headers_mut()
-            .insert("X-API-Key", self.signer.api_key().parse().unwrap());
+        req.headers_mut().insert(
+            "Authorization",
+            format!("Bearer {jwt}")
+                .parse()
+                .expect("failed to parse HttpHeader for jwt"),
+        );
+        req.headers_mut().insert(
+            "X-API-Key",
+            self.signer
+                .api_key()
+                .parse()
+                .expect("could not create x-api-key header"),
+        );
 
         // Continue with the request chain
         next.run(req, extensions).await
