@@ -3,15 +3,13 @@ use {
         apis::{
             transactions_api::{GetTransactionsError, GetTransactionsParams},
             vaults_api::{GetPagedVaultAccountsError, GetPagedVaultAccountsParams},
+            ResponseContent,
         },
-        models::{TransactionResponse, VaultAccountsPagedResponse},
-        Client,
-        Epoch,
-        FireblocksError,
-        ParamError,
-        QueryParams,
+        models::{self, ErrorSchema, TransactionResponse, VaultAccountsPagedResponse},
+        Client, Epoch, FireblocksError, ParamError, QueryParams,
     },
-    chrono::{TimeZone, Utc},
+    anyhow::anyhow,
+    chrono::{offset::LocalResult, TimeZone, Utc},
     futures::{future::BoxFuture, stream::FuturesUnordered, FutureExt, Stream, StreamExt},
     std::{
         pin::Pin,
@@ -38,6 +36,7 @@ pub struct VaultStream {
     fut: FuturesUnordered<BoxFuture<'static, VaultResult>>,
 }
 
+/// Stream all vault accounts in batches
 impl VaultStream {
     fn new(client: Arc<Client>, batch: u16) -> Self {
         Self {
@@ -56,6 +55,8 @@ impl VaultStream {
             .build()
     }
 }
+
+/// Stream transactions from a vault account
 pub struct TransactionStream {
     client: Arc<Client>,
     batch: u16,
@@ -65,11 +66,12 @@ pub struct TransactionStream {
     is_source: bool, // are we streaming from source vault account or destination
     fut: FuturesUnordered<BoxFuture<'static, TransactionResult>>,
 }
-impl TransactionStream {
-    fn epoch(ts: &Epoch) -> String {
-        format!("{}", ts.timestamp_millis())
-    }
 
+const fn epoch(ts: &Epoch) -> i64 {
+    ts.timestamp_millis()
+}
+
+impl TransactionStream {
     fn from_source(client: Arc<Client>, batch: u16, vault_id: i32, after: Epoch) -> Self {
         Self {
             client,
@@ -98,7 +100,7 @@ impl TransactionStream {
         let builder = GetTransactionsParams::builder()
             .limit(self.batch.into())
             .order_by("createdAt".to_owned())
-            .after(Self::epoch(&self.after))
+            .after(epoch(&self.after).to_string())
             .sort("ASC".to_owned());
         if self.is_source {
             return builder.source_id(self.vault_id.to_string()).build();
@@ -195,9 +197,30 @@ impl Stream for TransactionStream {
                                     va[0].created_at,
                                     last.created_at
                                 );
-                                if let Some(_ca) = last.created_at {
-                                    todo!();
-                                    // self.after =
+                                if let Some(millis) = last.created_at {
+                                    let ts = match Utc.timestamp_millis_opt(millis as i64) {
+                                        LocalResult::Single(dt) => dt,
+                                        _ => {
+                                            let entity: GetTransactionsError =
+                                                GetTransactionsError::DefaultResponse(
+                                                    ErrorSchema {
+                                                        message: Some(format!(
+                                                            "invalid timestamp {millis}"
+                                                        )),
+                                                        code: Some(-1.0),
+                                                    },
+                                                );
+                                            let e = crate::apis::Error::ResponseError(
+                                                ResponseContent {
+                                                    status: reqwest::StatusCode::GONE,
+                                                    content: String::new(),
+                                                    entity: Some(entity),
+                                                },
+                                            );
+                                            return Poll::Ready(Some(Err(e)));
+                                        }
+                                    };
+                                    self.after = ts;
                                     // last.created_at +
                                     // chrono::Duration::milliseconds(1);
                                 }
@@ -224,7 +247,7 @@ impl Stream for TransactionStream {
         Poll::Pending
     }
 }
-//
+
 impl PagedClient {
     pub const fn new(client: Arc<Client>) -> Self {
         Self { client }
@@ -254,58 +277,48 @@ impl PagedClient {
         VaultStream::new(self.client.clone(), batch_size)
     }
 
-    // Stream all the transactions from source vault account id and after some date
-    //
-    // Default date is 2022-04-06 if None provided
-    //
-    // ```
-    // use {
-    //     fireblocks_sdk::{Client, PagedClient},
-    //     futures::TryStreamExt,
-    //     std::sync::Arc,
-    // };
-    //
-    // async fn transactions_paged(c: Client) -> color_eyre::Result<()> {
-    //     let pc = PagedClient::new(Arc::new(c));
-    //     let mut ts = pc.transactions_from_source(0, 100, None);
-    //     while let Ok(Some(result)) = ts.try_next().await {
-    //         tracing::info!("transactions {}", result.0.len());
-    //     }
-    //     Ok(())
-    // }
-    // ```
-    //
-    // see
-    // * [`Client::transactions`]
+    /// Stream all the transactions from source vault account id and after some date
+    ///
+    /// Default date is 2022-04-06 if None provided
+    ///
+    /// ```
+    /// use {
+    ///     fireblocks_sdk::{Client, PagedClient},
+    ///     futures::TryStreamExt,
+    ///     std::sync::Arc,
+    /// };
+    ///
+    /// async fn transactions_paged(c: Client) -> color_eyre::Result<()> {
+    ///     let pc = PagedClient::new(Arc::new(c));
+    ///     let mut ts = pc.transactions_from_source(0, 100, None);
+    ///     while let Ok(Some(result)) = ts.try_next().await {
+    ///         tracing::info!("transactions {}", result.0.len());
+    ///     }
+    ///     Ok(())
+    /// }
+    /// ```
+    ///
+    /// see
+    /// * [`Client::transactions`]
+    pub fn transactions_from_source(
+        &self,
+        vault_id: i32,
+        batch_size: u16,
+        after: Option<Epoch>,
+    ) -> TransactionStream {
+        let after = after.unwrap_or(Utc.with_ymd_and_hms(2022, 4, 6, 0, 1, 1).unwrap());
+        TransactionStream::from_source(self.client.clone(), batch_size, vault_id, after)
+    }
 
-    // pub fn transactions_from_source(
-    //    &self,
-    //    vault_id: i32,
-    //    batch_size: u16,
-    //    after: Option<Epoch>,
-    //) -> TransactionStream {
-    //    let default_after = Utc.with_ymd_and_hms(2022, 4, 6, 0, 1, 1).unwrap();
-    //    TransactionStream::from_source(
-    //        self.client.clone(),
-    //        batch_size,
-    //        vault_id,
-    //        after.unwrap_or(default_after),
-    //    )
-    //}
-    //  Stream all the transactions from destination vault account id
-    //  See [`self.transactions_from_source`]
-    // pub fn transactions_from_destination(
-    //    &self,
-    //    vault_id: i32,
-    //    batch_size: u16,
-    //    after: Option<Epoch>,
-    //) -> TransactionStream {
-    //    let default_after = Utc.with_ymd_and_hms(2022, 4, 6, 0, 1, 1).unwrap();
-    //    TransactionStream::from_dest(
-    //        self.client.clone(),
-    //        batch_size,
-    //        vault_id,
-    //        after.unwrap_or(default_after),
-    //    )
-    //}
+    ///  Stream all the transactions from destination vault account id
+    ///  See [`self.transactions_from_source`]
+    pub fn transactions_from_destination(
+        &self,
+        vault_id: i32,
+        batch_size: u16,
+        after: Option<Epoch>,
+    ) -> TransactionStream {
+        let after = after.unwrap_or(Utc.with_ymd_and_hms(2022, 4, 6, 0, 1, 1).unwrap());
+        TransactionStream::from_dest(self.client.clone(), batch_size, vault_id, after)
+    }
 }

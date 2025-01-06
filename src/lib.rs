@@ -9,7 +9,7 @@ mod log;
 mod paged_client;
 
 #[cfg(feature = "page")]
-pub use paged_client::{PagedClient, VaultStream};
+pub use paged_client::{PagedClient, TransactionStream, VaultStream};
 pub use {
     crate::error::*,
     apis::{
@@ -17,13 +17,7 @@ pub use {
         ApiClient,
     },
     assets::{
-        Asset,
-        ASSET_BTC,
-        ASSET_BTC_TEST,
-        ASSET_ETH,
-        ASSET_ETH_TEST,
-        ASSET_SOL,
-        ASSET_SOL_TEST,
+        Asset, ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST,
     },
     client::{Client, ClientBuilder},
 };
@@ -567,24 +561,7 @@ pub mod models;
 //    Ok(())
 //  }
 //
-//  async fn transaction_stream(mut ts: TransactionStream) ->
-// color_eyre::Result<()> {    let mut counter = 0;
-//    let mut after = Utc.with_ymd_and_hms(2022, 4, 6, 0, 1, 1).unwrap();
-//    while let Some(result) = ts.try_next().await? {
-//      tracing::info!("transactions {}", result.0.len());
-//      counter += 1;
-//      if counter > 5 {
-//        break;
-//      }
-//      if let Some(last) = result.0.last() {
-//        assert!(after < last.created_at);
-//        after = last.created_at;
-//      }
-//      time::sleep(Duration::from_millis(100)).await;
-//    }
-//    Ok(())
-//  }
-//
+
 //  #[rstest::rstest]
 //  #[tokio::test]
 //  async fn test_hooks(config: Config) -> color_eyre::Result<()> {
@@ -607,19 +584,6 @@ pub mod models;
 //    Ok(())
 //  }
 //
-//  #[rstest::rstest]
-//  #[tokio::test]
-//  async fn test_paged_transactions(config: Config) -> color_eyre::Result<()> {
-//    if !config.is_ok() {
-//      return Ok(());
-//    }
-//    let c = config.client();
-//    let pc = PagedClient::new(Arc::new(c));
-//    let ts = pc.transactions_from_source(0, 100, None);
-//    transaction_stream(ts).await?;
-//    let ts = pc.transactions_from_destination(0, 100, None);
-//    transaction_stream(ts).await
-//  }
 //
 //  #[rstest::rstest]
 //  #[test]
