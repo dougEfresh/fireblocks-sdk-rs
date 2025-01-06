@@ -1,4 +1,5 @@
 use {
+    fireblocks_sdk::Client,
     std::{
         sync::{Arc, Once, OnceLock},
         time::Duration,
@@ -10,7 +11,7 @@ use {
 };
 
 static INIT: Once = Once::new();
-pub static CLIENT: OnceLock<fireblocks_sdk::Client> = OnceLock::new();
+pub static CLIENT: OnceLock<Client> = OnceLock::new();
 
 #[allow(clippy::unwrap_used)]
 pub fn setup() {
@@ -36,9 +37,42 @@ pub fn setup() {
         let rsa_pem = key.unwrap().as_bytes().to_vec();
         if let Ok(c) = fireblocks_sdk::ClientBuilder::new(&api_key, &rsa_pem)
             .use_sandbox()
+            .with_timeout(Duration::from_secs(15))
             .build()
         {
             let _ = CLIENT.set(c);
         }
     });
+}
+
+#[rstest::fixture]
+pub fn config() -> Config {
+    setup();
+    Config::new()
+}
+
+pub struct Config {
+    client: Option<Client>,
+    #[allow(dead_code)]
+    create_tx: bool,
+}
+
+impl Config {
+    fn new() -> Self {
+        let create_tx = std::env::var("FIREBLOCKS_CREATE_TX").ok().is_some();
+        Self {
+            client: CLIENT.get().cloned(),
+            create_tx,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub const fn is_ok(&self) -> bool {
+        self.client.is_some()
+    }
+
+    #[allow(clippy::unwrap_used, dead_code)]
+    pub fn client(&self) -> Client {
+        self.client.as_ref().unwrap().clone()
+    }
 }

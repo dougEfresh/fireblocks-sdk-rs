@@ -31,3 +31,11 @@ files:
     templateType: SupportingFiles
     destinationFilename: d_app_connections_api.rs
     folder: src/models/d_app_connections_api.rs
+  custom/models/signed_message_signature.rs:
+    templateType: SupportingFiles
+    destinationFilename: signed_message_signature.rs
+    folder: src/models/signed_message_signature.rs
+  custom/models/unsigned_message.rs:
+    templateType: SupportingFiles
+    destinationFilename: unsigned_message.rs
+    folder: src/models/unsigned_message.rs

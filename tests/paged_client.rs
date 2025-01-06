@@ -1,5 +1,6 @@
 mod setup;
 use chrono::{TimeZone, Utc};
+use setup::{config, Config};
 use {
     apis::vaults_api::*,
     fireblocks_sdk::*,
@@ -14,7 +15,7 @@ async fn transaction_stream(mut ts: TransactionStream) -> anyhow::Result<()> {
     let mut after: f64 = Utc
         .with_ymd_and_hms(2022, 4, 6, 0, 1, 1)
         .unwrap()
-        .timestamp_millis();
+        .timestamp_millis() as f64;
 
     while let Some(result) = ts.try_next().await? {
         tracing::info!("transactions {}", result.len());
@@ -24,6 +25,7 @@ async fn transaction_stream(mut ts: TransactionStream) -> anyhow::Result<()> {
         }
         if let Some(last) = result.last() {
             if let Some(created) = last.created_at {
+                //tracing::info!("id={}", last.id);
                 assert!(after < created);
                 after = created;
             }
@@ -33,14 +35,14 @@ async fn transaction_stream(mut ts: TransactionStream) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[rstest::rstest]
 #[tokio::test(flavor = "multi_thread", worker_threads = 5)]
-async fn get_paged_vault_accounts() -> anyhow::Result<()> {
-    setup::setup();
-    let c = CLIENT.get();
-    if c.is_none() {
+async fn get_paged_vault_accounts(config: Config) -> anyhow::Result<()> {
+    if !config.is_ok() {
         return Ok(());
     }
-    let pc = PagedClient::new(Arc::new(c.unwrap().clone()));
+    let c = config.client();
+    let pc = PagedClient::new(Arc::new(c.clone()));
     let mut vs = pc.vaults(50);
 
     while let Ok(Some(result)) = vs.try_next().await {
@@ -52,15 +54,14 @@ async fn get_paged_vault_accounts() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[rstest::rstest]
 #[tokio::test(flavor = "multi_thread", worker_threads = 5)]
-async fn test_paged_transactions() -> anyhow::Result<()> {
-    setup::setup();
-    let c = CLIENT.get();
-    if c.is_none() {
+async fn test_paged_transactions(config: Config) -> anyhow::Result<()> {
+    if !config.is_ok() {
         return Ok(());
     }
-
-    let pc = PagedClient::new(Arc::new(c.unwrap().clone()));
+    let c = config.client();
+    let pc = PagedClient::new(Arc::new(c.clone()));
     let ts = pc.transactions_from_source(0, 100, None);
     transaction_stream(ts).await?;
     let ts = pc.transactions_from_destination(0, 100, None);

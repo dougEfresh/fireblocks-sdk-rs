@@ -15131,6 +15131,8 @@ components:
             - EIP712
             - TIP191
             - BTC_MESSAGE
+            - SOLANA_MESSAGE
+            - ETH_MESSAGE
       required:
         - content
     ExtraParameters:

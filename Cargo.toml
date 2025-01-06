@@ -74,6 +74,7 @@ tokio = { version = "1", features = [ "full"] }
 lazy_static = "1.4.0"
 dotenvy = { version = "0.15" }
 tokio-stream = {version = "0.1" }
+rstest = "0.24.0"
 
 [[test]]
 name = "vaults_api"

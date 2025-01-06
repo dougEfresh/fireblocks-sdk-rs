@@ -101,6 +101,7 @@ impl TransactionStream {
             .limit(self.batch.into())
             .order_by("createdAt".to_owned())
             .after(epoch(&self.after).to_string())
+            .status(models::TransactionStatus::Completed)
             .sort("ASC".to_owned());
         if self.is_source {
             return builder.source_id(self.vault_id.to_string()).build();
@@ -198,7 +199,7 @@ impl Stream for TransactionStream {
                                     last.created_at
                                 );
                                 if let Some(millis) = last.created_at {
-                                    let ts = match Utc.timestamp_millis_opt(millis as i64) {
+                                    let ts = match Utc.timestamp_millis_opt(millis as i64 + 1) {
                                         LocalResult::Single(dt) => dt,
                                         _ => {
                                             let entity: GetTransactionsError =

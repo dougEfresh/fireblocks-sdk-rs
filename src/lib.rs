@@ -79,48 +79,7 @@ pub mod models;
 //    });
 //  }
 //
-//  #[rstest::fixture]
-//  fn config() -> Config {
-//    setup();
-//    Config::new()
-//  }
-//
-//  pub struct Config {
-//    client: Option<Client>,
-//    create_tx: bool,
-//  }
-//
-//  impl Config {
-//    fn new() -> Self {
-//      let keys = KEYS.get();
-//      let client: Option<Client> = match keys {
-//        None => None,
-//        Some((api_key, path)) => {
-//          let rsa_pem = path.as_bytes().to_vec();
-//          ClientBuilder::new(api_key, &rsa_pem)
-//            .use_sandbox()
-//            .with_sandbox() // code coverage
-//            .with_user_agent("fireblocks-sdk-rs test")
-//            .with_timeout(Duration::from_secs(30))
-//            .with_connect_timeout(Duration::from_secs(5))
-//            .build()
-//            .ok()
-//        },
-//      };
-//      let create_tx = std::env::var("FIREBLOCKS_CREATE_TX").ok().is_some();
-//      Self { client, create_tx }
-//    }
-//
-//    const fn is_ok(&self) -> bool {
-//      self.client.is_some()
-//    }
-//
-//    #[allow(clippy::unwrap_used)]
-//    fn client(&self) -> Client {
-//      self.client.as_ref().unwrap().clone()
-//    }
-//  }
-//
+
 //  #[rstest::rstest]
 //  #[tokio::test]
 //  async fn test_vaults(config: Config) -> color_eyre::Result<()> {
