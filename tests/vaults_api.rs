@@ -62,12 +62,10 @@ async fn test_vault_names(config: &Config) -> anyhow::Result<()> {
 #[rstest::rstest]
 #[test]
 fn check_ci(config: &Config) -> anyhow::Result<()> {
-    if std::env::var("CI").is_ok() {
-        if !config.is_ok() {
-            return Err(anyhow::format_err!(
-                "client is not configured and you are running in CI"
-            ));
-        }
+    if std::env::var("CI").is_ok() && !config.is_ok() {
+        return Err(anyhow::format_err!(
+            "client is not configured and you are running in CI"
+        ));
     }
     Ok(())
 }
