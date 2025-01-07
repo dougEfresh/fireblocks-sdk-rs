@@ -8,7 +8,7 @@ use {
 
 #[rstest::rstest]
 #[tokio::test]
-async fn get_transactions(config: Config) -> anyhow::Result<()> {
+async fn get_transactions(config: &Config) -> anyhow::Result<()> {
     if !config.is_ok() {
         return Ok(());
     }
@@ -22,6 +22,6 @@ async fn get_transactions(config: Config) -> anyhow::Result<()> {
         .source_id("0".to_string())
         .build();
     let result = c.transactions_api().get_transactions(params).await?;
-    assert!(result.len() > 0);
+    assert!(!result.is_empty());
     Ok(())
 }

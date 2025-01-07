@@ -17,13 +17,7 @@ pub use {
         ApiClient,
     },
     assets::{
-        Asset,
-        ASSET_BTC,
-        ASSET_BTC_TEST,
-        ASSET_ETH,
-        ASSET_ETH_TEST,
-        ASSET_SOL,
-        ASSET_SOL_TEST,
+        Asset, ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST,
     },
     client::{Client, ClientBuilder},
 };
@@ -50,45 +44,17 @@ pub mod models;
 //  use crate::{Client, ClientBuilder, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL};
 //  use bigdecimal::BigDecimal;
 //  use chrono::{TimeZone, Utc};
-//  use color_eyre::eyre::format_err;
+//  use anyhow::eyre::format_err;
 //  use tokio::time;
 //  use tokio_stream::StreamExt;
 //  use tracing::warn;
 //  use tracing_subscriber::fmt::format::FmtSpan;
 //  use tracing_subscriber::EnvFilter;
 //
-//  static INIT: Once = Once::new();
-//  static KEYS: OnceLock<(String, String)> = OnceLock::new();
-//
-//  #[allow(clippy::unwrap_used)]
-//  fn setup() {
-//    INIT.call_once(|| {
-//      color_eyre::install().unwrap();
-//      tracing_subscriber::fmt()
-//        .with_target(true)
-//        .with_level(true)
-//        .with_span_events(FmtSpan::CLOSE)
-//        .with_env_filter(EnvFilter::from_default_env())
-//        .init();
-//
-//      let env = dotenvy::dotenv();
-//      if env.is_err() {
-//        warn!("no .env file");
-//      }
-//
-//      let api_key: Option<String> = std::env::var("FIREBLOCKS_API_KEY").ok();
-//      let path: Option<String> = std::env::var("FIREBLOCKS_SECRET").ok();
-//      if api_key.is_none() || path.is_none() {
-//        return;
-//      }
-//      let _ = KEYS.set((api_key.unwrap(), path.unwrap()));
-//    });
-//  }
-//
 
 //  #[rstest::rstest]
 //  #[tokio::test]
-//  async fn test_vaults(config: Config) -> color_eyre::Result<()> {
+//  async fn test_vaults(config: Config) -> anyhow::Result<()> {
 //    if !config.is_ok() {
 //      return Ok(());
 //    }
@@ -117,50 +83,13 @@ pub mod models;
 // coverage    Ok(())
 //  }
 //
-//  #[rstest::rstest]
-//  #[tokio::test]
-//  async fn test_vault_names(config: Config) -> color_eyre::Result<()> {
-//    if !config.is_ok() {
-//      return Ok(());
-//    }
-//    let params =
-// PagingVaultRequestBuilder::new().name_prefix("Default").build()?;
-//    let results = config.client().vaults(params).await?.0;
-//    assert!(!results.accounts.is_empty());
-//    assert_eq!(results.accounts[0].name, "Default");
-//
-//    let params =
-// PagingVaultRequestBuilder::new().name_suffix("Default").build()?;
-//    let results = config.client().vaults(params).await?.0;
-//    assert!(!results.accounts.is_empty());
-//    assert_eq!(results.accounts[0].name, "Default");
-//    Ok(())
-//  }
-//
 //  fn vault_name() -> String {
 //    format!("z-test-{}", Utc::now().timestamp_millis())
 //  }
-//
 //  #[rstest::rstest]
 //  #[tokio::test]
 //  #[allow(clippy::unwrap_used)]
-//  async fn test_supported_assets(config: Config) -> color_eyre::Result<()> {
-//    if !config.is_ok() {
-//      return Ok(());
-//    }
-//    let c = config.client();
-//
-//    let assets = c.supported_assets().await?.0;
-//    assert!(!assets.is_empty());
-//    let found = assets.iter().find(|a| a.id == ASSET_BTC_TEST);
-//    assert!(found.is_some());
-//    Ok(())
-//  }
-//
-//  #[rstest::rstest]
-//  #[tokio::test]
-//  #[allow(clippy::unwrap_used)]
-//  async fn test_transaction_list(config: Config) -> color_eyre::Result<()> {
+//  async fn test_transaction_list(config: Config) -> anyhow::Result<()> {
 //    let after = Utc::now();
 //    let before = Utc::now();
 //    // test all options
@@ -211,7 +140,7 @@ pub mod models;
 //
 //  #[rstest::rstest]
 //  #[tokio::test]
-//  async fn test_assets(config: Config) -> color_eyre::Result<()> {
+//  async fn test_assets(config: Config) -> anyhow::Result<()> {
 //    if !config.is_ok() {
 //      return Ok(());
 //    }
@@ -223,7 +152,7 @@ pub mod models;
 //
 //  #[rstest::rstest]
 //  #[tokio::test]
-//  async fn test_create_vaults(config: Config) -> color_eyre::Result<()> {
+//  async fn test_create_vaults(config: Config) -> anyhow::Result<()> {
 //    if !config.is_ok() {
 //      return Ok(());
 //    }
@@ -268,7 +197,7 @@ pub mod models;
 //
 //  #[rstest::rstest]
 //  #[tokio::test]
-//  async fn test_wallet_contract(config: Config) -> color_eyre::Result<()> {
+//  async fn test_wallet_contract(config: Config) -> anyhow::Result<()> {
 //    if !config.is_ok() {
 //      return Ok(());
 //    }
@@ -290,7 +219,7 @@ pub mod models;
 //
 //  #[rstest::rstest]
 //  #[tokio::test]
-//  async fn test_external_wallet(config: Config) -> color_eyre::Result<()> {
+//  async fn test_external_wallet(config: Config) -> anyhow::Result<()> {
 //    if !config.is_ok() {
 //      return Ok(());
 //    }
@@ -318,7 +247,7 @@ pub mod models;
 //
 //  #[rstest::rstest]
 //  #[tokio::test]
-//  async fn test_internal_wallet(config: Config) -> color_eyre::Result<()> {
+//  async fn test_internal_wallet(config: Config) -> anyhow::Result<()> {
 //    if !config.is_ok() {
 //      return Ok(());
 //    }
@@ -358,7 +287,7 @@ pub mod models;
 //  #[rstest::rstest]
 //  #[tokio::test]
 //  async fn test_create_transaction_whitelist(config: Config) ->
-// color_eyre::Result<()> {    if !config.is_ok() {
+// anyhow::Result<()> {    if !config.is_ok() {
 //      return Ok(());
 //    }
 //    if !config.create_tx {
@@ -395,7 +324,7 @@ pub mod models;
 //
 //  #[rstest::rstest]
 //  #[tokio::test]
-//  async fn test_create_transaction(config: Config) -> color_eyre::Result<()> {
+//  async fn test_create_transaction(config: Config) -> anyhow::Result<()> {
 //    if !config.is_ok() {
 //      return Ok(());
 //    }
@@ -440,7 +369,7 @@ pub mod models;
 //
 //  #[rstest::rstest]
 //  #[tokio::test]
-//  async fn test_estimate_fees(config: Config) -> color_eyre::Result<()> {
+//  async fn test_estimate_fees(config: Config) -> anyhow::Result<()> {
 //    if !config.is_ok() {
 //      return Ok(());
 //    }
@@ -461,7 +390,7 @@ pub mod models;
 //  }
 //
 //  #[test]
-//  fn test_handle_not_present() -> color_eyre::Result<()> {
+//  fn test_handle_not_present() -> anyhow::Result<()> {
 //    let data = r#"{ "type": "VAULT_ACCOUNT","name": "jupiter","subType":
 // ""}"#;    let result: TransferPeerPath = serde_json::from_str(data)?;
 //    assert!(result.id.is_none());
@@ -470,25 +399,7 @@ pub mod models;
 //
 //  #[rstest::rstest]
 //  #[tokio::test]
-//  async fn test_wallet_connections(config: Config) -> color_eyre::Result<()> {
-//    if !config.is_ok() {
-//      return Ok(());
-//    }
-//    let c = config.client();
-//    c.wallet_connections().await?;
-//    if let Err(e) = c.wallet_connection_delete("wallet-connect-id").await {
-//      assert!(e.to_string().contains("wallet-connect-id not found"));
-//    }
-//
-//    if let Err(e) = c.wallet_connection_approve("wallet-connect-id",
-// true).await {      assert!(e.to_string().contains("wallet-connect-id not
-// found"));    }
-//    Ok(())
-//  }
-//
-//  #[rstest::rstest]
-//  #[tokio::test]
-//  async fn test_staking(config: Config) -> color_eyre::Result<()> {
+//  async fn test_staking(config: Config) -> anyhow::Result<()> {
 //    if !config.is_ok() {
 //      return Ok(());
 //    }
@@ -511,7 +422,7 @@ pub mod models;
 //
 //  #[rstest::rstest]
 //  #[tokio::test]
-//  async fn test_paged_vaults(config: Config) -> color_eyre::Result<()> {
+//  async fn test_paged_vaults(config: Config) -> anyhow::Result<()> {
 //    if !config.is_ok() {
 //      return Ok(());
 //    }
@@ -529,7 +440,7 @@ pub mod models;
 
 //  #[rstest::rstest]
 //  #[tokio::test]
-//  async fn test_hooks(config: Config) -> color_eyre::Result<()> {
+//  async fn test_hooks(config: Config) -> anyhow::Result<()> {
 //    if !config.is_ok() {
 //      return Ok(());
 //    }
@@ -552,7 +463,7 @@ pub mod models;
 //
 //  #[rstest::rstest]
 //  #[test]
-//  fn check_ci(config: Config) -> color_eyre::Result<()> {
+//  fn check_ci(config: Config) -> anyhow::Result<()> {
 //    match std::env::var("CI") {
 //      Err(_) => Ok(()),
 //      Ok(_) => match config.client {

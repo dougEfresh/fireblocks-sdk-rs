@@ -39,3 +39,7 @@ files:
     templateType: SupportingFiles
     destinationFilename: unsigned_message.rs
     folder: src/models/unsigned_message.rs
+  custom/models/vault_accounts_paged_response.rs:
+    templateType: SupportingFiles
+    destinationFilename: vault_accounts_paged_response.rs
+    folder: src/models/vault_accounts_paged_response.rs

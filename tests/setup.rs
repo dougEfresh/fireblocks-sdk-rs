@@ -13,7 +13,7 @@ use {
 static INIT: Once = Once::new();
 pub static CLIENT: OnceLock<Client> = OnceLock::new();
 
-#[allow(clippy::unwrap_used)]
+#[allow(clippy::unwrap_used, clippy::missing_panics_doc)]
 pub fn setup() {
     INIT.call_once(|| {
         tracing_subscriber::fmt()
@@ -46,6 +46,7 @@ pub fn setup() {
 }
 
 #[rstest::fixture]
+#[once]
 pub fn config() -> Config {
     setup();
     Config::new()
@@ -71,7 +72,7 @@ impl Config {
         self.client.is_some()
     }
 
-    #[allow(clippy::unwrap_used, dead_code)]
+    #[allow(clippy::unwrap_used, dead_code, clippy::missing_panics_doc)]
     pub fn client(&self) -> Client {
         self.client.as_ref().unwrap().clone()
     }

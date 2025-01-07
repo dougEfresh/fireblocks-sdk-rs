@@ -29,7 +29,7 @@ pub enum Network {
 /// async fn asset(client: Client) -> color_eyre::Result<()> {
 ///  let (response, request_id)  = client.create_address(0, ASSET_SOL ).await?;
 ///  // same call but with string arg: let (response, request_id)  = client.create_address(0, "SOL" ).await?;
-///  println!("Requst id: {request_id}, {response:#?}");
+///  println!("Request id: {request_id}, {response:#?}");
 ///
 /// // create a new sh*tcoin
 /// assert_eq!("sh*tcoin", Asset::new("sh*tcoin").to_string());

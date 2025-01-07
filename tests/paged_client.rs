@@ -11,10 +11,10 @@ use {
 
 async fn transaction_stream(mut ts: TransactionStream) -> anyhow::Result<()> {
     let mut counter = 0;
-    let mut after: f64 = Utc
+    let mut after = Utc
         .with_ymd_and_hms(2022, 4, 6, 0, 1, 1)
         .unwrap()
-        .timestamp_millis() as f64;
+        .timestamp_millis();
 
     while let Some(result) = ts.try_next().await? {
         tracing::info!("transactions {}", result.len());
@@ -35,8 +35,9 @@ async fn transaction_stream(mut ts: TransactionStream) -> anyhow::Result<()> {
 }
 
 #[rstest::rstest]
-#[tokio::test(flavor = "multi_thread", worker_threads = 5)]
-async fn get_paged_vault_accounts(config: Config) -> anyhow::Result<()> {
+#[tokio::test]
+//#[tokio::test(flavor = "multi_thread", worker_threads = 5)]
+async fn get_paged_vault_accounts(config: &Config) -> anyhow::Result<()> {
     if !config.is_ok() {
         return Ok(());
     }
@@ -45,17 +46,16 @@ async fn get_paged_vault_accounts(config: Config) -> anyhow::Result<()> {
     let mut vs = pc.vaults(50);
 
     while let Ok(Some(result)) = vs.try_next().await {
-        if let Some(accounts) = result.accounts {
-            tracing::info!("accounts {}", accounts.len());
-            tokio::time::sleep(Duration::from_millis(50)).await;
-        }
+        tracing::info!("accounts {}", result.accounts.len());
+        tokio::time::sleep(Duration::from_millis(50)).await;
     }
     Ok(())
 }
 
 #[rstest::rstest]
-#[tokio::test(flavor = "multi_thread", worker_threads = 5)]
-async fn test_paged_transactions(config: Config) -> anyhow::Result<()> {
+#[tokio::test]
+//#[tokio::test(flavor = "multi_thread", worker_threads = 5)]
+async fn test_paged_transactions(config: &Config) -> anyhow::Result<()> {
     if !config.is_ok() {
         return Ok(());
     }

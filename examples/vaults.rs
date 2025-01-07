@@ -18,6 +18,6 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let vault_account = client.vaults_api().get_vault_account(params).await?;
-    println!("vault account: {:#?}", vault_account);
+    println!("vault account: {vault_account:#?}");
     Ok(())
 }

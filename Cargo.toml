@@ -78,3 +78,19 @@ rstest = "0.24.0"
 
 [[test]]
 name = "vaults_api"
+
+[[test]]
+name = "paged_client"
+
+[[test]]
+name = "supported_assets"
+
+[[test]]
+name = "transactions_api"
+
+[[test]]
+name = "wallet_connect"
+
+[[test]]
+name = "staking"
+
