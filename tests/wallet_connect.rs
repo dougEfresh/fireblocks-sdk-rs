@@ -1,9 +1,11 @@
 mod setup;
-use fireblocks_sdk::{
-    apis::d_app_connections_api::{RemoveParams, SubmitParams},
-    models::RespondToConnectionRequest,
+use {
+    fireblocks_sdk::{
+        apis::d_app_connections_api::{RemoveParams, SubmitParams},
+        models::RespondToConnectionRequest,
+    },
+    setup::{config, Config},
 };
-use setup::{config, Config};
 
 #[rstest::rstest]
 #[tokio::test]

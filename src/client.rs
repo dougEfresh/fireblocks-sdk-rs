@@ -1,12 +1,17 @@
 use {
     crate::{
         apis::{
-            d_app_connections_api::DAppConnectionsApi, transactions_api::TransactionsApi,
-            vaults_api::VaultsApi, Api,
+            d_app_connections_api::DAppConnectionsApi,
+            transactions_api::TransactionsApi,
+            vaults_api::VaultsApi,
+            Api,
         },
         error::{self, FireblocksError},
         jwt::{JwtSigningMiddleware, Signer},
-        ApiClient, Configuration, FIREBLOCKS_API, FIREBLOCKS_SANDBOX_API,
+        ApiClient,
+        Configuration,
+        FIREBLOCKS_API,
+        FIREBLOCKS_SANDBOX_API,
     },
     jsonwebtoken::EncodingKey,
     reqwest::{Method, RequestBuilder, StatusCode},
@@ -147,6 +152,7 @@ impl Client {
     pub fn vaults_api(&self) -> &dyn VaultsApi {
         self.api_client.vaults_api()
     }
+
     pub fn wallet_connect_api(&self) -> &dyn DAppConnectionsApi {
         self.api_client.d_app_connections_api()
     }
