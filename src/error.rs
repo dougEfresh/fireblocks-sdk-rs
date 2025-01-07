@@ -1,4 +1,8 @@
-use {crate::jwt, thiserror::Error, url::ParseError};
+use {
+    crate::{apis::transactions_api::GetTransactionsError, jwt},
+    thiserror::Error,
+    url::ParseError,
+};
 
 #[derive(Debug, Error)]
 pub enum ParamError {
@@ -82,4 +86,9 @@ pub enum FireblocksError {
         code: u16,
         text: String,
     },
+
+    //#[error("Fetch transaction error {0}")]
+    // FetchTransactionError(crate::apis::Error<GetTransactionsError>),
+    #[error(transparent)]
+    FetchTransactionError(#[from] crate::apis::Error<GetTransactionsError>),
 }

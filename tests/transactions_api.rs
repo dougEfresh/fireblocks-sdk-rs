@@ -1,6 +1,10 @@
 mod setup;
-use setup::{config, Config};
-use {apis::transactions_api::*, fireblocks_sdk::*, setup::CLIENT, tracing::info};
+use {
+    apis::transactions_api::*,
+    fireblocks_sdk::*,
+    setup::{config, Config, CLIENT},
+    tracing::info,
+};
 
 #[rstest::rstest]
 #[tokio::test]

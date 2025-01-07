@@ -20,7 +20,7 @@ pub struct UnsignedMessage {
     /// required.
     #[serde(rename = "content")]
     pub content: serde_json::Value,
-    //String,
+    // String,
     /// BIP44 address index
     #[serde(rename = "bip44addressIndex", skip_serializing_if = "Option::is_none")]
     pub bip44address_index: Option<i32>,
@@ -40,6 +40,7 @@ pub struct UnsignedMessage {
 
 impl UnsignedMessage {
     pub fn new(content: String) -> UnsignedMessage {
+        #[allow(clippy::unwrap_used)]
         let content: serde_json::Value = serde_json::to_value(content).unwrap();
         UnsignedMessage {
             pre_hash: None,

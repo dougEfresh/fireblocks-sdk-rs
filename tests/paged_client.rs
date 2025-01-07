@@ -1,10 +1,9 @@
 mod setup;
-use chrono::{TimeZone, Utc};
-use setup::{config, Config};
 use {
     apis::vaults_api::*,
+    chrono::{TimeZone, Utc},
     fireblocks_sdk::*,
-    setup::CLIENT,
+    setup::{config, Config, CLIENT},
     std::{sync::Arc, time::Duration},
     tokio_stream::StreamExt,
     tracing::info,
@@ -25,7 +24,7 @@ async fn transaction_stream(mut ts: TransactionStream) -> anyhow::Result<()> {
         }
         if let Some(last) = result.last() {
             if let Some(created) = last.created_at {
-                //tracing::info!("id={}", last.id);
+                // tracing::info!("id={}", last.id);
                 assert!(after < created);
                 after = created;
             }

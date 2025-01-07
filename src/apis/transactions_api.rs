@@ -748,10 +748,10 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            let v: serde_json::Value = serde_json::from_str(&local_var_content).unwrap();
-            let v: String = serde_json::to_string_pretty(&v).unwrap();
-            //tracing::error!("\n{v}\n");
-            serde_json::from_str(&v).map_err(Error::from)
+            // let v: serde_json::Value = serde_json::from_str(&local_var_content).unwrap();
+            // let v: String = serde_json::to_string_pretty(&v).unwrap();
+            // tracing::error!("\n{v}\n");
+            serde_json::from_str(&local_var_content).map_err(Error::from)
         } else {
             let local_var_entity: Option<GetTransactionsError> =
                 serde_json::from_str(&local_var_content).ok();

@@ -17,7 +17,13 @@ pub use {
         ApiClient,
     },
     assets::{
-        Asset, ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST,
+        Asset,
+        ASSET_BTC,
+        ASSET_BTC_TEST,
+        ASSET_ETH,
+        ASSET_ETH_TEST,
+        ASSET_SOL,
+        ASSET_SOL_TEST,
     },
     client::{Client, ClientBuilder},
 };
@@ -25,7 +31,7 @@ pub use {
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
 pub const FIREBLOCKS_SANDBOX_API: &str = "https://sandbox-api.fireblocks.io/v1";
 pub type Epoch = DateTime<Utc>;
-pub type Result<T> = std::result::Result<(T, String), FireblocksError>;
+pub type Result<T> = std::result::Result<T, FireblocksError>;
 pub type QueryParams = Vec<(String, String)>;
 
 #[allow(clippy::all, clippy::pedantic, clippy::nursery)]

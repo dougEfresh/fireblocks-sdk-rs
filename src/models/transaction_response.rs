@@ -111,7 +111,7 @@ pub struct TransactionResponse {
     pub network_records: Option<Vec<models::NetworkRecord>>,
     /// The transaction’s creation date and time, in unix timestamp.
     #[serde(rename = "createdAt", skip_serializing_if = "Option::is_none")]
-    pub created_at: Option<f64>,
+    pub created_at: Option<i64>,
     /// The transaction’s last update date and time, in unix timestamp.
     #[serde(rename = "lastUpdated", skip_serializing_if = "Option::is_none")]
     pub last_updated: Option<f64>,
