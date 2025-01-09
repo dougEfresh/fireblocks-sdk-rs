@@ -17,14 +17,13 @@
   </a>
 </div>
 
-
 # Overview
 
 `fireblocks_sdk` is an async library for the Fireblocks [API](https://docs.fireblocks.com/api/swagger-ui/#)
 
-!!!! Note this is community driven project and not affiliated with [Fireblocks](https://fireblocks.io) !!!!! 
+!!!! Note this is community driven project and not affiliated with [Fireblocks](https://fireblocks.io) !!!!!
 
-# Getting Started 
+# Getting Started
 
 See developer [portal](https://developers.fireblocks.com/docs/introduction) and sign up for a [sandbox](https://developers.fireblocks.com/docs/sandbox-quickstart) account
 
@@ -36,8 +35,13 @@ use std::time::Duration;
 
 async fn vaults() -> color_eyre::Result<()> {
   let api_key = std::env::var("FIREBLOCKS_API_KEY")?;
-  let secret = std::env::var("FIREBLOCKS_SECRET")?;
+  let secret_file = std::env::var("FIREBLOCKS_SECRET")?;
+  let mut file = File::open(secret_file).expect("file not found");
+  let mut secret: String = String::new();
+  file.read_to_string(&mut secret)
+      .expect("something went wrong reading the file");
   let client = ClientBuilder::new(&api_key, &secret.into_bytes())
+    .with_sandbox()
     .with_timeout(Duration::from_secs(10))
     .with_connect_timeout(Duration::from_secs(5))
     .build()?;
@@ -52,15 +56,19 @@ async fn vaults() -> color_eyre::Result<()> {
 # Development
 
 Create a .env file
+
 ```shell
 cp .env-sameple .env
 ```
+
 Edit .env and configure your API and secret key
 
 Run tests:
+
 ```shell
 cargo test
 ```
+
 ---
 
 # Supported [Endpoints](./SUPPORTED_ENDPOINTS.md)
