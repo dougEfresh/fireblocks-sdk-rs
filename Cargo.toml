@@ -94,3 +94,6 @@ name = "wallet_connect"
 [[test]]
 name = "staking"
 
+[[test]]
+name = "wallets"
+

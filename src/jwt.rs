@@ -4,7 +4,7 @@ use {
     http::Extensions,
     jsonwebtoken::{errors as jwterrors, Algorithm, EncodingKey, Header},
     rand::Rng,
-    reqwest::Response,
+    reqwest::{Body, Response},
     reqwest_middleware::{Middleware, Next},
     serde::{Deserialize, Serialize},
     sha2::{Digest, Sha256},
@@ -36,6 +36,7 @@ impl Signer {
         path: &str,
         body: Option<S>,
     ) -> Result<String, JwtError> {
+        tracing::debug!("signing path:'{}' hasBody:{}", path, body.is_some());
         let header = Header::new(Algorithm::RS256);
         let claims = match body {
             Some(b) => Claims::new(path, &self.api_key, b)?,
@@ -135,6 +136,25 @@ impl JwtSigningMiddleware {
     }
 }
 
+impl JwtSigningMiddleware {
+    async fn buffer_and_get_body_bytes(req: &mut reqwest::Request) -> Vec<u8> {
+        // Extract the existing body (if any)
+        let body_opt = req.body_mut().take();
+
+        // If there's no body set, return empty buffer
+        let Some(body) = body_opt else {
+            return Vec::new();
+        };
+
+        // Convert it into bytes (this will buffer the entire body in memory)
+        let body_bytes = body.as_bytes().unwrap_or_default().to_vec();
+
+        // Re-attach a copy of the bytes to the request body
+        req.body_mut().replace(Body::from(body_bytes.clone()));
+        body_bytes
+    }
+}
+
 #[async_trait]
 impl Middleware for JwtSigningMiddleware {
     async fn handle(
@@ -148,17 +168,17 @@ impl Middleware for JwtSigningMiddleware {
             .query()
             .map_or_else(String::new, |q| format!("?{q}"));
         let path = format!("{}{}", req.url().path(), query);
-
-        let body = req
-            .body()
-            .and_then(|body| body.as_bytes().map(Self::calculate_body_hash));
-        let jwt = body.map_or_else(
-            || self.signer.sign::<()>(&path, None),
-            |body_hash| self.signer.sign(&path, Some(body_hash)),
-        );
-        let jwt = jwt.map_err(|e| {
-            anyhow::format_err!("failed to sign payload for path {path} error:'{e}'")
-        })?;
+        let body_bytes = Self::buffer_and_get_body_bytes(&mut req).await;
+        let body_hash = if body_bytes.is_empty() {
+            None
+        } else {
+            Some(Self::calculate_body_hash(&body_bytes))
+        };
+        let jwt = match body_hash {
+            None => self.signer.sign::<()>(&path, None),
+            Some(hash) => self.signer.sign(&path, Some(hash)),
+        }
+        .map_err(|e| anyhow::format_err!("failed to sign payload for path {path} error:'{e}'"))?;
         // Add the Authorization header
         req.headers_mut().insert(
             "Authorization",
@@ -174,7 +194,6 @@ impl Middleware for JwtSigningMiddleware {
                 .expect("could not create x-api-key header"),
         );
 
-        // Continue with the request chain
         next.run(req, extensions).await
     }
 }

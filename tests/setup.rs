@@ -77,3 +77,7 @@ impl Config {
         self.client.as_ref().unwrap().clone()
     }
 }
+
+pub fn dummy_name() -> String {
+    format!("z-test-{}", chrono::Utc::now().timestamp_millis())
+}

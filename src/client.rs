@@ -7,12 +7,14 @@ use {
                 CreateVaultAccountAssetAddressParams, CreateVaultAccountAssetParams,
                 GetVaultAccountAssetAddressesPaginatedParams, GetVaultAccountParams, VaultsApi,
             },
-            whitelisted_contracts_api::CreateContractParams,
+            whitelisted_contracts_api::{CreateContractParams, WhitelistedContractsApi},
             whitelisted_external_wallets_api::{
                 AddAssetToExternalWalletParams, CreateExternalWalletParams,
+                WhitelistedExternalWalletsApi,
             },
             whitelisted_internal_wallets_api::{
                 CreateInternalWalletAssetParams, CreateInternalWalletParams,
+                WhitelistedInternalWalletsApi,
             },
             Api,
         },
@@ -228,6 +230,18 @@ impl Client {
 
     pub fn wallet_connect_api(&self) -> &dyn DAppConnectionsApi {
         self.api_client.d_app_connections_api()
+    }
+
+    pub fn wallet_internal_api(&self) -> &dyn WhitelistedInternalWalletsApi {
+        self.api_client.whitelisted_internal_wallets_api()
+    }
+
+    pub fn wallet_external_api(&self) -> &dyn WhitelistedExternalWalletsApi {
+        self.api_client.whitelisted_external_wallets_api()
+    }
+
+    pub fn wallet_contract_api(&self) -> &dyn WhitelistedContractsApi {
+        self.api_client.whitelisted_contracts_api()
     }
 
     pub fn apis(&self) -> Arc<ApiClient> {

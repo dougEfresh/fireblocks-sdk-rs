@@ -43,3 +43,11 @@ files:
     templateType: SupportingFiles
     destinationFilename: vault_accounts_paged_response.rs
     folder: src/models/vault_accounts_paged_response.rs
+  custom/models/paginated_address_response.rs.rs:
+    templateType: SupportingFiles
+    destinationFilename: paginated_address_response.rs
+    folder: src/models
+  custom/models/vault_wallet_address.rs.rs:
+    templateType: SupportingFiles
+    destinationFilename: vault_wallet_address.rs
+    folder: src/models
