@@ -91,7 +91,7 @@ impl Stream for TransactionStream {
                     .transactions_api()
                     .get_transactions(params)
                     .await
-                    .map_err(FireblocksError::FetchTransactionError)
+                    .map_err(FireblocksError::FetchTransactionsError)
             }
             .boxed();
             self.fut.push(fut);
@@ -131,7 +131,7 @@ impl Stream for TransactionStream {
                                                 entity: Some(entity),
                                             });
                                         return Poll::Ready(Some(Err(
-                                            FireblocksError::FetchTransactionError(e),
+                                            FireblocksError::FetchTransactionsError(e),
                                         )));
                                     };
                                     self.after = ts;
@@ -160,7 +160,7 @@ impl Stream for TransactionStream {
                 .transactions_api()
                 .get_transactions(params)
                 .await
-                .map_err(FireblocksError::FetchTransactionError)
+                .map_err(FireblocksError::FetchTransactionsError)
         }
         .boxed();
         self.fut.push(fut);

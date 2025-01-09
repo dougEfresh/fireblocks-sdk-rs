@@ -1,5 +1,17 @@
 use {
-    crate::{apis::transactions_api::GetTransactionsError, jwt},
+    crate::{
+        apis::{
+            blockchains_assets_api::GetSupportedAssetsError,
+            transactions_api::{GetTransactionError, GetTransactionsError},
+            vaults_api::{
+                CreateVaultAccountAssetAddressError,
+                GetVaultAccountAssetAddressesPaginatedError,
+                GetVaultAccountError,
+            },
+        },
+        jwt,
+        models::TransferPeerPathType,
+    },
     thiserror::Error,
     url::ParseError,
 };
@@ -87,8 +99,27 @@ pub enum FireblocksError {
         text: String,
     },
 
-    //#[error("Fetch transaction error {0}")]
-    // FetchTransactionError(crate::apis::Error<GetTransactionsError>),
     #[error(transparent)]
-    FetchTransactionError(#[from] crate::apis::Error<GetTransactionsError>),
+    FetchTransactionsError(#[from] crate::apis::Error<GetTransactionsError>),
+
+    #[error(transparent)]
+    FetchVaultAccountError(#[from] crate::apis::Error<GetVaultAccountError>),
+
+    #[error(transparent)]
+    FetchAddressesError(#[from] crate::apis::Error<GetVaultAccountAssetAddressesPaginatedError>),
+
+    #[error(transparent)]
+    FetchTransactionError(#[from] crate::apis::Error<GetTransactionError>),
+
+    #[error(transparent)]
+    FetchCreateAssetError(#[from] crate::apis::Error<CreateVaultAccountAssetAddressError>),
+
+    #[error(transparent)]
+    FetchSupportedAssetsError(#[from] crate::apis::Error<GetSupportedAssetsError>),
+
+    #[error("failed to create waller {0}")]
+    FetchWalletCreateError(String),
+
+    #[error("invalid wallet type {0}")]
+    InvalidWalletType(crate::WalletType),
 }
