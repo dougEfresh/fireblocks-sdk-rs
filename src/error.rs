@@ -4,8 +4,7 @@ use {
             blockchains_assets_api::GetSupportedAssetsError,
             transactions_api::{GetTransactionError, GetTransactionsError},
             vaults_api::{
-                CreateVaultAccountAssetAddressError,
-                GetVaultAccountAssetAddressesPaginatedError,
+                CreateVaultAccountAssetAddressError, GetVaultAccountAssetAddressesPaginatedError,
                 GetVaultAccountError,
             },
         },
@@ -117,9 +116,18 @@ pub enum FireblocksError {
     #[error(transparent)]
     FetchSupportedAssetsError(#[from] crate::apis::Error<GetSupportedAssetsError>),
 
-    #[error("failed to create waller {0}")]
+    #[error("failed to create wallet {0}")]
     FetchWalletCreateError(String),
 
     #[error("invalid wallet type {0}")]
     InvalidWalletType(crate::WalletType),
+
+    #[error("failed fetch contract wallets: {0}")]
+    FetchWalletContractError(String),
+
+    #[error("failed fetch external wallets: {0}")]
+    FetchWalletExternalError(String),
+
+    #[error("failed fetch internal wallets: {0}")]
+    FetchWalletInternalError(String),
 }

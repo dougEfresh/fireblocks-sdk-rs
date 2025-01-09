@@ -28,7 +28,8 @@ use {
             CreateWalletRequest, TransactionResponse, TransferPeerPathType, VaultAccount,
             VaultWalletAddress,
         },
-        ApiClient, Configuration, WalletType, FIREBLOCKS_API, FIREBLOCKS_SANDBOX_API,
+        ApiClient, Configuration, WalletContainer, WalletType, FIREBLOCKS_API,
+        FIREBLOCKS_SANDBOX_API,
     },
     jsonwebtoken::EncodingKey,
     reqwest::{Method, RequestBuilder, StatusCode},
@@ -379,5 +380,35 @@ impl Client {
             }
         };
         Ok(id)
+    }
+
+    pub async fn wallets(&self, wallet_type: WalletType) -> crate::Result<Vec<WalletContainer>> {
+        let wallets: Vec<WalletContainer> = match wallet_type {
+            WalletType::Internal => {
+                let api = self.api_client.whitelisted_internal_wallets_api();
+                let wallets = api
+                    .get_internal_wallets()
+                    .await
+                    .map_err(|e| FireblocksError::FetchWalletInternalError(e.to_string()))?;
+                wallets.into_iter().map(WalletContainer::from).collect()
+            }
+            WalletType::External => {
+                let api = self.api_client.whitelisted_external_wallets_api();
+                let wallets = api
+                    .get_external_wallets()
+                    .await
+                    .map_err(|e| FireblocksError::FetchWalletExternalError(e.to_string()))?;
+                wallets.into_iter().map(WalletContainer::from).collect()
+            }
+            WalletType::Contract => {
+                let api = self.api_client.whitelisted_contracts_api();
+                let wallets = api
+                    .get_contracts()
+                    .await
+                    .map_err(|e| FireblocksError::FetchWalletContractError(e.to_string()))?;
+                wallets.into_iter().map(WalletContainer::from).collect()
+            }
+        };
+        Ok(wallets)
     }
 }

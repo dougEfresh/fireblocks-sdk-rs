@@ -10,6 +10,8 @@ pub(crate) mod jwt;
 mod log;
 #[cfg(feature = "page")]
 mod paged_client;
+mod wallet;
+pub use wallet::WalletContainer;
 
 #[cfg(feature = "page")]
 pub use paged_client::{PagedClient, TransactionStream, VaultStream};
@@ -20,13 +22,7 @@ pub use {
         ApiClient,
     },
     assets::{
-        Asset,
-        ASSET_BTC,
-        ASSET_BTC_TEST,
-        ASSET_ETH,
-        ASSET_ETH_TEST,
-        ASSET_SOL,
-        ASSET_SOL_TEST,
+        Asset, ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST,
     },
     client::{Client, ClientBuilder},
 };
@@ -46,11 +42,15 @@ pub enum WalletType {
 
 impl Display for WalletType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", match &self {
-            Self::Internal => "Internal",
-            Self::External => "External",
-            Self::Contract => "Contract",
-        })
+        write!(
+            f,
+            "{}",
+            match &self {
+                Self::Internal => "Internal",
+                Self::External => "External",
+                Self::Contract => "Contract",
+            }
+        )
     }
 }
 
