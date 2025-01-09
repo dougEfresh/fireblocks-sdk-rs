@@ -10,7 +10,7 @@ async fn test_wallet_whitelist_external(config: &Config) -> anyhow::Result<()> {
         return Ok(());
     }
     let c = config.client();
-    let name = dummy_name();
+    let name = dummy_name(Some("ext"));
     let id = c
         .wallet_create(fireblocks_sdk::WalletType::External, &name)
         .await?;
@@ -40,7 +40,7 @@ async fn test_wallet_whitelist_internal(config: &Config) -> anyhow::Result<()> {
         return Ok(());
     }
     let c = config.client();
-    let name = dummy_name();
+    let name = dummy_name(Some("int"));
     let id = c.wallet_create(WalletType::Internal, &name).await?;
     assert!(!id.is_empty());
 
