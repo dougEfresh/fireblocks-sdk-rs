@@ -33,7 +33,7 @@ pub type Epoch = DateTime<Utc>;
 pub type Result<T> = std::result::Result<T, FireblocksError>;
 pub type QueryParams = Vec<(String, String)>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum WalletType {
     Internal,
     External,
