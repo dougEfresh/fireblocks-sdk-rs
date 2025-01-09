@@ -31,19 +31,11 @@ impl Signer {
         }
     }
 
-    pub fn sign<S: Serialize + Debug>(
-        &self,
-        path: &str,
-        body: Option<S>,
-    ) -> Result<String, JwtError> {
-        tracing::debug!("signing path:'{}' hasBody:{}", path, body.is_some());
+    pub fn sign(&self, path: &str, body: Vec<u8>) -> Result<String, JwtError> {
+        //tracing::debug!("signing path:'{}' hasBody:{}", path, body.is_some());
         let header = Header::new(Algorithm::RS256);
-        let claims = match body {
-            Some(b) => Claims::new(path, &self.api_key, b)?,
-            None => Claims::new(path, &self.api_key, ())?,
-        };
+        let claims = Claims::new(path, &self.api_key, &body);
         let msg = jsonwebtoken::encode(&header, &claims, &self.key)?;
-        // debug!("signed message {}", msg);
         Ok(msg)
     }
 
@@ -95,27 +87,33 @@ impl HexString for Vec<u8> {
 }
 
 impl<'a> Claims<'a> {
-    fn new<S: Serialize>(uri: &'a str, sub: &'a str, body: S) -> Result<Self, JwtError> {
+    fn new(uri: &'a str, sub: &'a str, body: &[u8]) -> Self {
         // use millisecond precision to ensure that it's not reused
-        let now = u64::try_from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis())?;
+        let now = u64::try_from(
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_millis(),
+        )
+        .unwrap_or_default();
         let mut rng = rand::thread_rng();
         let nonce = rng.gen::<u64>();
         let now = now / 1000;
 
         let body_hash = {
             let mut digest = Sha256::new();
-            digest.update(serde_json::to_vec(&body)?);
+            digest.update(body);
             digest.finalize().to_vec()
         };
 
-        Ok(Self {
+        Self {
             uri,
             sub,
             body_hash: body_hash.to_hex_string(),
             nonce,
             iat: now,
             exp: now + EXPIRY,
-        })
+        }
     }
 }
 
@@ -128,14 +126,7 @@ impl JwtSigningMiddleware {
     pub const fn new(signer: Signer) -> Self {
         Self { signer }
     }
-
-    fn calculate_body_hash(body: &[u8]) -> String {
-        let mut hasher = Sha256::new();
-        hasher.update(body);
-        hex::encode(hasher.finalize())
-    }
 }
-
 impl JwtSigningMiddleware {
     async fn buffer_and_get_body_bytes(req: &mut reqwest::Request) -> Vec<u8> {
         // Extract the existing body (if any)
@@ -169,16 +160,9 @@ impl Middleware for JwtSigningMiddleware {
             .map_or_else(String::new, |q| format!("?{q}"));
         let path = format!("{}{}", req.url().path(), query);
         let body_bytes = Self::buffer_and_get_body_bytes(&mut req).await;
-        let body_hash = if body_bytes.is_empty() {
-            None
-        } else {
-            Some(Self::calculate_body_hash(&body_bytes))
-        };
-        let jwt = match body_hash {
-            None => self.signer.sign::<()>(&path, None),
-            Some(hash) => self.signer.sign(&path, Some(hash)),
-        }
-        .map_err(|e| anyhow::format_err!("failed to sign payload for path {path} error:'{e}'"))?;
+        let jwt = self.signer.sign(&path, body_bytes).map_err(|e| {
+            anyhow::format_err!("failed to sign payload for path {path} error:'{e}'")
+        })?;
         // Add the Authorization header
         req.headers_mut().insert(
             "Authorization",
@@ -195,16 +179,5 @@ impl Middleware for JwtSigningMiddleware {
         );
 
         next.run(req, extensions).await
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn claim_new() -> anyhow::Result<()> {
-        Claims::new("/api", "api-key", "body")?;
-        Ok(())
     }
 }

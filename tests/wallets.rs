@@ -23,6 +23,8 @@ async fn test_wallet_whitelist_external(config: &Config) -> anyhow::Result<()> {
         .await?;
     assert!(!w.id.is_empty());
     assert_eq!(&w.id, &id);
+    c.wallet_delete(fireblocks_sdk::WalletType::External, &id)
+        .await?;
     Ok(())
 }
 
@@ -47,5 +49,7 @@ async fn test_wallet_whitelist_internal(config: &Config) -> anyhow::Result<()> {
         .await?;
     assert!(w.id.is_some());
     assert_eq!(&w.id.unwrap_or_default(), &id);
+    c.wallet_delete(fireblocks_sdk::WalletType::Internal, &id)
+        .await?;
     Ok(())
 }

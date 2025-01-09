@@ -7,14 +7,16 @@ use {
                 CreateVaultAccountAssetAddressParams, CreateVaultAccountAssetParams,
                 GetVaultAccountAssetAddressesPaginatedParams, GetVaultAccountParams, VaultsApi,
             },
-            whitelisted_contracts_api::{CreateContractParams, WhitelistedContractsApi},
+            whitelisted_contracts_api::{
+                CreateContractParams, DeleteContractParams, WhitelistedContractsApi,
+            },
             whitelisted_external_wallets_api::{
                 AddAssetToExternalWalletParams, CreateExternalWalletParams,
-                WhitelistedExternalWalletsApi,
+                DeleteExternalWalletParams, WhitelistedExternalWalletsApi,
             },
             whitelisted_internal_wallets_api::{
                 CreateInternalWalletAssetParams, CreateInternalWalletParams,
-                WhitelistedInternalWalletsApi,
+                DeleteInternalWalletParams, WhitelistedInternalWalletsApi,
             },
             Api,
         },
@@ -293,6 +295,39 @@ impl Client {
             WalletType::Contract => String::new(),
         };
         Ok(id)
+    }
+
+    pub async fn wallet_delete(&self, wallet_type: WalletType, id: &str) -> crate::Result<()> {
+        match wallet_type {
+            WalletType::External => {
+                let api = self.api_client.whitelisted_external_wallets_api();
+                let params = DeleteExternalWalletParams::builder()
+                    .wallet_id(String::from(id))
+                    .build();
+                api.delete_external_wallet(params)
+                    .await
+                    .map_err(|e| FireblocksError::FetchWalletCreateError(e.to_string()))?;
+            }
+            WalletType::Internal => {
+                let api = self.api_client.whitelisted_internal_wallets_api();
+                let params = DeleteInternalWalletParams::builder()
+                    .wallet_id(String::from(id))
+                    .build();
+                api.delete_internal_wallet(params)
+                    .await
+                    .map_err(|e| FireblocksError::FetchWalletCreateError(e.to_string()))?;
+            }
+            WalletType::Contract => {
+                let api = self.api_client.whitelisted_contracts_api();
+                let params = DeleteContractParams::builder()
+                    .contract_id(String::from(id))
+                    .build();
+                api.delete_contract(params)
+                    .await
+                    .map_err(|e| FireblocksError::FetchWalletCreateError(e.to_string()))?;
+            }
+        };
+        Ok(())
     }
 
     pub async fn wallet_create(
