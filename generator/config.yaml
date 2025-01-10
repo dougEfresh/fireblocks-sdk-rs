@@ -43,7 +43,7 @@ files:
     templateType: SupportingFiles
     destinationFilename: vault_accounts_paged_response.rs
     folder: src/models
-  custom/models/paginated_address_response.rs.rs:
+  custom/models/paginated_address_response.rs:
     templateType: SupportingFiles
     destinationFilename: paginated_address_response.rs
     folder: src/models
@@ -51,11 +51,19 @@ files:
     templateType: SupportingFiles
     destinationFilename: vault_wallet_address.rs
     folder: src/models
-  custom/models/wallet_asset_external.rs.rs:
-    templateType: SupportingFiles
-    destinationFilename: wallet_asset_external.rs
-    folder: src/models
-  custom/models/create_transaction_response.rs.rs:
+  custom/models/create_transaction_response.rs:
     templateType: SupportingFiles
     destinationFilename: create_transaction_response.rs
+    folder: src/models
+  custom/models/wallet_asset_external.rs.rs:
+    templateType: SupportingFiles
+    destinationFilename: wallet_asset_external.rs.rs
+    folder: src/models
+  custom/models/wallet_asset.rs:
+    templateType: SupportingFiles
+    destinationFilename: wallet_asset.rs.rs
+    folder: src/models
+  custom/models/external_wallet_asset_detail.rs:
+    templateType: SupportingFiles
+    destinationFilename: external_wallet_asset_detail.rs.rs
     folder: src/models

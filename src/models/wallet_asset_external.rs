@@ -15,8 +15,8 @@ use {
 pub struct WalletAssetExternal {
     #[serde(rename = "id")]
     pub id: String,
-    #[serde(rename = "lockedAmount", skip_serializing_if = "Option::is_none")]
-    pub locked_amount: Option<String>,
+    #[serde(rename = "lockedAmount")]
+    pub locked_amount: f64,
     #[serde(rename = "status")]
     pub status: models::ConfigChangeRequestStatus,
     #[serde(rename = "address")]
@@ -31,7 +31,7 @@ impl WalletAssetExternal {
     pub fn new() -> WalletAssetExternal {
         WalletAssetExternal {
             id: String::new(),
-            locked_amount: None,
+            locked_amount: 0.0,
             status: models::ConfigChangeRequestStatus::default(),
             address: String::new(),
             tag: None,

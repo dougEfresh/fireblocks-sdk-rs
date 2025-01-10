@@ -2,16 +2,22 @@ use {
     super::Client,
     crate::{
         apis::{
-            whitelisted_contracts_api::{CreateContractParams, DeleteContractParams},
+            whitelisted_contracts_api::{
+                CreateContractParams,
+                DeleteContractParams,
+                GetContractParams,
+            },
             whitelisted_external_wallets_api::{
                 AddAssetToExternalWalletParams,
                 CreateExternalWalletParams,
                 DeleteExternalWalletParams,
+                GetExternalWalletParams,
             },
             whitelisted_internal_wallets_api::{
                 CreateInternalWalletAssetParams,
                 CreateInternalWalletParams,
                 DeleteInternalWalletParams,
+                GetInternalWalletParams,
             },
             Api,
         },
@@ -33,14 +39,15 @@ impl Client {
         &self,
         wallet_type: WalletType,
         id: &str,
-        asset_id: &str,
+        asset_id: impl Into<String>,
         address: &str,
     ) -> crate::Result<String> {
+        let asset_id = asset_id.into();
         let id: String = match wallet_type {
             WalletType::External => {
                 let api = self.api_client.whitelisted_external_wallets_api();
                 let params = AddAssetToExternalWalletParams::builder()
-                    .asset_id(String::from(asset_id))
+                    .asset_id(asset_id)
                     .wallet_id(String::from(id))
                     .add_asset_to_external_wallet_request(
                         AddAssetToExternalWalletRequest::AddAssetToExternalWalletRequestOneOf(
@@ -55,13 +62,12 @@ impl Client {
                     .await
                     .map_err(|e| FireblocksError::FetchWalletCreateError(e.to_string()))?
                     .id
-                    .unwrap_or_default()
             }
             WalletType::Internal => {
                 let api = self.api_client.whitelisted_internal_wallets_api();
                 let a = CreateInternalWalletAssetRequest::new(String::from(address));
                 let params = CreateInternalWalletAssetParams::builder()
-                    .asset_id(String::from(asset_id))
+                    .asset_id(asset_id)
                     .wallet_id(String::from(id))
                     .create_internal_wallet_asset_request(a)
                     .build();
@@ -69,9 +75,8 @@ impl Client {
                     .await
                     .map_err(|e| FireblocksError::FetchWalletCreateError(e.to_string()))?
                     .id
-                    .unwrap_or_default()
             }
-            WalletType::Contract => String::new(),
+            WalletType::Contract => todo!(),
         };
         Ok(id)
     }
@@ -160,7 +165,7 @@ impl Client {
         Ok(id)
     }
 
-    pub async fn wallet_name(
+    pub async fn wallet_by_name(
         &self,
         wallet_type: WalletType,
         name: &str,
@@ -170,6 +175,46 @@ impl Client {
             .await?
             .into_iter()
             .find(|w| w.name == name))
+    }
+
+    pub async fn wallet_by_id(
+        &self,
+        wallet_type: WalletType,
+        id: &str,
+    ) -> crate::Result<WalletContainer> {
+        let w: WalletContainer = match wallet_type {
+            WalletType::External => {
+                let w = self
+                    .wallet_external_api()
+                    .get_external_wallet(GetExternalWalletParams {
+                        wallet_id: String::from(id),
+                    })
+                    .await
+                    .map_err(|e| FireblocksError::FetchWalletError(e.to_string()))?;
+                WalletContainer::from(w)
+            }
+            WalletType::Internal => {
+                let w = self
+                    .wallet_internal_api()
+                    .get_internal_wallet(GetInternalWalletParams {
+                        wallet_id: String::from(id),
+                    })
+                    .await
+                    .map_err(|e| FireblocksError::FetchWalletError(e.to_string()))?;
+                WalletContainer::from(w)
+            }
+            WalletType::Contract => {
+                let w = self
+                    .wallet_contract_api()
+                    .get_contract(GetContractParams {
+                        contract_id: String::from(id),
+                    })
+                    .await
+                    .map_err(|e| FireblocksError::FetchWalletError(e.to_string()))?;
+                WalletContainer::from(w)
+            }
+        };
+        Ok(w)
     }
 
     pub async fn wallets(&self, wallet_type: WalletType) -> crate::Result<Vec<WalletContainer>> {

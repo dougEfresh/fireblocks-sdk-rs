@@ -13,14 +13,14 @@ use {
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ExternalWalletAssetDetail {
-    #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<String>,
-    #[serde(rename = "status", skip_serializing_if = "Option::is_none")]
-    pub status: Option<models::ConfigChangeRequestStatus>,
+    #[serde(rename = "id")]
+    pub id: String,
+    #[serde(rename = "status")]
+    pub status: models::ConfigChangeRequestStatus,
     #[serde(rename = "address", skip_serializing_if = "Option::is_none")]
     pub address: Option<String>,
-    #[serde(rename = "lockedAmount", skip_serializing_if = "Option::is_none")]
-    pub locked_amount: Option<String>,
+    #[serde(rename = "lockedAmount")]
+    pub locked_amount: f64,
     #[serde(rename = "tag", skip_serializing_if = "Option::is_none")]
     pub tag: Option<String>,
     #[serde(rename = "activationTime", skip_serializing_if = "Option::is_none")]
@@ -32,10 +32,10 @@ pub struct ExternalWalletAssetDetail {
 impl ExternalWalletAssetDetail {
     pub fn new() -> ExternalWalletAssetDetail {
         ExternalWalletAssetDetail {
-            id: None,
-            status: None,
+            id: String::new(),
+            status: models::ConfigChangeRequestStatus::default(),
             address: None,
-            locked_amount: None,
+            locked_amount: 0.0,
             tag: None,
             activation_time: None,
             additional_info: None,

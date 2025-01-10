@@ -76,6 +76,7 @@ impl Config {
     }
 }
 
+#[allow(dead_code)]
 pub fn dummy_name(extra: Option<&str>) -> String {
     format!(
         "{}{}",

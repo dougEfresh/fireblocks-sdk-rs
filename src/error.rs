@@ -136,4 +136,7 @@ pub enum FireblocksError {
 
     #[error(transparent)]
     UuidErr(#[from] uuid::Error),
+
+    #[error("failed fetching whitelisted wallet: {0}")]
+    FetchWalletError(String),
 }
