@@ -47,7 +47,7 @@ files:
     templateType: SupportingFiles
     destinationFilename: paginated_address_response.rs
     folder: src/models
-  custom/models/vault_wallet_address.rs.rs:
+  custom/models/vault_wallet_address.rs:
     templateType: SupportingFiles
     destinationFilename: vault_wallet_address.rs
     folder: src/models
@@ -55,15 +55,19 @@ files:
     templateType: SupportingFiles
     destinationFilename: create_transaction_response.rs
     folder: src/models
-  custom/models/wallet_asset_external.rs.rs:
+  custom/models/wallet_asset_external.rs:
     templateType: SupportingFiles
-    destinationFilename: wallet_asset_external.rs.rs
+    destinationFilename: wallet_asset_external.rs
     folder: src/models
   custom/models/wallet_asset.rs:
     templateType: SupportingFiles
-    destinationFilename: wallet_asset.rs.rs
+    destinationFilename: wallet_asset.rs
     folder: src/models
   custom/models/external_wallet_asset_detail.rs:
     templateType: SupportingFiles
-    destinationFilename: external_wallet_asset_detail.rs.rs
+    destinationFilename: external_wallet_asset_detail.rs
+    folder: src/models
+  custom/models/external_wallet_asset.rs:
+    templateType: SupportingFiles
+    destinationFilename: external_wallet_asset.rs
     folder: src/models

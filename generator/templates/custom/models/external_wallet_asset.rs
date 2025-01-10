@@ -22,7 +22,7 @@ pub struct ExternalWalletAsset {
     #[serde(rename = "balance", skip_serializing_if = "Option::is_none")]
     pub balance: Option<String>,
     //#[serde(rename = "lockedAmount", skip_serializing_if = "Option::is_none")]
-    // pub locked_amount: Option<String>,
+    //pub locked_amount: Option<String>,
     #[serde(rename = "tag", skip_serializing_if = "Option::is_none")]
     pub tag: Option<String>,
     #[serde(rename = "activationTime", skip_serializing_if = "Option::is_none")]
