@@ -10,7 +10,6 @@ use {
             },
         },
         jwt,
-        models::TransferPeerPathType,
     },
     thiserror::Error,
     url::ParseError,

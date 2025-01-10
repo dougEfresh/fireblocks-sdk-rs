@@ -2,7 +2,7 @@
 coverage:
   # Hold ourselves to a high bar
   range: 85..100
-  round: down
+  round: up
   precision: 1
   status:
     # ref: https://docs.codecov.com/docs/commit-status
@@ -14,6 +14,8 @@ coverage:
 # Test files aren't important for coverage
 ignore:
   - "tests"
+  - "src/apis"
+  - "src/models"
 
 # Make comments less noisy
 comment:

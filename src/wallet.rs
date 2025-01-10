@@ -1,15 +1,5 @@
 use {
-    crate::{
-        assets::Asset,
-        models::{
-            TransferPeerPathType,
-            UnmanagedExternalWallet,
-            UnmanagedWallet,
-            WalletAsset,
-            WalletAssetExternal,
-        },
-        WalletType,
-    },
+    crate::models::{UnmanagedExternalWallet, UnmanagedWallet, WalletAssetExternal},
     serde::{Deserialize, Serialize},
 };
 

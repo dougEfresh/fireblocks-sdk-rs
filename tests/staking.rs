@@ -1,10 +1,7 @@
 mod setup;
 use {
     fireblocks_sdk::{
-        apis::{
-            staking_api::{ApproveTermsOfServiceByProviderIdParams, GetChainInfoParams},
-            Api,
-        },
+        apis::{staking_api::GetChainInfoParams, Api},
         ASSET_ETH,
         ASSET_ETH_TEST,
         ASSET_SOL,

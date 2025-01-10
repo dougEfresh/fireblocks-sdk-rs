@@ -1,9 +1,8 @@
 use {
-    async_trait::async_trait,
     http::Extensions,
     reqwest::{Request, Response},
     reqwest_middleware::{Middleware, Next, Result},
-    tracing::{info, Level},
+    tracing::Level,
 };
 
 pub struct LoggingMiddleware;

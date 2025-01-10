@@ -1,6 +1,5 @@
 use {
     async_trait::async_trait,
-    bytes::Bytes,
     http::Extensions,
     jsonwebtoken::{errors as jwterrors, Algorithm, EncodingKey, Header},
     rand::Rng,

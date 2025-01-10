@@ -1,12 +1,10 @@
 mod setup;
 use {
-    apis::vaults_api::*,
     chrono::{TimeZone, Utc},
     fireblocks_sdk::*,
-    setup::{config, Config, CLIENT},
+    setup::{config, Config},
     std::{sync::Arc, time::Duration},
     tokio_stream::StreamExt,
-    tracing::info,
 };
 
 async fn transaction_stream(mut ts: TransactionStream) -> anyhow::Result<()> {

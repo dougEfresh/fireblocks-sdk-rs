@@ -2,17 +2,13 @@ use {
     crate::{
         apis::{
             transactions_api::{GetTransactionsError, GetTransactionsParams},
-            vaults_api::{GetPagedVaultAccountsError, GetPagedVaultAccountsParams},
             ResponseContent,
         },
-        models::{self, ErrorSchema, TransactionResponse, VaultAccountsPagedResponse},
+        models::{self, ErrorSchema, TransactionResponse},
         Client,
         Epoch,
         FireblocksError,
-        ParamError,
-        QueryParams,
     },
-    anyhow::anyhow,
     chrono::{offset::LocalResult, TimeZone, Utc},
     futures::{future::BoxFuture, stream::FuturesUnordered, FutureExt, Stream, StreamExt},
     std::{

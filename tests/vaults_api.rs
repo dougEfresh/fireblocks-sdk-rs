@@ -2,8 +2,7 @@ mod setup;
 use {
     apis::vaults_api::*,
     fireblocks_sdk::*,
-    setup::{config, Config, CLIENT},
-    tracing::info,
+    setup::{config, Config},
 };
 
 #[rstest::rstest]

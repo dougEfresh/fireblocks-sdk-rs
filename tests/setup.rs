@@ -1,11 +1,9 @@
 use {
     fireblocks_sdk::Client,
     std::{
-        sync::{Arc, Once, OnceLock},
+        sync::{Once, OnceLock},
         time::Duration,
     },
-    tokio::time,
-    tokio_stream::StreamExt,
     tracing::warn,
     tracing_subscriber::{fmt::format::FmtSpan, EnvFilter},
 };

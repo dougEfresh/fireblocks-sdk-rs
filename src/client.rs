@@ -2,73 +2,28 @@ use {
     crate::{
         apis::{
             d_app_connections_api::DAppConnectionsApi,
-            transactions_api::{CreateTransactionParams, GetTransactionParams, TransactionsApi},
+            transactions_api::{GetTransactionParams, TransactionsApi},
             vaults_api::{
                 CreateVaultAccountAssetAddressParams,
-                CreateVaultAccountAssetParams,
                 GetVaultAccountAssetAddressesPaginatedParams,
                 GetVaultAccountParams,
                 VaultsApi,
             },
-            whitelisted_contracts_api::{
-                CreateContractParams,
-                DeleteContractParams,
-                WhitelistedContractsApi,
-            },
-            whitelisted_external_wallets_api::{
-                AddAssetToExternalWalletParams,
-                CreateExternalWalletParams,
-                DeleteExternalWalletParams,
-                WhitelistedExternalWalletsApi,
-            },
-            whitelisted_internal_wallets_api::{
-                CreateInternalWalletAssetParams,
-                CreateInternalWalletParams,
-                DeleteInternalWalletParams,
-                WhitelistedInternalWalletsApi,
-            },
+            whitelisted_contracts_api::WhitelistedContractsApi,
+            whitelisted_external_wallets_api::WhitelistedExternalWalletsApi,
+            whitelisted_internal_wallets_api::WhitelistedInternalWalletsApi,
             Api,
         },
-        error::{self, FireblocksError},
+        error::{self},
         jwt::{JwtSigningMiddleware, Signer},
-        models::{
-            AddAssetToExternalWalletRequest,
-            AddAssetToExternalWalletRequestOneOf,
-            AssetTypeResponse,
-            CreateContractRequest,
-            CreateInternalWalletAssetRequest,
-            CreateTransactionResponse,
-            CreateWalletRequest,
-            DestinationTransferPeerPath,
-            SourceTransferPeerPath,
-            Transaction,
-            TransactionRequest,
-            TransactionResponse,
-            TransactionStatus,
-            TransferPeerPathType,
-            VaultAccount,
-            VaultWalletAddress,
-        },
+        models::{AssetTypeResponse, TransactionResponse, VaultAccount, VaultWalletAddress},
         ApiClient,
         Configuration,
-        WalletContainer,
-        WalletType,
         FIREBLOCKS_API,
         FIREBLOCKS_SANDBOX_API,
     },
     jsonwebtoken::EncodingKey,
-    reqwest::{Method, RequestBuilder, StatusCode},
-    serde::{de::DeserializeOwned, Serialize},
-    std::{
-        borrow::Borrow,
-        fmt::{Debug, Display},
-        ops::Add,
-        sync::Arc,
-        time::Duration,
-    },
-    tokio::time,
-    tracing::debug,
-    url::Url,
+    std::{sync::Arc, time::Duration},
 };
 
 #[derive(Clone)]
@@ -76,9 +31,9 @@ pub struct Client {
     api_client: Arc<ApiClient>,
 }
 
+mod poll;
 mod transfer;
 mod whitelist;
-
 pub struct ClientBuilder {
     api_key: String,
     client: Option<reqwest_middleware::ClientBuilder>,
@@ -279,50 +234,5 @@ impl Client {
 
     pub fn apis(&self) -> Arc<ApiClient> {
         self.api_client.clone()
-    }
-
-    /// Pool transaction until
-    /// * [`TransactionStatus::Failed`]
-    /// * [`TransactionStatus::Completed`]
-    /// * [`TransactionStatus::Blocked`]
-    /// * [`TransactionStatus::Rejected`]
-    /// * [`TransactionStatus::Cancelling`]
-    /// * [`TransactionStatus::Cancelled`]
-    ///
-    /// [getTransaction](https://docs.fireblocks.com/api/swagger-ui/#/Transactions/getTransaction)
-    #[tracing::instrument(level = "debug", skip(self, callback))]
-    pub async fn poll_transaction(
-        &self,
-        id: &str,
-        timeout: time::Duration,
-        interval: time::Duration,
-        callback: impl Fn(&TransactionResponse) + Send + Sync,
-    ) -> crate::Result<TransactionResponse> {
-        let mut total_time = time::Duration::from_millis(0);
-        loop {
-            if let Ok(result) = self.get_transaction(id).await {
-                let status = &result.status;
-                debug!("status {:#?}", status);
-                #[allow(clippy::match_same_arms)]
-                match status {
-                    TransactionStatus::Blocked => break,
-                    TransactionStatus::Cancelled => break,
-                    TransactionStatus::Cancelling => break,
-                    TransactionStatus::Completed => break,
-                    TransactionStatus::Confirming => break,
-                    TransactionStatus::Failed => break,
-                    TransactionStatus::Rejected => break,
-                    _ => {
-                        callback(&result);
-                    }
-                }
-            }
-            time::sleep(interval).await;
-            total_time = total_time.add(interval);
-            if total_time > timeout {
-                break;
-            }
-        }
-        self.get_transaction(id).await
     }
 }

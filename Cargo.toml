@@ -19,7 +19,7 @@ path = "src/lib.rs"
 
 [lints.rust]
 unsafe_code = "forbid"
-unused_imports = "allow"
+unused_imports = "deny"
 non_snake_case = "allow"
 
 [lints.clippy]
