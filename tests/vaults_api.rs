@@ -3,6 +3,7 @@ use {
     apis::vaults_api::*,
     fireblocks_sdk::*,
     setup::{config, Config},
+    std::time::Duration,
 };
 
 #[rstest::rstest]
@@ -62,5 +63,27 @@ async fn test_vault_names(config: Config) -> anyhow::Result<()> {
     let results = c.vaults_api().get_paged_vault_accounts(params).await?;
     assert!(!results.accounts.is_empty());
     assert_eq!(results.accounts[0].name, "Default");
+    Ok(())
+}
+
+#[rstest::rstest]
+#[tokio::test]
+async fn vault_create(config: Config) -> anyhow::Result<()> {
+    if !config.create_vault() {
+        return Ok(());
+    }
+    let c = config.client();
+
+    let params = models::CreateVaultAccountRequest {
+        name: Some(setup::dummy_name(None)),
+        hidden_on_ui: Some(true),
+        customer_ref_id: None,
+        auto_fuel: None,
+        vault_type: None,
+        auto_assign: None,
+    };
+    let _vault_account = c.create_vault(params).await?;
+    //tokio::time::sleep(Duration::from_secs(1)).await;
+    //c.create_asset(&vault_account.id, ASSET_ETH_TEST).await?;
     Ok(())
 }

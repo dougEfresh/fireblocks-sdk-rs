@@ -3,12 +3,7 @@ use {
         apis::{
             d_app_connections_api::DAppConnectionsApi,
             transactions_api::{GetTransactionParams, TransactionsApi},
-            vaults_api::{
-                CreateVaultAccountAssetAddressParams,
-                GetVaultAccountAssetAddressesPaginatedParams,
-                GetVaultAccountParams,
-                VaultsApi,
-            },
+            vaults_api::{GetVaultAccountAssetAddressesPaginatedParams, VaultsApi},
             whitelisted_contracts_api::WhitelistedContractsApi,
             whitelisted_external_wallets_api::WhitelistedExternalWalletsApi,
             whitelisted_internal_wallets_api::WhitelistedInternalWalletsApi,
@@ -16,11 +11,8 @@ use {
         },
         error::{self},
         jwt::{JwtSigningMiddleware, Signer},
-        models::{AssetTypeResponse, TransactionResponse, VaultAccount, VaultWalletAddress},
-        ApiClient,
-        Configuration,
-        FIREBLOCKS_API,
-        FIREBLOCKS_SANDBOX_API,
+        models::{AssetTypeResponse, TransactionResponse, VaultWalletAddress},
+        ApiClient, Configuration, FIREBLOCKS_API, FIREBLOCKS_SANDBOX_API,
     },
     jsonwebtoken::EncodingKey,
     std::{sync::Arc, time::Duration},
@@ -33,7 +25,9 @@ pub struct Client {
 
 mod poll;
 mod transfer;
+mod vault;
 mod whitelist;
+
 pub struct ClientBuilder {
     api_key: String,
     timeout: Duration,
@@ -152,22 +146,6 @@ impl Client {
         .map_err(crate::FireblocksError::FetchTransactionError)
     }
 
-    pub async fn create_asset(
-        &self,
-        vault_id: &str,
-        asset_id: impl Into<String>,
-    ) -> crate::Result<String> {
-        let api = self.api_client.vaults_api();
-        let params = CreateVaultAccountAssetAddressParams::builder()
-            .asset_id(asset_id.into())
-            .vault_account_id(String::from(vault_id))
-            .build();
-        api.create_vault_account_asset_address(params)
-            .await
-            .map_err(crate::FireblocksError::FetchCreateAssetError)
-            .map(|r| r.address.unwrap_or_default())
-    }
-
     pub async fn supported_assets(&self) -> crate::Result<Vec<AssetTypeResponse>> {
         let api = self.api_client.blockchains_assets_api();
         api.get_supported_assets()
@@ -191,18 +169,6 @@ impl Client {
             .await
             .map_err(crate::FireblocksError::FetchAddressesError)
             .map(|r| r.addresses)
-    }
-
-    pub async fn vault(&self, id: &str) -> crate::Result<VaultAccount> {
-        let vault_api = self.api_client.vaults_api();
-        vault_api
-            .get_vault_account(
-                GetVaultAccountParams::builder()
-                    .vault_account_id(String::from(id))
-                    .build(),
-            )
-            .await
-            .map_err(crate::FireblocksError::FetchVaultAccountError)
     }
 
     pub fn transactions_api(&self) -> &dyn TransactionsApi {

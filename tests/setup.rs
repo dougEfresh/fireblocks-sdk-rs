@@ -33,11 +33,15 @@ pub fn config() -> Config {
 pub struct Config {
     client: Client,
     create_tx: bool,
+    create_vault: bool,
+    create_webhook: bool,
 }
 
 impl Config {
     fn new() -> Self {
         let create_tx = std::env::var("FIREBLOCKS_CREATE_TX").ok().is_some();
+        let create_vault = std::env::var("FIREBLOCKS_CREATE_VAULT").ok().is_some();
+        let create_webhook = std::env::var("FIREBLOCKS_CREATE_WEBHOOK").ok().is_some();
         let api_key: String =
             std::env::var("FIREBLOCKS_API_KEY").expect("FIREBLOCKS_API_KEY is not set");
         let key: String = std::env::var("FIREBLOCKS_SECRET").expect("FIREBLOCKS_SECRET is not set");
@@ -50,7 +54,21 @@ impl Config {
             .build()
             .expect("failed to configure client. Is .env configured properly?");
 
-        Self { client, create_tx }
+        Self {
+            client,
+            create_tx,
+            create_vault,
+            create_webhook,
+        }
+    }
+    #[allow(dead_code)]
+    pub const fn create_vault(&self) -> bool {
+        self.create_vault
+    }
+
+    #[allow(dead_code)]
+    pub const fn create_webhook(&self) -> bool {
+        self.create_webhook
     }
 
     #[allow(dead_code)]

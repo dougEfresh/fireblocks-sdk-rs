@@ -4,8 +4,7 @@ use {
             blockchains_assets_api::GetSupportedAssetsError,
             transactions_api::{GetTransactionError, GetTransactionsError},
             vaults_api::{
-                CreateVaultAccountAssetAddressError,
-                GetVaultAccountAssetAddressesPaginatedError,
+                CreateVaultAccountAssetAddressError, GetVaultAccountAssetAddressesPaginatedError,
                 GetVaultAccountError,
             },
         },
@@ -115,6 +114,9 @@ pub enum FireblocksError {
 
     #[error(transparent)]
     FetchSupportedAssetsError(#[from] crate::apis::Error<GetSupportedAssetsError>),
+
+    #[error("failed to create vault {0}")]
+    FetchVaultCreateError(String),
 
     #[error("failed to create wallet {0}")]
     FetchWalletCreateError(String),
