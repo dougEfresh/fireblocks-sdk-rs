@@ -35,15 +35,15 @@ option_if_let_else = "warn"
 nursery = { level = "deny", priority = -1 }
 
 [features]
-default = ["bon", "page"]
+default = ["page", "bon"]
 rustls-tls = ["reqwest/rustls-tls"]
-bon = ["dep:bon"]
-page = ["bon"]
+bon = []
+page = []
 
 [dependencies]
 anyhow = "1"
 async-trait = "^0.1"
-bon = { version = "3", optional = true }
+bon = { version = "3" }
 bytes = { version = "1" }
 chrono = { version = "0.4", default-features = true, features = ["serde"] }
 futures = { version = "0.3" }
