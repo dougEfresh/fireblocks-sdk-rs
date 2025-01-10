@@ -2,7 +2,10 @@ mod setup;
 use {
     fireblocks_sdk::{
         models::{CreateTransactionResponse, TransactionStatus},
-        Client, WalletContainer, WalletType, ASSET_SOL_TEST,
+        Client,
+        WalletContainer,
+        WalletType,
+        ASSET_SOL_TEST,
     },
     setup::{config, Config},
     std::time::Duration,

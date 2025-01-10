@@ -156,7 +156,10 @@ mod tests {
     use {
         crate::{
             assets::{Asset, ASSET_DOGE, ASSET_DOGE_TEST, ASSET_ETH, ASSET_ETH_TEST},
-            ASSET_BTC, ASSET_BTC_TEST, ASSET_SOL, ASSET_SOL_TEST,
+            ASSET_BTC,
+            ASSET_BTC_TEST,
+            ASSET_SOL,
+            ASSET_SOL_TEST,
         },
         std::str::FromStr,
     };
