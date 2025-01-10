@@ -35,10 +35,10 @@ impl Client {
         let params = CreateVaultAccountParams::builder()
             .create_vault_account_request(params)
             .build();
-        Ok(vault_api
+        vault_api
             .create_vault_account(params)
             .await
-            .map_err(|e| FireblocksError::FetchVaultCreateError(e.to_string()))?)
+            .map_err(|e| FireblocksError::FetchVaultCreateError(e.to_string()))
     }
 
     pub async fn create_asset(

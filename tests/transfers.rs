@@ -12,7 +12,7 @@ use {
     tracing::info,
 };
 
-fn transfer_client(config: Config) -> Option<fireblocks_sdk::Client> {
+fn transfer_client(config: &Config) -> Option<fireblocks_sdk::Client> {
     let c = config.client();
     if !config.create_tx() {
         tracing::info!("skipping transfers test");
@@ -51,7 +51,7 @@ async fn transfer_whitelist(
 #[rstest::rstest]
 #[tokio::test]
 async fn test_transfer_internal(config: Config) -> anyhow::Result<()> {
-    let c = transfer_client(config);
+    let c = transfer_client(&config);
     if c.is_none() {
         return Ok(());
     }
@@ -62,7 +62,7 @@ async fn test_transfer_internal(config: Config) -> anyhow::Result<()> {
 #[rstest::rstest]
 #[tokio::test]
 async fn test_transfer_external(config: Config) -> anyhow::Result<()> {
-    let c = transfer_client(config);
+    let c = transfer_client(&config);
     if c.is_none() {
         return Ok(());
     }
@@ -73,7 +73,7 @@ async fn test_transfer_external(config: Config) -> anyhow::Result<()> {
 #[rstest::rstest]
 #[tokio::test]
 async fn test_transfer_poll(config: Config) -> anyhow::Result<()> {
-    let c = transfer_client(config);
+    let c = transfer_client(&config);
     if c.is_none() {
         return Ok(());
     }

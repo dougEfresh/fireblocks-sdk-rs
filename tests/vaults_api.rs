@@ -3,7 +3,6 @@ use {
     apis::vaults_api::*,
     fireblocks_sdk::*,
     setup::{config, Config},
-    std::time::Duration,
 };
 
 #[rstest::rstest]
