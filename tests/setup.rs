@@ -61,6 +61,7 @@ impl Config {
             create_webhook,
         }
     }
+
     #[allow(dead_code)]
     pub const fn create_vault(&self) -> bool {
         self.create_vault

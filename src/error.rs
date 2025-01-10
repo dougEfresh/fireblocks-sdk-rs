@@ -4,7 +4,8 @@ use {
             blockchains_assets_api::GetSupportedAssetsError,
             transactions_api::{GetTransactionError, GetTransactionsError},
             vaults_api::{
-                CreateVaultAccountAssetAddressError, GetVaultAccountAssetAddressesPaginatedError,
+                CreateVaultAccountAssetAddressError,
+                GetVaultAccountAssetAddressesPaginatedError,
                 GetVaultAccountError,
             },
         },

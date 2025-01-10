@@ -3,7 +3,8 @@ use {
     crate::{
         apis::{
             vaults_api::{
-                CreateVaultAccountAssetAddressParams, CreateVaultAccountParams,
+                CreateVaultAccountAssetAddressParams,
+                CreateVaultAccountParams,
                 GetVaultAccountParams,
             },
             Api,
