@@ -35,10 +35,7 @@ async fn transaction_stream(mut ts: TransactionStream) -> anyhow::Result<()> {
 #[rstest::rstest]
 #[tokio::test]
 //#[tokio::test(flavor = "multi_thread", worker_threads = 5)]
-async fn get_paged_vault_accounts(config: &Config) -> anyhow::Result<()> {
-    if !config.is_ok() {
-        return Ok(());
-    }
+async fn get_paged_vault_accounts(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     let pc = PagedClient::new(Arc::new(c.clone()));
     let mut vs = pc.vaults(50);
@@ -52,11 +49,7 @@ async fn get_paged_vault_accounts(config: &Config) -> anyhow::Result<()> {
 
 #[rstest::rstest]
 #[tokio::test]
-//#[tokio::test(flavor = "multi_thread", worker_threads = 5)]
-async fn test_paged_transactions(config: &Config) -> anyhow::Result<()> {
-    if !config.is_ok() {
-        return Ok(());
-    }
+async fn test_paged_transactions(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     let pc = PagedClient::new(Arc::new(c.clone()));
     let ts = pc.transactions_from_source(0, 100, None);

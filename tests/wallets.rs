@@ -40,30 +40,21 @@ async fn wallet_whitelisting(c: Client, wallet_type: WalletType) -> anyhow::Resu
 
 #[rstest::rstest]
 #[tokio::test]
-async fn test_wallet_whitelist_contract(config: &Config) -> anyhow::Result<()> {
-    if !config.is_ok() {
-        return Ok(());
-    }
+async fn test_wallet_whitelist_contract(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     wallet_whitelisting(c, WalletType::Contract).await
 }
 
 #[rstest::rstest]
 #[tokio::test]
-async fn test_wallet_whitelist_external(config: &Config) -> anyhow::Result<()> {
-    if !config.is_ok() {
-        return Ok(());
-    }
+async fn test_wallet_whitelist_external(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     wallet_whitelisting(c, WalletType::External).await
 }
 
 #[rstest::rstest]
 #[tokio::test]
-async fn test_wallet_whitelist_internal(config: &Config) -> anyhow::Result<()> {
-    if !config.is_ok() {
-        return Ok(());
-    }
+async fn test_wallet_whitelist_internal(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     wallet_whitelisting(c, WalletType::Internal).await
 }

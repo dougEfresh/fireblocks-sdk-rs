@@ -7,10 +7,7 @@ use {
 
 #[rstest::rstest]
 #[tokio::test]
-async fn get_transactions(config: &Config) -> anyhow::Result<()> {
-    if !config.is_ok() {
-        return Ok(());
-    }
+async fn get_transactions(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     let params = GetTransactionsParams::builder()
         .limit(10)

@@ -7,10 +7,7 @@ use {
 #[rstest::rstest]
 #[tokio::test]
 #[allow(clippy::unwrap_used)]
-async fn test_supported_assets(config: &Config) -> anyhow::Result<()> {
-    if !config.is_ok() {
-        return Ok(());
-    }
+async fn test_supported_assets(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     let assets = c.supported_assets().await?;
     assert!(!assets.is_empty());

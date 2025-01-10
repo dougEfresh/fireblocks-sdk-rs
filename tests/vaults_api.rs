@@ -7,10 +7,7 @@ use {
 
 #[rstest::rstest]
 #[tokio::test]
-async fn get_vault_account(config: &Config) -> anyhow::Result<()> {
-    if !config.is_ok() {
-        return Ok(());
-    }
+async fn get_vault_account(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     let id = String::from("0");
     let params = GetVaultAccountParams::builder()
@@ -24,10 +21,7 @@ async fn get_vault_account(config: &Config) -> anyhow::Result<()> {
 
 #[rstest::rstest]
 #[tokio::test]
-async fn vault_id(config: &Config) -> anyhow::Result<()> {
-    if !config.is_ok() {
-        return Ok(());
-    }
+async fn vault_id(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     c.vault("0").await?;
     Ok(())
@@ -35,10 +29,7 @@ async fn vault_id(config: &Config) -> anyhow::Result<()> {
 
 #[rstest::rstest]
 #[tokio::test]
-async fn vault_addresses(config: &Config) -> anyhow::Result<()> {
-    if !config.is_ok() {
-        return Ok(());
-    }
+async fn vault_addresses(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     c.addresses("0", ASSET_SOL_TEST).await?;
     Ok(())
@@ -46,10 +37,7 @@ async fn vault_addresses(config: &Config) -> anyhow::Result<()> {
 
 #[rstest::rstest]
 #[tokio::test]
-async fn get_paged_vault_accounts(config: &Config) -> anyhow::Result<()> {
-    if !config.is_ok() {
-        return Ok(());
-    }
+async fn get_paged_vault_accounts(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     let params = GetPagedVaultAccountsParams::builder().limit(10.0).build();
     let result = c.vaults_api().get_paged_vault_accounts(params).await?;
@@ -59,10 +47,7 @@ async fn get_paged_vault_accounts(config: &Config) -> anyhow::Result<()> {
 
 #[rstest::rstest]
 #[tokio::test]
-async fn test_vault_names(config: &Config) -> anyhow::Result<()> {
-    if !config.is_ok() {
-        return Ok(());
-    }
+async fn test_vault_names(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     let params = GetPagedVaultAccountsParams::builder()
         .name_prefix("Default".to_owned())
@@ -77,16 +62,5 @@ async fn test_vault_names(config: &Config) -> anyhow::Result<()> {
     let results = c.vaults_api().get_paged_vault_accounts(params).await?;
     assert!(!results.accounts.is_empty());
     assert_eq!(results.accounts[0].name, "Default");
-    Ok(())
-}
-
-#[rstest::rstest]
-#[test]
-fn check_ci(config: &Config) -> anyhow::Result<()> {
-    if std::env::var("CI").is_ok() && !config.is_ok() {
-        return Err(anyhow::format_err!(
-            "client is not configured and you are running in CI"
-        ));
-    }
     Ok(())
 }

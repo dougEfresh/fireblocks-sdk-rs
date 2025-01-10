@@ -1,15 +1,10 @@
 use {
     fireblocks_sdk::Client,
-    std::{
-        sync::{Once, OnceLock},
-        time::Duration,
-    },
-    tracing::warn,
+    std::{sync::Once, time::Duration},
     tracing_subscriber::{fmt::format::FmtSpan, EnvFilter},
 };
 
 static INIT: Once = Once::new();
-pub static CLIENT: OnceLock<Client> = OnceLock::new();
 
 #[allow(clippy::unwrap_used, clippy::missing_panics_doc)]
 pub fn setup() {
@@ -23,58 +18,49 @@ pub fn setup() {
 
         let env = dotenvy::dotenv();
         if env.is_err() {
-            warn!("no .env file");
-        }
-
-        let api_key: Option<String> = std::env::var("FIREBLOCKS_API_KEY").ok();
-        let key: Option<String> = std::env::var("FIREBLOCKS_SECRET").ok();
-        if api_key.is_none() || key.is_none() {
-            return;
-        }
-        let api_key = api_key.unwrap();
-        let rsa_pem = key.unwrap().as_bytes().to_vec();
-        if let Ok(c) = fireblocks_sdk::ClientBuilder::new(&api_key, &rsa_pem)
-            .use_sandbox()
-            .with_sandbox()
-            .with_user_agent("fireblocks-rs-sdk-test")
-            .with_timeout(Duration::from_secs(15))
-            .build()
-        {
-            let _ = CLIENT.set(c);
+            tracing::debug!("no .env file");
         }
     });
 }
 
 #[rstest::fixture]
-#[once]
+//#[once]
 pub fn config() -> Config {
     setup();
     Config::new()
 }
 
 pub struct Config {
-    client: Option<Client>,
-    #[allow(dead_code)]
+    client: Client,
     create_tx: bool,
 }
 
 impl Config {
     fn new() -> Self {
         let create_tx = std::env::var("FIREBLOCKS_CREATE_TX").ok().is_some();
-        Self {
-            client: CLIENT.get().cloned(),
-            create_tx,
-        }
+        let api_key: String =
+            std::env::var("FIREBLOCKS_API_KEY").expect("FIREBLOCKS_API_KEY is not set");
+        let key: String = std::env::var("FIREBLOCKS_SECRET").expect("FIREBLOCKS_SECRET is not set");
+        let rsa_pem = key.as_bytes().to_vec();
+        let client = fireblocks_sdk::ClientBuilder::new(&api_key, &rsa_pem)
+            .use_sandbox()
+            .with_sandbox()
+            .with_user_agent("fireblocks-rs-sdk-test")
+            .with_timeout(Duration::from_secs(15))
+            .build()
+            .expect("failed to configure client. Is .env configured properly?");
+
+        Self { client, create_tx }
     }
 
     #[allow(dead_code)]
-    pub const fn is_ok(&self) -> bool {
-        self.client.is_some()
+    pub const fn create_tx(&self) -> bool {
+        self.create_tx
     }
 
-    #[allow(clippy::unwrap_used, dead_code, clippy::missing_panics_doc)]
+    #[allow(dead_code)]
     pub fn client(&self) -> Client {
-        self.client.as_ref().unwrap().clone()
+        self.client.clone()
     }
 }
 

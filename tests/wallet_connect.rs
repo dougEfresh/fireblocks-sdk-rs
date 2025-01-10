@@ -9,10 +9,7 @@ use {
 
 #[rstest::rstest]
 #[tokio::test]
-async fn test_wallet_connections(config: &Config) -> anyhow::Result<()> {
-    if !config.is_ok() {
-        return Ok(());
-    }
+async fn test_wallet_connections(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     let dapp = c.wallet_connect_api();
     let params = RemoveParams::builder()
