@@ -35,6 +35,8 @@ pub fn setup() {
         let rsa_pem = key.unwrap().as_bytes().to_vec();
         if let Ok(c) = fireblocks_sdk::ClientBuilder::new(&api_key, &rsa_pem)
             .use_sandbox()
+            .with_sandbox()
+            .with_user_agent("fireblocks-rs-sdk-test")
             .with_timeout(Duration::from_secs(15))
             .build()
         {

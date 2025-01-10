@@ -1,6 +1,6 @@
 mod setup;
 use {
-    fireblocks_sdk::{apis::Api, ASSET_BTC_TEST},
+    fireblocks_sdk::ASSET_BTC_TEST,
     setup::{config, Config},
 };
 
@@ -12,11 +12,7 @@ async fn test_supported_assets(config: &Config) -> anyhow::Result<()> {
         return Ok(());
     }
     let c = config.client();
-    let assets = c
-        .apis()
-        .blockchains_assets_api()
-        .get_supported_assets()
-        .await?;
+    let assets = c.supported_assets().await?;
     assert!(!assets.is_empty());
     let found = assets.iter().find(|a| a.id == ASSET_BTC_TEST.to_string());
     assert!(found.is_some());

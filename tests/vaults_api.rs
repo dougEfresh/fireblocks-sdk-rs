@@ -24,6 +24,28 @@ async fn get_vault_account(config: &Config) -> anyhow::Result<()> {
 
 #[rstest::rstest]
 #[tokio::test]
+async fn vault_id(config: &Config) -> anyhow::Result<()> {
+    if !config.is_ok() {
+        return Ok(());
+    }
+    let c = config.client();
+    c.vault("0").await?;
+    Ok(())
+}
+
+#[rstest::rstest]
+#[tokio::test]
+async fn vault_addresses(config: &Config) -> anyhow::Result<()> {
+    if !config.is_ok() {
+        return Ok(());
+    }
+    let c = config.client();
+    c.addresses("0", ASSET_SOL_TEST).await?;
+    Ok(())
+}
+
+#[rstest::rstest]
+#[tokio::test]
 async fn get_paged_vault_accounts(config: &Config) -> anyhow::Result<()> {
     if !config.is_ok() {
         return Ok(());

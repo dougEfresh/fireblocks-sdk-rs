@@ -36,7 +36,6 @@ mod transfer;
 mod whitelist;
 pub struct ClientBuilder {
     api_key: String,
-    client: Option<reqwest_middleware::ClientBuilder>,
     timeout: Duration,
     connect_timeout: Duration,
     user_agent: String,
@@ -48,7 +47,6 @@ impl Default for ClientBuilder {
     fn default() -> Self {
         Self {
             api_key: String::new(),
-            client: None,
             timeout: Duration::from_secs(15),
             connect_timeout: Duration::from_secs(5),
             user_agent: format!("fireblocks-sdk-rs {}", env!["CARGO_PKG_VERSION"]),
@@ -101,29 +99,24 @@ impl ClientBuilder {
         self
     }
 
-    #[allow(clippy::return_self_not_must_use)]
-    pub fn with_client(mut self, client: reqwest_middleware::ClientBuilder) -> Self {
-        self.client = Some(client);
-        self
-    }
-
     pub fn build(self) -> Result<Client, error::FireblocksError> {
         let key = EncodingKey::from_rsa_pem(&self.secret[..])?;
         let signer = Signer::new(key, &self.api_key);
         let jwt_handler = JwtSigningMiddleware::new(signer);
-        let c = self.client.unwrap_or_else(|| {
-            let r = reqwest::ClientBuilder::new()
-                .timeout(self.timeout)
-                .connect_timeout(self.connect_timeout)
-                .user_agent(String::from(&self.user_agent))
-                .build()
-                .unwrap_or_default();
-            reqwest_middleware::ClientBuilder::new(r)
-                .with(crate::log::LoggingMiddleware)
-                .with(jwt_handler)
-        });
-        let c = c.build();
-        Ok(Client::new_with_url(&self.url, c, Some(self.user_agent)))
+        let r = reqwest::ClientBuilder::new()
+            .timeout(self.timeout)
+            .connect_timeout(self.connect_timeout)
+            .user_agent(String::from(&self.user_agent))
+            .build()
+            .unwrap_or_default();
+        let client = reqwest_middleware::ClientBuilder::new(r)
+            .with(crate::log::LoggingMiddleware)
+            .with(jwt_handler);
+        Ok(Client::new_with_url(
+            &self.url,
+            client.build(),
+            Some(self.user_agent),
+        ))
     }
 }
 
@@ -181,12 +174,12 @@ impl Client {
     pub async fn addresses(
         &self,
         vault_id: &str,
-        asset_id: &str,
+        asset_id: impl Into<String>,
     ) -> crate::Result<Vec<VaultWalletAddress>> {
         let vault_api = self.api_client.vaults_api();
         let params = GetVaultAccountAssetAddressesPaginatedParams::builder()
             .vault_account_id(String::from(vault_id))
-            .asset_id(String::from(asset_id))
+            .asset_id(asset_id.into())
             .build();
 
         vault_api

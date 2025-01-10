@@ -1,6 +1,8 @@
 use {
     crate::{
-        apis::vaults_api::GetPagedVaultAccountsParams, models::VaultAccountsPagedResponse, Client,
+        apis::vaults_api::GetPagedVaultAccountsParams,
+        models::VaultAccountsPagedResponse,
+        Client,
         FireblocksError,
     },
     futures::{future::BoxFuture, stream::FuturesUnordered, FutureExt, Stream, StreamExt},
