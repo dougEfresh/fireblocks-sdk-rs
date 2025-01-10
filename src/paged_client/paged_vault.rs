@@ -1,8 +1,7 @@
 use {
     crate::{
-        apis::vaults_api::{GetPagedVaultAccountsError, GetPagedVaultAccountsParams},
-        models::VaultAccountsPagedResponse,
-        Client,
+        apis::vaults_api::GetPagedVaultAccountsParams, models::VaultAccountsPagedResponse, Client,
+        FireblocksError,
     },
     futures::{future::BoxFuture, stream::FuturesUnordered, FutureExt, Stream, StreamExt},
     std::{
@@ -12,8 +11,7 @@ use {
     },
 };
 
-type VaultResult =
-    std::result::Result<VaultAccountsPagedResponse, crate::apis::Error<GetPagedVaultAccountsError>>;
+type VaultResult = std::result::Result<VaultAccountsPagedResponse, crate::FireblocksError>;
 
 pub struct VaultStream {
     client: Arc<Client>,
@@ -53,8 +51,14 @@ impl Stream for VaultStream {
             self.init = true;
             let client = self.client.clone();
             let params = self.build_params();
-            let fut =
-                async move { client.vaults_api().get_paged_vault_accounts(params).await }.boxed();
+            let fut = async move {
+                client
+                    .vaults_api()
+                    .get_paged_vault_accounts(params)
+                    .await
+                    .map_err(|e| FireblocksError::FetchVaultsPagedError(e.to_string()))
+            }
+            .boxed();
             self.fut.push(fut);
             cx.waker().wake_by_ref();
             return Poll::Pending;
@@ -94,7 +98,14 @@ impl Stream for VaultStream {
 
         let client = self.client.clone();
         let params = self.build_params();
-        let fut = async move { client.vaults_api().get_paged_vault_accounts(params).await }.boxed();
+        let fut = async move {
+            client
+                .vaults_api()
+                .get_paged_vault_accounts(params)
+                .await
+                .map_err(|e| FireblocksError::FetchVaultsPagedError(e.to_string()))
+        }
+        .boxed();
         self.fut.push(fut);
         cx.waker().wake_by_ref();
         Poll::Pending

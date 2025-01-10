@@ -78,9 +78,6 @@ impl Config {
 
 #[allow(dead_code)]
 pub fn dummy_name(extra: Option<&str>) -> String {
-    format!(
-        "{}{}",
-        format!("z-test-{}", chrono::Utc::now().timestamp_millis()),
-        extra.unwrap_or_default()
-    )
+    let name = format!("z-test-{}", chrono::Utc::now().timestamp_millis());
+    format!("{}{}", name, extra.unwrap_or_default())
 }

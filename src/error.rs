@@ -4,8 +4,7 @@ use {
             blockchains_assets_api::GetSupportedAssetsError,
             transactions_api::{GetTransactionError, GetTransactionsError},
             vaults_api::{
-                CreateVaultAccountAssetAddressError,
-                GetVaultAccountAssetAddressesPaginatedError,
+                CreateVaultAccountAssetAddressError, GetVaultAccountAssetAddressesPaginatedError,
                 GetVaultAccountError,
             },
         },
@@ -139,4 +138,7 @@ pub enum FireblocksError {
 
     #[error("failed fetching whitelisted wallet: {0}")]
     FetchWalletError(String),
+
+    #[error("failed fetching vaults (paging): {0}")]
+    FetchVaultsPagedError(String),
 }
