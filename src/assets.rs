@@ -116,11 +116,12 @@ impl Display for Asset {
     }
 }
 
-impl Into<String> for Asset {
-    fn into(self) -> String {
-        format!("{self}")
+impl From<Asset> for String {
+    fn from(value: Asset) -> Self {
+        format!("{value}")
     }
 }
+
 /// Convert a String to an [`Asset`]
 /// Note: This method will never fail
 impl FromStr for Asset {
@@ -155,10 +156,7 @@ mod tests {
     use {
         crate::{
             assets::{Asset, ASSET_DOGE, ASSET_DOGE_TEST, ASSET_ETH, ASSET_ETH_TEST},
-            ASSET_BTC,
-            ASSET_BTC_TEST,
-            ASSET_SOL,
-            ASSET_SOL_TEST,
+            ASSET_BTC, ASSET_BTC_TEST, ASSET_SOL, ASSET_SOL_TEST,
         },
         std::str::FromStr,
     };

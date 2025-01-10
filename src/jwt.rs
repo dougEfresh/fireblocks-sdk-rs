@@ -30,10 +30,10 @@ impl Signer {
         }
     }
 
-    pub fn sign(&self, path: &str, body: Vec<u8>) -> Result<String, JwtError> {
+    pub fn sign(&self, path: &str, body: &[u8]) -> Result<String, JwtError> {
         // tracing::debug!("signing path:'{}' hasBody:{}", path, body.is_some());
         let header = Header::new(Algorithm::RS256);
-        let claims = Claims::new(path, &self.api_key, &body);
+        let claims = Claims::new(path, &self.api_key, body);
         let msg = jsonwebtoken::encode(&header, &claims, &self.key)?;
         Ok(msg)
     }
@@ -127,7 +127,7 @@ impl JwtSigningMiddleware {
     }
 }
 impl JwtSigningMiddleware {
-    async fn buffer_and_get_body_bytes(req: &mut reqwest::Request) -> Vec<u8> {
+    fn buffer_and_get_body_bytes(req: &mut reqwest::Request) -> Vec<u8> {
         // Extract the existing body (if any)
         let body_opt = req.body_mut().take();
 
@@ -158,8 +158,8 @@ impl Middleware for JwtSigningMiddleware {
             .query()
             .map_or_else(String::new, |q| format!("?{q}"));
         let path = format!("{}{}", req.url().path(), query);
-        let body_bytes = Self::buffer_and_get_body_bytes(&mut req).await;
-        let jwt = self.signer.sign(&path, body_bytes).map_err(|e| {
+        let body_bytes = Self::buffer_and_get_body_bytes(&mut req);
+        let jwt = self.signer.sign(&path, &body_bytes).map_err(|e| {
             anyhow::format_err!("failed to sign payload for path {path} error:'{e}'")
         })?;
         // Add the Authorization header
