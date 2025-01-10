@@ -26,10 +26,10 @@ pub enum Network {
 /// use fireblocks_sdk::Client;
 /// use fireblocks_sdk::{ASSET_SOL, Asset};
 ///
-/// async fn asset(client: Client) -> color_eyre::Result<()> {
-///  let (response, request_id)  = client.create_address(0, ASSET_SOL ).await?;
+/// async fn asset(client: Client) -> anyhow::Result<()> {
+///  let response  = client.create_asset("0", ASSET_SOL ).await?;
 ///  // same call but with string arg: let (response, request_id)  = client.create_address(0, "SOL" ).await?;
-///  println!("Request id: {request_id}, {response:#?}");
+///  println!("{response:#?}");
 ///
 /// // create a new sh*tcoin
 /// assert_eq!("sh*tcoin", Asset::new("sh*tcoin").to_string());

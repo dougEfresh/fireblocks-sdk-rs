@@ -152,10 +152,14 @@ impl Client {
         .map_err(crate::FireblocksError::FetchTransactionError)
     }
 
-    pub async fn create_asset(&self, vault_id: &str, asset_id: &str) -> crate::Result<String> {
+    pub async fn create_asset(
+        &self,
+        vault_id: &str,
+        asset_id: impl Into<String>,
+    ) -> crate::Result<String> {
         let api = self.api_client.vaults_api();
         let params = CreateVaultAccountAssetAddressParams::builder()
-            .asset_id(String::from(asset_id))
+            .asset_id(asset_id.into())
             .vault_account_id(String::from(vault_id))
             .build();
         api.create_vault_account_asset_address(params)

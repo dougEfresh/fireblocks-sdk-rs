@@ -31,21 +31,43 @@ See developer [portal](https://developers.fireblocks.com/docs/introduction) and 
 # Quick Start
 
 ```rust
-use fireblocks_sdk::{ClientBuilder, PagingVaultRequestBuilder};
+use fireblocks_sdk::ClientBuilder;
+use fireblocks_sdk::apis::vaults_api::GetPagedVaultAccountsParams;
+use crate::fireblocks_sdk::apis::Api;
 use std::time::Duration;
 
-async fn vaults() -> color_eyre::Result<()> {
+async fn vaults() -> anyhow::Result<()> {
   let api_key = std::env::var("FIREBLOCKS_API_KEY")?;
   let secret = std::env::var("FIREBLOCKS_SECRET")?;
   let client = ClientBuilder::new(&api_key, &secret.into_bytes())
     .with_timeout(Duration::from_secs(10))
     .with_connect_timeout(Duration::from_secs(5))
     .build()?;
-  let params = PagingVaultRequestBuilder::new().limit(10).build()?;
-  let (vault_accounts, request_id) = client.vaults(params).await?;
-  println!("Got requestId: {request_id}");
-  println!("vault accounts: {:#?}", vault_accounts.accounts);
+  // Auto generate ApiClient 
+  let api_client = client.apis();
+  let params = GetPagedVaultAccountsParams::builder()
+            .limit(50.0)
+            .build();
+  let vault_accounts = api_client.vaults_api().get_paged_vault_accounts(params).await?;
+  println!("vault accounts: {:#?}", vault_accounts);
   Ok(())
+}
+```
+
+# APIs
+
+The [client](./src/client.rs) is a small wrapper to the auto-generate [APIs](./src/apis/mod.rs) using openapi generator.
+
+```rust
+
+use crate::fireblocks_sdk::apis::Api;
+use fireblocks_sdk::Client;
+
+fn demo(client: Client) {
+  // Access to generated API client
+  let api_client = client.apis();
+  // External Wallet Api (whitlisted)
+  let external_wallet_api = api_client.whitelisted_external_wallets_api();
 }
 ```
 
