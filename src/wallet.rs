@@ -1,9 +1,17 @@
-use crate::models::WalletAsset;
-use crate::{
-    assets::Asset,
-    models::{UnmanagedExternalWallet, UnmanagedWallet, WalletAssetExternal},
+use {
+    crate::{
+        assets::Asset,
+        models::{
+            TransferPeerPathType,
+            UnmanagedExternalWallet,
+            UnmanagedWallet,
+            WalletAsset,
+            WalletAssetExternal,
+        },
+        WalletType,
+    },
+    serde::{Deserialize, Serialize},
 };
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct WalletContainer {

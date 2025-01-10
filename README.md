@@ -65,6 +65,6 @@ cargo test
 
 # Docs 
  
-Some of the code was generatered by Fireblocks openapi [spec](https://raw.githubusercontent.com/fireblocks/fireblocks-openapi-spec/refs/heads/main/api-spec-v2.yaml)
+Code was generatered by Fireblocks openapi [spec](https://raw.githubusercontent.com/fireblocks/fireblocks-openapi-spec/refs/heads/main/api-spec-v2.yaml)
 
 See [docs](./docs/README.md)

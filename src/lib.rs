@@ -11,8 +11,6 @@ mod log;
 #[cfg(feature = "page")]
 mod paged_client;
 mod wallet;
-pub use wallet::WalletContainer;
-
 #[cfg(feature = "page")]
 pub use paged_client::{PagedClient, TransactionStream, VaultStream};
 pub use {
@@ -22,9 +20,18 @@ pub use {
         ApiClient,
     },
     assets::{
-        Asset, ASSET_BTC, ASSET_BTC_TEST, ASSET_ETH, ASSET_ETH_TEST, ASSET_SOL, ASSET_SOL_TEST,
+        Asset,
+        ASSET_BTC,
+        ASSET_BTC_TEST,
+        ASSET_DOGE,
+        ASSET_DOGE_TEST,
+        ASSET_ETH,
+        ASSET_ETH_TEST,
+        ASSET_SOL,
+        ASSET_SOL_TEST,
     },
     client::{Client, ClientBuilder},
+    wallet::WalletContainer,
 };
 
 pub const FIREBLOCKS_API: &str = "https://api.fireblocks.io/v1";
@@ -42,15 +49,11 @@ pub enum WalletType {
 
 impl Display for WalletType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match &self {
-                Self::Internal => "Internal",
-                Self::External => "External",
-                Self::Contract => "Contract",
-            }
-        )
+        write!(f, "{}", match &self {
+            Self::Internal => "Internal",
+            Self::External => "External",
+            Self::Contract => "Contract",
+        })
     }
 }
 

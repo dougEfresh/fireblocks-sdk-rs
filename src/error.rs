@@ -4,7 +4,8 @@ use {
             blockchains_assets_api::GetSupportedAssetsError,
             transactions_api::{GetTransactionError, GetTransactionsError},
             vaults_api::{
-                CreateVaultAccountAssetAddressError, GetVaultAccountAssetAddressesPaginatedError,
+                CreateVaultAccountAssetAddressError,
+                GetVaultAccountAssetAddressesPaginatedError,
                 GetVaultAccountError,
             },
         },
@@ -130,4 +131,10 @@ pub enum FireblocksError {
 
     #[error("failed fetch internal wallets: {0}")]
     FetchWalletInternalError(String),
+
+    #[error("failed creating transaction: {0}")]
+    FetchCreateTransactionError(String),
+
+    #[error(transparent)]
+    UuidErr(#[from] uuid::Error),
 }

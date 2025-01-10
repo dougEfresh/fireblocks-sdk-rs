@@ -97,3 +97,6 @@ name = "staking"
 [[test]]
 name = "wallets"
 
+[[test]]
+name = "transfers"
+

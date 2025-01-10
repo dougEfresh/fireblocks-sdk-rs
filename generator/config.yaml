@@ -55,3 +55,7 @@ files:
     templateType: SupportingFiles
     destinationFilename: wallet_asset_external.rs
     folder: src/models
+  custom/models/create_transaction_response.rs.rs:
+    templateType: SupportingFiles
+    destinationFilename: create_transaction_response.rs
+    folder: src/models

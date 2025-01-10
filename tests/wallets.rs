@@ -1,7 +1,14 @@
 mod setup;
-use fireblocks_sdk::apis::whitelisted_internal_wallets_api::GetInternalWalletParams;
-use fireblocks_sdk::{apis::whitelisted_external_wallets_api::GetExternalWalletParams, WalletType};
-use setup::{config, dummy_name, Config};
+use {
+    fireblocks_sdk::{
+        apis::{
+            whitelisted_external_wallets_api::GetExternalWalletParams,
+            whitelisted_internal_wallets_api::GetInternalWalletParams,
+        },
+        WalletType,
+    },
+    setup::{config, dummy_name, Config},
+};
 
 #[rstest::rstest]
 #[tokio::test]

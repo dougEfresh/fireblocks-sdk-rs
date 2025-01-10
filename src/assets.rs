@@ -87,15 +87,6 @@ impl Serialize for Asset {
     }
 }
 
-pub const ASSET_BTC: Asset = Asset::BTC(Network::Main);
-pub const ASSET_BTC_TEST: Asset = Asset::BTC(Network::Test);
-pub const ASSET_SOL: Asset = Asset::SOL(Network::Main);
-pub const ASSET_SOL_TEST: Asset = Asset::SOL(Network::Test);
-pub const ASSET_ETH: Asset = Asset::ETH(EthNetwork::Main);
-pub const ASSET_ETH_TEST: Asset = Asset::ETH(EthNetwork::Test);
-pub const ASSET_DOGE: Asset = Asset::Dodge(Network::Main);
-pub const ASSET_DOGE_TEST: Asset = Asset::Dodge(Network::Test);
-
 impl AsRef<str> for Asset {
     #[allow(clippy::match_same_arms)]
     fn as_ref(&self) -> &str {
@@ -125,6 +116,11 @@ impl Display for Asset {
     }
 }
 
+impl Into<String> for Asset {
+    fn into(self) -> String {
+        format!("{self}")
+    }
+}
 /// Convert a String to an [`Asset`]
 /// Note: This method will never fail
 impl FromStr for Asset {
@@ -144,6 +140,15 @@ impl FromStr for Asset {
         }
     }
 }
+
+pub const ASSET_BTC: Asset = Asset::BTC(Network::Main);
+pub const ASSET_BTC_TEST: Asset = Asset::BTC(Network::Test);
+pub const ASSET_SOL: Asset = Asset::SOL(Network::Main);
+pub const ASSET_SOL_TEST: Asset = Asset::SOL(Network::Test);
+pub const ASSET_ETH: Asset = Asset::ETH(EthNetwork::Main);
+pub const ASSET_ETH_TEST: Asset = Asset::ETH(EthNetwork::Test);
+pub const ASSET_DOGE: Asset = Asset::Dodge(Network::Main);
+pub const ASSET_DOGE_TEST: Asset = Asset::Dodge(Network::Test);
 
 #[cfg(test)]
 mod tests {
