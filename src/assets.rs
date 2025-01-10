@@ -161,6 +161,7 @@ mod tests {
             ASSET_SOL,
             ASSET_SOL_TEST,
         },
+        serde_json::json,
         std::str::FromStr,
     };
 
@@ -207,6 +208,9 @@ mod tests {
         assert_eq!(ASSET_BTC.to_string(), "BTC");
 
         assert_eq!("BLAH", Asset::new("BLAH").to_string());
+        let v = json!("SOL_TEST");
+        let a: Asset = serde_json::from_value(v)?;
+        assert_eq!("SOL_TEST", a.to_string().as_str());
         Ok(())
     }
 }
