@@ -16,7 +16,7 @@ pub struct WalletAsset {
     #[serde(rename = "id")]
     pub id: String,
     #[serde(rename = "balance")]
-    pub balance: f64,
+    pub balance: Option<String>,
     #[serde(rename = "status")]
     pub status: models::ConfigChangeRequestStatus,
     #[serde(rename = "address", skip_serializing_if = "Option::is_none")]

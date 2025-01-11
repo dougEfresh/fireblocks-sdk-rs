@@ -37,6 +37,28 @@ async fn wallet_whitelisting(c: Client, wallet_type: WalletType) -> anyhow::Resu
     c.wallet_delete(wallet_type, &id).await?;
     Ok(())
 }
+#[rstest::rstest]
+#[tokio::test]
+async fn test_wallet_list_contract(config: Config) -> anyhow::Result<()> {
+    config.client().wallets(WalletType::Contract).await?;
+    Ok(())
+}
+
+#[rstest::rstest]
+#[tokio::test]
+async fn test_wallet_list_external(config: Config) -> anyhow::Result<()> {
+    let c = config.client();
+    c.wallets(WalletType::External).await?;
+    Ok(())
+}
+
+#[rstest::rstest]
+#[tokio::test]
+async fn test_wallet_list_internal(config: Config) -> anyhow::Result<()> {
+    let c = config.client();
+    c.wallets(WalletType::Internal).await?;
+    Ok(())
+}
 
 #[rstest::rstest]
 #[tokio::test]
