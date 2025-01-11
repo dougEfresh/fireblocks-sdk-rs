@@ -80,7 +80,7 @@ impl Client {
             WalletType::Contract => {
                 let api = self.api_client.whitelisted_contracts_api();
                 let params = AddContractAssetParams::builder()
-                    .asset_id(asset_id.into())
+                    .asset_id(asset_id)
                     .contract_id(String::from(address))
                     .build();
                 api.add_contract_asset(params)
