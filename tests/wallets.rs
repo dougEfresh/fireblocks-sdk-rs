@@ -40,10 +40,11 @@ async fn wallet_whitelisting(c: Client, wallet_type: WalletType) -> anyhow::Resu
 
 #[rstest::rstest]
 #[tokio::test]
-async fn test_wallet_whitelist_contract(config: Config) -> anyhow::Result<()> {
-    let c = config.client();
-    tracing::warn!("contract whitelisting is disabled")
+async fn test_wallet_whitelist_contract(_config: Config) -> anyhow::Result<()> {
+    //let c = config.client();
     // wallet_whitelisting(c, WalletType::Contract).await
+    tracing::warn!("contract whitelisting is disabled");
+    Ok(())
 }
 
 #[rstest::rstest]
