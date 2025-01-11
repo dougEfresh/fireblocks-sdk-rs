@@ -1,19 +1,19 @@
 <div align="center">
   <h1><code>fireblocks-sdk</code></h1>
   <a href="https://docs.rs/fireblocks-sdk/">
-    <img src="https://docs.rs/fireblocks-sdk/badge.svg">
+    <img src="https://docs.rs/fireblocks-sdk/badge.svg" height="25">
   </a>
   <a href="https://github.com/dougEfresh/fireblocks-sdk-rs/actions">
-    <img src="https://github.com/dougEfresh/fireblocks-sdk-rs/workflows/Continuous%20integration/badge.svg">
+    <img src="https://github.com/dougEfresh/fireblocks-sdk-rs/workflows/Continuous%20integration/badge.svg" height="25">
   </a>
   <a href="https://deps.rs/repo/github/dougEfresh/fireblocks-sdk-rs">
-    <img src="https://deps.rs/repo/github/dougEfresh/fireblocks-sdk-rs/status.svg" >
+    <img src="https://deps.rs/repo/github/dougEfresh/fireblocks-sdk-rs/status.svg" height="25">
   </a>
   <a href="https://codecov.io/github/dougEfresh/fireblocks-sdk-rs" > 
-   <img src="https://codecov.io/github/dougEfresh/fireblocks-sdk-rs/graph/badge.svg?token=dILa1k9tlW"/> 
+   <img src="https://codecov.io/github/dougEfresh/fireblocks-sdk-rs/graph/badge.svg?token=dILa1k9tlW" height="25"/> 
  </a>
   <a href="https://crates.io/crates/fireblocks-sdk">
-    <img src="https://img.shields.io/crates/v/fireblocks-sdk.svg">
+    <img src="https://img.shields.io/crates/v/fireblocks-sdk.svg" height="25">
   </a>
 </div>
 
@@ -25,6 +25,10 @@
 !!!! Note this is community driven project and not affiliated with [Fireblocks](https://fireblocks.io) !!!!! 
 
 # Getting Started 
+
+```shell
+cargo install fireblocks-sdk
+```
 
 See developer [portal](https://developers.fireblocks.com/docs/introduction) and sign up for a [sandbox](https://developers.fireblocks.com/docs/sandbox-quickstart) account
 
@@ -71,22 +75,38 @@ fn demo(client: Client) {
 }
 ```
 
+## Bon builder
+
+This is [bon](https://crates.io/crates/bon) crate for construction parameters to API endpoints (both query and body)
+
+## Caveats 
+
+The openapi-generator decided that all integers are floats. Annoying yes, but it is what it is.
+
 # Development
 
 Create a .env file
+
 ```shell
 cp .env-sameple .env
 ```
-Edit .env and configure your API and secret key
+
+Edit .env and configure your API and secret key. You also need to create some whitlisted (see [test](./tests/wallets.rs) for details)
 
 Run tests:
 ```shell
 cargo test
 ```
+
+Run a single test:
+```shell
+cargo test --test wallets
+```
+
 ---
 
 # Docs 
  
-Code was generatered by Fireblocks openapi [spec](https://raw.githubusercontent.com/fireblocks/fireblocks-openapi-spec/refs/heads/main/api-spec-v2.yaml)
+Code was generatered by Fireblocks openapi [spec](https://raw.githubusercontent.com/fireblocks/fireblocks-openapi-spec/refs/heads/main/api-spec-v2.yaml) using [openapi-generator](./Makefile) with this [config](./generator/config.yaml)
 
 See [docs](./docs/README.md)
