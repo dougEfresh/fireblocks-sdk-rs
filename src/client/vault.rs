@@ -3,7 +3,7 @@ use {
     crate::{
         apis::{
             vaults_api::{
-                CreateVaultAccountAssetAddressParams,
+                ActivateAssetForVaultAccountParams,
                 CreateVaultAccountParams,
                 GetVaultAccountParams,
             },
@@ -47,13 +47,13 @@ impl Client {
         asset_id: impl Into<String>,
     ) -> crate::Result<String> {
         let api = self.api_client.vaults_api();
-        let params = CreateVaultAccountAssetAddressParams::builder()
+        let params = ActivateAssetForVaultAccountParams::builder()
             .asset_id(asset_id.into())
             .vault_account_id(String::from(vault_id))
             .build();
-        api.create_vault_account_asset_address(params)
+        api.activate_asset_for_vault_account(params)
             .await
-            .map_err(crate::FireblocksError::FetchCreateAssetError)
-            .map(|r| r.address.unwrap_or_default())
+            .map_err(|e| FireblocksError::FetchVaultAssetActivateCreateError(e.to_string()))
+            .map(|r| r.address)
     }
 }

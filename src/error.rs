@@ -116,6 +116,9 @@ pub enum FireblocksError {
     #[error(transparent)]
     FetchSupportedAssetsError(#[from] crate::apis::Error<GetSupportedAssetsError>),
 
+    #[error("failed to create vault asset {0}")]
+    FetchVaultAssetActivateCreateError(String),
+
     #[error("failed to create vault {0}")]
     FetchVaultCreateError(String),
 

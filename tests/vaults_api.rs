@@ -81,8 +81,8 @@ async fn vault_create(config: Config) -> anyhow::Result<()> {
         vault_type: None,
         auto_assign: None,
     };
-    let _vault_account = c.create_vault(params).await?;
-    // tokio::time::sleep(Duration::from_secs(1)).await;
-    // c.create_asset(&vault_account.id, ASSET_ETH_TEST).await?;
+    let vault_account = c.create_vault(params).await?;
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+    c.create_asset(&vault_account.id, ASSET_ETH_TEST).await?;
     Ok(())
 }
