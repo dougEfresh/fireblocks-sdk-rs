@@ -30,7 +30,7 @@ async fn wallet_whitelisting(c: Client, wallet_type: WalletType) -> anyhow::Resu
     let w = c.wallet_by_id(wallet_type, &id).await?;
     assert!(!w.id.is_empty());
     assert_eq!(&w.id, &id);
-    c.wallet_create_asset(WalletType::External, &w.id, asset_id, &address)
+    c.wallet_create_asset(wallet_type, &w.id, asset_id, &address)
         .await?;
     // let them rest for a second before delete
     tokio::time::sleep(Duration::from_secs(1)).await;
