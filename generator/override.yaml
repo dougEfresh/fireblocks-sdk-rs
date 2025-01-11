@@ -1,0 +1,11 @@
+components:
+  schemas:
+    VaultAccount:
+      required:
+        - id
+        - name
+        - assets
+        - hiddenOnUI
+        - customerRefId
+        - autoFuel
+

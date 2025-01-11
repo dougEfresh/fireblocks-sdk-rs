@@ -1,0 +1,73 @@
+gitUserId: dougEfresh
+gitRepoId: fireblock-sdk-rs
+templateDir: ./templates
+# library: reqwest
+library: reqwest-trait
+globalProperty:
+  modelTests: true
+  apiTests: true
+  ensureUniqueParams: true
+  skipFormModel: true
+  modelDocs: true
+  apiDocs: true
+additionalProperties:
+  packageName: fireblocks-sdk
+  bestFitInt: true
+  useBonBuilder: true
+  topLevelApiClient: true
+  mockall: false
+  avoidBoxedModels: true
+  supportAsync: true
+  supportMiddleware: true
+  supportMultipleResponses: false
+  useSingleRequestParameter: true
+  withAWSV4Signature: false
+  preferUnsignedInt: true
+  licenseName: MIT
+  packageDescription: "The Fireblocks Official SDK is a comprehensive software development kit that enables seamless integration and interaction with the Fireblocks platform. Fireblocks is a cutting-edge blockchain infrastructure platform that provides secure and scalable solutions for managing digital assets and transactions. This SDK empowers developers to build robust applications that can interact with the Fireblocks platform's features, including creating and managing vault accounts, initiating secure transactions, managing assets, and more. It abstracts complex interactions with the Fireblocks API, making it easier for developers to leverage the platform's capabilities while adhering to best practices in security and efficiency."
+
+files:
+  custom/models/d_app_connections_api.rs:
+    templateType: SupportingFiles
+    destinationFilename: d_app_connections_api.rs
+    folder: src/models/d_app_connections_api.rs
+  custom/models/signed_message_signature.rs:
+    templateType: SupportingFiles
+    destinationFilename: signed_message_signature.rs
+    folder: src/models/signed_message_signature.rs
+  custom/models/unsigned_message.rs:
+    templateType: SupportingFiles
+    destinationFilename: unsigned_message.rs
+    folder: src/models/unsigned_message.rs
+  custom/models/vault_accounts_paged_response.rs:
+    templateType: SupportingFiles
+    destinationFilename: vault_accounts_paged_response.rs
+    folder: src/models
+  custom/models/paginated_address_response.rs:
+    templateType: SupportingFiles
+    destinationFilename: paginated_address_response.rs
+    folder: src/models
+  custom/models/vault_wallet_address.rs:
+    templateType: SupportingFiles
+    destinationFilename: vault_wallet_address.rs
+    folder: src/models
+  custom/models/create_transaction_response.rs:
+    templateType: SupportingFiles
+    destinationFilename: create_transaction_response.rs
+    folder: src/models
+  custom/models/wallet_asset_external.rs:
+    templateType: SupportingFiles
+    destinationFilename: wallet_asset_external.rs
+    folder: src/models
+  custom/models/wallet_asset.rs:
+    templateType: SupportingFiles
+    destinationFilename: wallet_asset.rs
+    folder: src/models
+  custom/models/external_wallet_asset_detail.rs:
+    templateType: SupportingFiles
+    destinationFilename: external_wallet_asset_detail.rs
+    folder: src/models
+  custom/models/external_wallet_asset.rs:
+    templateType: SupportingFiles
+    destinationFilename: external_wallet_asset.rs
+    folder: src/models
