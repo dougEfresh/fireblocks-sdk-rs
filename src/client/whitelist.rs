@@ -3,6 +3,7 @@ use {
     crate::{
         apis::{
             whitelisted_contracts_api::{
+                AddContractAssetParams,
                 CreateContractParams,
                 DeleteContractParams,
                 GetContractParams,
@@ -76,7 +77,18 @@ impl Client {
                     .map_err(|e| FireblocksError::FetchWalletCreateError(e.to_string()))?
                     .id
             }
-            WalletType::Contract => todo!(),
+            WalletType::Contract => {
+                let api = self.api_client.whitelisted_contracts_api();
+                let params = AddContractAssetParams::builder()
+                    .asset_id(asset_id.into())
+                    .contract_id(String::from(address))
+                    .build();
+                api.add_contract_asset(params)
+                    .await
+                    .map_err(|e| FireblocksError::FetchWalletCreateError(e.to_string()))?
+                    .id
+                    .unwrap_or_default()
+            }
         };
         Ok(id)
     }
