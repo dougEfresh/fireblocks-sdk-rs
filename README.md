@@ -22,9 +22,9 @@
 
 `fireblocks_sdk` is an async library for the Fireblocks [API](https://docs.fireblocks.com/api/swagger-ui/#)
 
-!!!! Note this is community driven project and not affiliated with [Fireblocks](https://fireblocks.io) !!!!! 
+!!!! Note this is community driven project and not affiliated with [Fireblocks](https://fireblocks.io) !!!!!
 
-# Getting Started 
+# Getting Started
 
 ```shell
 cargo install fireblocks-sdk
@@ -44,6 +44,7 @@ async fn vaults() -> anyhow::Result<()> {
   let api_key = std::env::var("FIREBLOCKS_API_KEY")?;
   let secret = std::env::var("FIREBLOCKS_SECRET")?;
   let client = ClientBuilder::new(&api_key, &secret.into_bytes())
+    .with_sandbox()
     .with_timeout(Duration::from_secs(10))
     .with_connect_timeout(Duration::from_secs(5))
     .build()?;
@@ -106,7 +107,7 @@ cargo test --test wallets
 ---
 
 # Docs 
- 
+
 Code was generatered by Fireblocks openapi [spec](https://raw.githubusercontent.com/fireblocks/fireblocks-openapi-spec/refs/heads/main/api-spec-v2.yaml) using [openapi-generator](./Makefile) with this [config](./generator/config.yaml)
 
 See [docs](./docs/README.md)
