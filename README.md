@@ -77,7 +77,7 @@ async fn main() -> anyhow::Result<()> {
 
 # APIs
 
-The [client](./src/client.rs) is a small wrapper to the auto-generate [APIs](./src/apis/mod.rs) using openapi generator.
+The [fireblocks_sdk::Client](./struct.Client.html) is a small wrapper to the auto-generate [fireblocks_sdk::apis::ApiClient](./apis/struct.ApiClient.html) using openapi generator.
 
 ```rust
 
@@ -94,7 +94,7 @@ fn demo(client: Client) {
 
 ## Bon builder
 
-This is [bon](https://crates.io/crates/bon) crate for construction parameters to API endpoints (both query and body)
+Parameters to [APIs](fireblocks_sdk::apis::ApiClient) use [bon](https://crates.io/crates/bon) to all API endpoints (both query and body)
 
 ## Caveats 
 
@@ -108,7 +108,7 @@ Create a .env file
 cp .env-sameple .env
 ```
 
-Edit .env and configure your API and secret key. You also need to create some whitlisted (see [test](./tests/wallets.rs) for details)
+Edit .env and configure your API and secret key (in FIREBLOCKS_SECRET or FIREBLOCKS_SECRET_FILE). You also need to create some whitlisted (see [tests/wallets.rs](./tests/wallets.rs) for details)
 
 Run tests:
 ```shell
