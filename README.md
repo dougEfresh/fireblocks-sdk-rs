@@ -22,9 +22,9 @@
 
 `fireblocks_sdk` is an async library for the Fireblocks [API](https://docs.fireblocks.com/api/swagger-ui/#)
 
-!!!! Note this is community driven project and not affiliated with [Fireblocks](https://fireblocks.io) !!!!! 
+!!!! Note this is community driven project and not affiliated with [Fireblocks](https://fireblocks.io) !!!!!
 
-# Getting Started 
+# Getting Started
 
 ```shell
 cargo install fireblocks-sdk
@@ -35,8 +35,12 @@ See developer [portal](https://developers.fireblocks.com/docs/introduction) and 
 # Quick Start
 
 ```rust
+
 use {
-    fireblocks_sdk::{apis::vaults_api::GetVaultAccountParams, ClientBuilder},
+    fireblocks_sdk::{
+        apis::vaults_api::{GetPagedVaultAccountsParams, GetVaultAccountParams},
+        ClientBuilder,
+    },
     std::{fs::File, io::Read, time::Duration},
 };
 
@@ -71,6 +75,10 @@ async fn main() -> anyhow::Result<()> {
     };
     let vault_account = client.vaults_api().get_vault_account(params).await?;
     println!("vault account: {vault_account:#?}");
+
+    let params = GetPagedVaultAccountsParams::builder().limit(50.0).build();
+    let vault_accounts = client.vaults_api().get_paged_vault_accounts(params).await?;
+    println!("vault accounts: {:#?}", vault_accounts);
     Ok(())
 }
 ```
@@ -123,7 +131,7 @@ cargo test --test wallets
 ---
 
 # Docs 
- 
+
 Code was generatered by Fireblocks openapi [spec](https://raw.githubusercontent.com/fireblocks/fireblocks-openapi-spec/refs/heads/main/api-spec-v2.yaml) using [openapi-generator](./Makefile) with this [config](./generator/config.yaml)
 
 See [docs](./docs/README.md)

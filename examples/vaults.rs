@@ -1,5 +1,8 @@
 use {
-    fireblocks_sdk::{apis::vaults_api::GetVaultAccountParams, ClientBuilder},
+    fireblocks_sdk::{
+        apis::vaults_api::{GetPagedVaultAccountsParams, GetVaultAccountParams},
+        ClientBuilder,
+    },
     std::{fs::File, io::Read, time::Duration},
 };
 
@@ -34,5 +37,9 @@ async fn main() -> anyhow::Result<()> {
     };
     let vault_account = client.vaults_api().get_vault_account(params).await?;
     println!("vault account: {vault_account:#?}");
+
+    let params = GetPagedVaultAccountsParams::builder().limit(50.0).build();
+    let vault_accounts = client.vaults_api().get_paged_vault_accounts(params).await?;
+    println!("vault accounts: {:#?}", vault_accounts);
     Ok(())
 }
