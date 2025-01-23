@@ -4,6 +4,7 @@ use {
         apis::{transactions_api::CreateTransactionParams, Api},
         error::FireblocksError,
         models::{
+            transaction_request::FeeLevel,
             CreateTransactionResponse,
             DestinationTransferPeerPath,
             SourceTransferPeerPath,
@@ -22,6 +23,7 @@ impl Client {
         amount: impl Into<String>,
         dest_type: WalletType,
         dest_id: &str,
+        fee_level: Option<FeeLevel>,
     ) -> crate::Result<CreateTransactionResponse> {
         let api = self.api_client.transactions_api();
         let mut req = TransactionRequest::default();
@@ -30,6 +32,9 @@ impl Client {
             WalletType::External => TransferPeerPathType::ExternalWallet,
             WalletType::Contract => TransferPeerPathType::Contract,
         };
+        if fee_level.is_some() {
+            req.fee_level = fee_level;
+        }
         req.source = Some(SourceTransferPeerPath {
             r#type: TransferPeerPathType::VaultAccount,
             sub_type: None,

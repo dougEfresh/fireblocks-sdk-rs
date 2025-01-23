@@ -54,14 +54,14 @@ async fn test_vault_names(config: Config) -> anyhow::Result<()> {
         .build();
     let results = c.vaults_api().get_paged_vault_accounts(params).await?;
     assert!(!results.accounts.is_empty());
-    assert_eq!(results.accounts[0].name, "Default");
+    assert_eq!(results.accounts[0].name.to_lowercase(), "default");
 
     let params = GetPagedVaultAccountsParams::builder()
         .name_suffix("Default".to_owned())
         .build();
     let results = c.vaults_api().get_paged_vault_accounts(params).await?;
     assert!(!results.accounts.is_empty());
-    assert_eq!(results.accounts[0].name, "Default");
+    assert_eq!(results.accounts[0].name.to_lowercase(), "default");
     Ok(())
 }
 

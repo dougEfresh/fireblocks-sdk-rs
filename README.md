@@ -35,33 +35,57 @@ See developer [portal](https://developers.fireblocks.com/docs/introduction) and 
 # Quick Start
 
 ```rust
-use fireblocks_sdk::ClientBuilder;
-use fireblocks_sdk::apis::vaults_api::GetPagedVaultAccountsParams;
-use crate::fireblocks_sdk::apis::Api;
-use std::time::Duration;
 
-async fn vaults() -> anyhow::Result<()> {
-  let api_key = std::env::var("FIREBLOCKS_API_KEY")?;
-  let secret = std::env::var("FIREBLOCKS_SECRET")?;
-  let client = ClientBuilder::new(&api_key, &secret.into_bytes())
-    .with_sandbox()
-    .with_timeout(Duration::from_secs(10))
-    .with_connect_timeout(Duration::from_secs(5))
-    .build()?;
-  // Auto generate ApiClient 
-  let api_client = client.apis();
-  let params = GetPagedVaultAccountsParams::builder()
-            .limit(50.0)
-            .build();
-  let vault_accounts = api_client.vaults_api().get_paged_vault_accounts(params).await?;
-  println!("vault accounts: {:#?}", vault_accounts);
-  Ok(())
+use {
+    fireblocks_sdk::{
+        apis::vaults_api::{GetPagedVaultAccountsParams, GetVaultAccountParams},
+        ClientBuilder,
+    },
+    std::{fs::File, io::Read, time::Duration},
+};
+
+fn load_secret() -> anyhow::Result<Vec<u8>> {
+    match std::env::var("FIREBLOCKS_SECRET").ok() {
+        Some(secret) => Ok(secret.into_bytes()),
+        None => {
+            let secret = std::env::var("FIREBLOCKS_SECRET_FILE")
+                .expect("failed find secret key in FIREBLOCKS_SECRET or FIREBLOCKS_SECRET_FILE");
+            let mut file = File::open(secret).expect("file not found");
+            let mut secret: String = String::new();
+            file.read_to_string(&mut secret)
+                .expect("something went wrong reading the file");
+            Ok(secret.into_bytes())
+        }
+    }
+}
+
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    let api_key = std::env::var("FIREBLOCKS_API_KEY")?;
+    let secret = load_secret()?;
+    let client = ClientBuilder::new(&api_key, &secret)
+        .with_sandbox()
+        .with_timeout(Duration::from_secs(10))
+        .with_connect_timeout(Duration::from_secs(5))
+        .build()?;
+
+    let id = String::from("0");
+    let params = GetVaultAccountParams {
+        vault_account_id: id.clone(),
+    };
+    let vault_account = client.vaults_api().get_vault_account(params).await?;
+    println!("vault account: {vault_account:#?}");
+
+    let params = GetPagedVaultAccountsParams::builder().limit(50.0).build();
+    let vault_accounts = client.vaults_api().get_paged_vault_accounts(params).await?;
+    println!("vault accounts: {:#?}", vault_accounts);
+    Ok(())
 }
 ```
 
 # APIs
 
-The [client](./src/client.rs) is a small wrapper to the auto-generate [APIs](./src/apis/mod.rs) using openapi generator.
+The [fireblocks_sdk::Client](./struct.Client.html) is a small wrapper to the auto-generate [fireblocks_sdk::apis::ApiClient](./apis/struct.ApiClient.html) using openapi generator.
 
 ```rust
 
@@ -78,7 +102,7 @@ fn demo(client: Client) {
 
 ## Bon builder
 
-This is [bon](https://crates.io/crates/bon) crate for construction parameters to API endpoints (both query and body)
+Parameters to [APIs](fireblocks_sdk::apis::ApiClient) use [bon](https://crates.io/crates/bon) to all API endpoints (both query and body)
 
 ## Caveats 
 
@@ -92,7 +116,7 @@ Create a .env file
 cp .env-sameple .env
 ```
 
-Edit .env and configure your API and secret key. You also need to create some whitlisted (see [test](./tests/wallets.rs) for details)
+Edit .env and configure your API and secret key in FIREBLOCKS_SECRET or FIREBLOCKS_SECRET_FILE. You also need to create some whitlisted (see [tests/wallets.rs](./tests/wallets.rs) for details)
 
 Run tests:
 ```shell
