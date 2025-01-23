@@ -24,6 +24,8 @@ pub enum TransactionOperation {
     Raw,
     #[serde(rename = "TYPED_MESSAGE")]
     TypedMessage,
+    #[serde(rename = "PROGRAM_CALL")]
+    ProgramCall,
 }
 
 impl std::fmt::Display for TransactionOperation {
@@ -35,6 +37,7 @@ impl std::fmt::Display for TransactionOperation {
             Self::Mint => write!(f, "MINT"),
             Self::Raw => write!(f, "RAW"),
             Self::TypedMessage => write!(f, "TYPED_MESSAGE"),
+            Self::ProgramCall => write!(f, "PROGRAM_CALL"),
         }
     }
 }

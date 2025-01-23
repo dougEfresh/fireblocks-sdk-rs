@@ -17,7 +17,7 @@ Method | HTTP request | Description
 > models::ContractWithAbiDto add_contract_abi(add_abi_request_dto, idempotency_key)
 Save contract ABI
 
-Save contract ABI for the tenant
+Save contract ABI for the tenant. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -48,7 +48,7 @@ No authorization required
 > models::ContractWithAbiDto fetch_contract_abi(fetch_abi_request_dto, idempotency_key)
 Fetch the contract ABI
 
-Fetch the ABI. If not found fetch the ABI from the block explorer
+Fetch the ABI. If not found fetch the ABI from the block explorer. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -79,7 +79,7 @@ No authorization required
 > models::DeployedContractResponseDto get_deployed_contract_by_address(contract_address, asset_id)
 Return deployed contract data
 
-Return deployed contract data by blockchain native asset id and contract address
+Return deployed contract data by blockchain native asset id and contract address. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -110,7 +110,7 @@ No authorization required
 > models::DeployedContractResponseDto get_deployed_contract_by_id(id)
 Return deployed contract data by id
 
-Return deployed contract data by id
+Return deployed contract data by id. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -137,10 +137,10 @@ No authorization required
 
 ## get_deployed_contracts
 
-> models::DeployedContractsPaginatedResponse get_deployed_contracts(page_cursor, page_size, contract_address, asset_id, template_id)
+> models::DeployedContractsPaginatedResponse get_deployed_contracts(page_cursor, page_size, contract_address, base_asset_id, contract_template_id)
 List deployed contracts data
 
-Return a filtered lean representation of the deployed contracts data on all blockchains (paginated)
+Return a filtered lean representation of the deployed contracts data on all blockchains (paginated). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -150,8 +150,8 @@ Name | Type | Description  | Required | Notes
 **page_cursor** | Option<**String**> | Page cursor to get the next page |  |
 **page_size** | Option<**f64**> | Number of items per page, requesting more then max will return max items |  |
 **contract_address** | Option<**String**> | The contract's onchain address |  |
-**asset_id** | Option<**String**> | The blockchain asset ID |  |
-**template_id** | Option<**String**> | The contract template identifier |  |
+**base_asset_id** | Option<**String**> | The blockchain asset ID |  |
+**contract_template_id** | Option<**String**> | The contract template identifier |  |
 
 ### Return type
 

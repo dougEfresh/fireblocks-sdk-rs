@@ -15,11 +15,11 @@ pub struct AssetNotFoundErrorResponse {
     pub message: String,
     /// Error code
     #[serde(rename = "code")]
-    pub code: String,
+    pub code: f64,
 }
 
 impl AssetNotFoundErrorResponse {
-    pub fn new(message: String, code: String) -> AssetNotFoundErrorResponse {
+    pub fn new(message: String, code: f64) -> AssetNotFoundErrorResponse {
         AssetNotFoundErrorResponse { message, code }
     }
 }

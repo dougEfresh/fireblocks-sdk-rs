@@ -19,7 +19,7 @@ Method | HTTP request | Description
 > delete_contract_template_by_id(contract_template_id)
 Delete a contract template by id
 
-Delete a contract by id. allowed only for private contract templates. Notice: it is irreversible!
+Delete a contract by id. allowed only for private contract templates. Notice: it is irreversible! </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -49,7 +49,7 @@ No authorization required
 > models::ContractDeployResponse deploy_contract(contract_template_id, contract_deploy_request, idempotency_key)
 Deploy contract
 
-Deploy a new contract by contract template id. If you wish to deploy a token (ERC20, ERC721 etc), and create asset please use POST /tokenization
+Deploy a new contract by contract template id. If you wish to deploy a token (ERC20, ERC721 etc), and create asset please use `POST /tokenization`. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -81,7 +81,7 @@ No authorization required
 > models::AbiFunction get_constructor_by_contract_template_id(contract_template_id, with_docs)
 Return contract template's constructor
 
-Return contract template's constructor ABI
+Return contract template's constructor ABI. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -112,7 +112,7 @@ No authorization required
 > models::ContractTemplateDto get_contract_template_by_id(contract_template_id)
 Return contract template by id
 
-Return detailed information about the contract template
+Return detailed information about the contract template. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -139,16 +139,18 @@ No authorization required
 
 ## get_contract_templates
 
-> models::TemplatesPaginatedResponse get_contract_templates(page_cursor, page_size, r#type, initialization_phase)
+> models::TemplatesPaginatedResponse get_contract_templates(limit, offset, page_cursor, page_size, r#type, initialization_phase)
 List all contract templates
 
-Return minimal representation of all the contract templates available for the workspace
+Return minimal representation of all the contract templates available for the workspace. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
 
 Name | Type | Description  | Required | Notes
 ------------- | ------------- | ------------- | ------------- | -------------
+**limit** | Option<**f64**> | Items per page (max 100) |  |[default to 100]
+**offset** | Option<**f64**> | Paging offset |  |[default to 0]
 **page_cursor** | Option<**String**> | Page cursor to get the next page |  |
 **page_size** | Option<**f64**> | Number of items per page, requesting more then max will return max items |  |
 **r#type** | Option<**String**> | The type of the contract templates you wish to retrieve. Can accept one type, more or none |  |
@@ -175,7 +177,7 @@ No authorization required
 > models::AbiFunction get_function_abi_by_contract_template_id(contract_template_id, function_signature)
 Return contract template's function
 
-Return contract template`s function ABI by signature
+Return contract template`s function ABI by signature. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -206,7 +208,7 @@ No authorization required
 > models::ContractTemplateDto upload_contract_template(contract_upload_request, idempotency_key)
 Upload contract template
 
-Upload a new contract template. This contract template will be available for the workspace
+Upload a new contract template. This contract template will be available for the workspace. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 

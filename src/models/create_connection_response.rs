@@ -16,7 +16,7 @@ pub struct CreateConnectionResponse {
     /// The ID of the Web3 connection initiated.
     #[serde(rename = "id")]
     pub id: String,
-    /// Metadata of the dApp connection (provided by the dApp).
+    /// Metadata of the Web3 connection (provided by the dApp).
     #[serde(rename = "sessionMetadata")]
     pub session_metadata: models::SessionMetadata,
 }

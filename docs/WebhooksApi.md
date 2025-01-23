@@ -14,7 +14,7 @@ Method | HTTP request | Description
 > models::ResendWebhooksByTransactionIdResponse resend_transaction_webhooks(tx_id, resend_transaction_webhooks_request, idempotency_key)
 Resend webhooks for a transaction by ID
 
-Resends webhook notifications for a transaction by its unique identifier
+Resends webhook notifications for a transaction by its unique identifier. Learn more about Fireblocks Webhooks in the following [guide](https://developers.fireblocks.com/docs/configure-webhooks). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -46,7 +46,7 @@ No authorization required
 > models::ResendWebhooksResponse resend_webhooks(idempotency_key)
 Resend failed webhooks
 
-Resends all failed webhook notifications
+Resends all failed webhook notifications. Learn more about Fireblocks Webhooks in the following [guide](https://developers.fireblocks.com/docs/configure-webhooks). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 

@@ -80,6 +80,8 @@ pub enum GetTransactionOperation {
     SupplyToCompound,
     #[serde(rename = "APPROVE")]
     Approve,
+    #[serde(rename = "PROGRAM_CALL")]
+    ProgramCall,
 }
 
 impl std::fmt::Display for GetTransactionOperation {
@@ -98,6 +100,7 @@ impl std::fmt::Display for GetTransactionOperation {
             Self::RedeemFromCompound => write!(f, "REDEEM_FROM_COMPOUND"),
             Self::SupplyToCompound => write!(f, "SUPPLY_TO_COMPOUND"),
             Self::Approve => write!(f, "APPROVE"),
+            Self::ProgramCall => write!(f, "PROGRAM_CALL"),
         }
     }
 }

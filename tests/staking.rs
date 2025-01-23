@@ -2,9 +2,7 @@ mod setup;
 use {
     fireblocks_sdk::{
         apis::{staking_api::GetChainInfoParams, Api},
-        ASSET_ETH,
-        ASSET_SOL,
-        ASSET_SOL_TEST,
+        models::ChainDescriptor,
     },
     setup::{config, Config},
 };
@@ -29,9 +27,9 @@ async fn test_staking(config: Config) -> anyhow::Result<()> {
     //        .await?;
     //}
 
-    for chain in [ASSET_SOL, ASSET_SOL_TEST, ASSET_ETH] {
+    for chain in [ChainDescriptor::Eth, ChainDescriptor::Sol] {
         let params = GetChainInfoParams::builder()
-            .chain_descriptor(chain.to_string())
+            .chain_descriptor(chain)
             .build();
         stake_api.get_chain_info(params).await?;
     }

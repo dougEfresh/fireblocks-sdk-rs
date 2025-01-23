@@ -118,7 +118,6 @@
 | RejectedByBlockchain | REJECTED_BY_BLOCKCHAIN |
 | SmartContractExecutionFailed | SMART_CONTRACT_EXECUTION_FAILED |
 | TooLongMempoolChain | TOO_LONG_MEMPOOL_CHAIN |
-| Empty |  |
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

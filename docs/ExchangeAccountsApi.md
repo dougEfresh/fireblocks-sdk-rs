@@ -4,7 +4,7 @@ All URIs are relative to *https://api.fireblocks.io/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**convert_assets**](ExchangeAccountsApi.md#convert_assets) | **POST** /exchange_accounts/{exchangeAccountId}/convert | Convert exchange account funds from the source asset to the destination asset
+[**convert_assets**](ExchangeAccountsApi.md#convert_assets) | **POST** /exchange_accounts/{exchangeAccountId}/convert | Convert exchange account funds
 [**get_exchange_account**](ExchangeAccountsApi.md#get_exchange_account) | **GET** /exchange_accounts/{exchangeAccountId} | Get a specific exchange account
 [**get_exchange_account_asset**](ExchangeAccountsApi.md#get_exchange_account_asset) | **GET** /exchange_accounts/{exchangeAccountId}/{assetId} | Get an asset for an exchange account
 [**get_paged_exchange_accounts**](ExchangeAccountsApi.md#get_paged_exchange_accounts) | **GET** /exchange_accounts/paged | List connected exchange accounts
@@ -15,9 +15,9 @@ Method | HTTP request | Description
 ## convert_assets
 
 > models::ConvertAssetsResponse convert_assets(exchange_account_id, idempotency_key, convert_assets_request)
-Convert exchange account funds from the source asset to the destination asset
+Convert exchange account funds
 
-Convert exchange account funds from the source asset to the destination asset. Coinbase (USD to USDC, USDC to USD) and Bitso (MXN to USD) are supported conversions
+Convert exchange account funds from the source asset to the destination asset. Coinbase (USD to USDC, USDC to USD) and Bitso (MXN to USD) are supported conversions. Learn more about Fireblocks Exchange Connectivity in the following [guide](https://developers.fireblocks.com/docs/connect-to-exchanges-and-fiat-providers). </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -49,7 +49,7 @@ No authorization required
 > models::ExchangeAccount get_exchange_account(exchange_account_id)
 Get a specific exchange account
 
-Returns an exchange account by ID
+Returns an exchange account by ID. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -79,7 +79,7 @@ No authorization required
 > models::ExchangeAsset get_exchange_account_asset(exchange_account_id, asset_id)
 Get an asset for an exchange account
 
-Returns an asset for an exchange account
+Returns an asset for an exchange account. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -110,7 +110,7 @@ No authorization required
 > Vec<models::ExchangeAccountsPaged> get_paged_exchange_accounts(limit, before, after)
 List connected exchange accounts
 
-Returns a list of the connected exchange accounts in your workspace
+Returns a list of the connected exchange accounts in your workspace. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -142,7 +142,7 @@ No authorization required
 > models::InternalTransferResponse internal_transfer(exchange_account_id, idempotency_key, create_internal_transfer_request)
 Internal transfer for exchange accounts
 
-Transfers funds between trading accounts under the same exchange account
+Transfers funds between trading accounts under the same exchange account. Learn more about Fireblocks Exchange Connectivity in the following [guide](https://developers.fireblocks.com/docs/connect-to-exchanges-and-fiat-providers). </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 

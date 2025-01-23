@@ -17,7 +17,7 @@ Method | HTTP request | Description
 > models::PolicyAndValidationResponse get_active_policy()
 Get the active policy and its validation
 
-Returns the active policy and its validation. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. 
+Returns the active policy and its validation. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -44,7 +44,7 @@ No authorization required
 > models::DraftReviewAndValidationResponse get_draft()
 Get the active draft
 
-Returns the active draft and its validation. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. 
+Returns the active draft and its validation. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -71,7 +71,7 @@ No authorization required
 > models::PublishResult publish_draft(publish_draft_request, idempotency_key)
 Send publish request for a certain draft id
 
-Send publish request of certain draft id and returns the response. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. 
+Send publish request of certain draft id and returns the response. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -102,7 +102,7 @@ No authorization required
 > models::PublishResult publish_policy_rules(policy_rules, idempotency_key)
 Send publish request for a set of policy rules
 
-Send publish request of set of policy rules and returns the response. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. 
+Send publish request of set of policy rules and returns the response. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -133,7 +133,7 @@ No authorization required
 > models::DraftReviewAndValidationResponse update_draft(policy_rules, idempotency_key)
 Update the draft with a new set of rules
 
-Update the draft and return its validation. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. 
+Update the draft and return its validation. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. Learn more about Fireblocks Transaction Authorization Policy in the following [guide](https://developers.fireblocks.com/docs/set-transaction-authorization-policy). </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 

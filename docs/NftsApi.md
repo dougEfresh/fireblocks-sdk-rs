@@ -22,7 +22,7 @@ Method | HTTP request | Description
 > models::TokenResponse get_nft(id)
 List token data by ID
 
-Returns the requested token data. 
+Returns the requested token data. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -52,7 +52,7 @@ No authorization required
 > models::GetNftsResponse get_nfts(ids, page_cursor, page_size, sort, order)
 List tokens by IDs
 
-Returns the requested tokens data. 
+Returns the requested tokens data. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -86,7 +86,7 @@ No authorization required
 > models::GetOwnershipTokensResponse get_ownership_tokens(blockchain_descriptor, vault_account_ids, ncw_id, ncw_account_ids, wallet_type, ids, collection_ids, page_cursor, page_size, sort, order, status, search, spam)
 List all owned tokens (paginated)
 
-Returns all tokens and their data in your workspace. 
+Returns all tokens and their data in your workspace.  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -129,14 +129,14 @@ No authorization required
 > models::ListOwnedCollectionsResponse list_owned_collections(ncw_id, wallet_type, search, page_cursor, page_size, sort, order, status)
 List owned collections (paginated)
 
-Returns all collections in your workspace 
+Returns all collections in your workspace. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
 
 Name | Type | Description  | Required | Notes
 ------------- | ------------- | ------------- | ------------- | -------------
-**ncw_id** | Option<**String**> | Non-Custodial Wallet ID |  |
+**ncw_id** | Option<**String**> | Tenant's Non-Custodial Wallet ID |  |
 **wallet_type** | Option<**String**> | Wallet type, it can be `VAULT_ACCOUNT` or `END_USER_WALLET` |  |[default to VAULT_ACCOUNT]
 **search** | Option<**String**> | Search owned collections. Possible criteria for search: collection name, collection contract address. |  |
 **page_cursor** | Option<**String**> | Page cursor to fetch |  |
@@ -166,7 +166,7 @@ No authorization required
 > models::ListOwnedTokensResponse list_owned_tokens(ncw_id, wallet_type, page_cursor, page_size, sort, order, status, search, spam)
 List all distinct owned tokens (paginated)
 
-Returns all owned distinct tokens (for your workspace) and their data in your workspace. 
+Returns all owned distinct tokens (for your workspace) and their data in your workspace. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -204,7 +204,7 @@ No authorization required
 > refresh_nft_metadata(id, idempotency_key)
 Refresh token metadata
 
-Updates the latest token metadata. 
+Updates the latest token metadata. Learn more about Fireblocks NFT management in the following [guide](https://developers.fireblocks.com/reference/deploy-an-nft-collection).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -235,7 +235,7 @@ No authorization required
 > update_ownership_tokens(blockchain_descriptor, vault_account_id, idempotency_key)
 Refresh vault account tokens
 
-Updates all tokens and balances per blockchain and vault account. 
+Updates all tokens and balances per blockchain and vault account. Learn more about Fireblocks NFT management in the following [guide](https://developers.fireblocks.com/reference/deploy-an-nft-collection).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -267,7 +267,7 @@ No authorization required
 > update_token_ownership_status(id, update_token_ownership_status_dto, idempotency_key)
 Update token ownership status
 
-Updates token status for a workspace, in all workspace vaults. 
+Updates token status for a workspace, in all workspace vaults.  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -299,7 +299,7 @@ No authorization required
 > update_tokens_ownership_spam(token_ownership_spam_update_payload, idempotency_key)
 Update tokens ownership spam property
 
-Updates tokens spam property for a workspace's token ownerships, in all vault accounts.
+Updates tokens spam property for a workspace's token ownerships, in all vault accounts.  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -330,7 +330,7 @@ No authorization required
 > update_tokens_ownership_status(token_ownership_status_update_payload, idempotency_key)
 Update tokens ownership status
 
-Updates tokens status for a workspace, in all vault accounts.
+Updates tokens status for a workspace, in all vault accounts.  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 

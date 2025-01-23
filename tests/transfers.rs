@@ -41,14 +41,7 @@ async fn transfer_whitelist(
             )
         })?;
     let response = c
-        .vault_whitelist_transfer(
-            "0",
-            ASSET_SOL_TEST,
-            "0.00001",
-            WalletType::Internal,
-            &w.id,
-            None,
-        )
+        .vault_whitelist_transfer("0", ASSET_SOL_TEST, "0.00001", wallet_type, &w.id, None)
         .await?;
 
     assert_eq!(response.status, TransactionStatus::Submitted);

@@ -178,7 +178,8 @@ impl KeyLinkBetaApi for KeyLinkBetaApiClient {
     /// currently in beta and might be subject to changes. If you want to
     /// participate and learn more about the Fireblocks Key Link, please contact
     /// your Fireblocks Customer Success Manager or send an email to
-    /// CSM@fireblocks.com.
+    /// CSM@fireblocks.com. </br>Endpoint Permission: Admin and Non-Signing
+    /// Admin.
     async fn create_signing_key(
         &self,
         params: CreateSigningKeyParams,
@@ -235,7 +236,8 @@ impl KeyLinkBetaApi for KeyLinkBetaApiClient {
     /// workspaces. **Note:**  This endpoint is currently in beta and might be
     /// subject to changes. If you want to participate and learn more about the
     /// Fireblocks Key Link, please contact your Fireblocks Customer Success
-    /// Manager or send an email to CSM@fireblocks.com.
+    /// Manager or send an email to CSM@fireblocks.com. </br>Endpoint
+    /// Permission: Admin and Non-Signing Admin.
     async fn create_validation_key(
         &self,
         params: CreateValidationKeyParams,
@@ -293,7 +295,8 @@ impl KeyLinkBetaApi for KeyLinkBetaApiClient {
     /// currently in beta and might be subject to changes. If you want to
     /// participate and learn more about the Fireblocks Key Link, please contact
     /// your Fireblocks Customer Success Manager or send an email to
-    /// CSM@fireblocks.com.
+    /// CSM@fireblocks.com. </br>Endpoint Permission: Admin and Non-Signing
+    /// Admin.
     async fn disable_validation_key(
         &self,
         params: DisableValidationKeyParams,
@@ -347,7 +350,8 @@ impl KeyLinkBetaApi for KeyLinkBetaApiClient {
     /// currently in beta and might be subject to changes. If you want to
     /// participate and learn more about the Fireblocks Key Link, please contact
     /// your Fireblocks Customer Success Manager or send an email to
-    /// CSM@fireblocks.com.
+    /// CSM@fireblocks.com. </br>Endpoint Permission: Admin and Non-Signing
+    /// Admin.
     async fn get_signing_key(
         &self,
         params: GetSigningKeyParams,
@@ -396,7 +400,8 @@ impl KeyLinkBetaApi for KeyLinkBetaApiClient {
     /// This endpoint is currently in beta and might be subject to changes. If
     /// you want to participate and learn more about the Fireblocks Key Link,
     /// please contact your Fireblocks Customer Success Manager or send an email
-    /// to CSM@fireblocks.com.
+    /// to CSM@fireblocks.com. </br>Endpoint Permission: Admin and Non-Signing
+    /// Admin.
     async fn get_signing_keys_list(
         &self,
         params: GetSigningKeysListParams,
@@ -490,7 +495,8 @@ impl KeyLinkBetaApi for KeyLinkBetaApiClient {
     /// enabled workspaces. **Note:**  This endpoint is currently in beta and
     /// might be subject to changes. If you want to participate and learn more
     /// about the Fireblocks Key Link, please contact your Fireblocks Customer
-    /// Success Manager or send an email to CSM@fireblocks.com.
+    /// Success Manager or send an email to CSM@fireblocks.com. </br>Endpoint
+    /// Permission: Admin and Non-Signing Admin.
     async fn get_validation_key(
         &self,
         params: GetValidationKeyParams,
@@ -539,7 +545,8 @@ impl KeyLinkBetaApi for KeyLinkBetaApiClient {
     /// **Note:**  This endpoint is currently in beta and might be subject to
     /// changes. If you want to participate and learn more about the Fireblocks
     /// Key Link, please contact your Fireblocks Customer Success Manager or
-    /// send an email to CSM@fireblocks.com.
+    /// send an email to CSM@fireblocks.com. </br>Endpoint Permission: Admin and
+    /// Non-Signing Admin.
     async fn get_validation_keys_list(
         &self,
         params: GetValidationKeysListParams,
@@ -610,7 +617,8 @@ impl KeyLinkBetaApi for KeyLinkBetaApiClient {
     /// workspaces. **Note:**  This endpoint is currently in beta and might be
     /// subject to changes. If you want to participate and learn more about the
     /// Fireblocks Key Link, please contact your Fireblocks Customer Success
-    /// Manager or send an email to CSM@fireblocks.com.
+    /// Manager or send an email to CSM@fireblocks.com. </br>Endpoint
+    /// Permission: Admin and Non-Signing Admin.
     async fn set_agent_id(&self, params: SetAgentIdParams) -> Result<(), Error<SetAgentIdError>> {
         let SetAgentIdParams {
             key_id,
@@ -661,7 +669,8 @@ impl KeyLinkBetaApi for KeyLinkBetaApiClient {
     /// endpoint is currently in beta and might be subject to changes. If you
     /// want to participate and learn more about the Fireblocks Key Link, please
     /// contact your Fireblocks Customer Success Manager or send an email to
-    /// CSM@fireblocks.com.
+    /// CSM@fireblocks.com. </br>Endpoint Permission: Admin and Non-Signing
+    /// Admin.
     async fn update_signing_key(
         &self,
         params: UpdateSigningKeyParams,

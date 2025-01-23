@@ -108,7 +108,7 @@ pub struct SettleOffExchangeTradesParams {
 
 #[async_trait]
 impl OffExchangeApi for OffExchangeApiClient {
-    /// add collateral, create deposit request
+    /// Add collateral and create deposit request. Learn more about Fireblocks Off Exchange in the following [guide](https://developers.fireblocks.com/docs/off-exchange). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn add_off_exchange(
         &self,
         params: AddOffExchangeParams,
@@ -156,7 +156,8 @@ impl OffExchangeApi for OffExchangeApiClient {
         }
     }
 
-    /// Returns a collateral account by mainExchangeAccountId.
+    /// Returns a collateral account by mainExchangeAccountId. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_off_exchange_collateral_accounts(
         &self,
         params: GetOffExchangeCollateralAccountsParams,
@@ -202,7 +203,8 @@ impl OffExchangeApi for OffExchangeApiClient {
         }
     }
 
-    /// get settlements transactions from exchange
+    /// Get settlements transactions from exchange. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_off_exchange_settlement_transactions(
         &self,
         params: GetOffExchangeSettlementTransactionsParams,
@@ -254,7 +256,8 @@ impl OffExchangeApi for OffExchangeApiClient {
         }
     }
 
-    /// remove collateral, create withdraw request
+    /// Remove collateral and create withdraw request. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn remove_off_exchange(
         &self,
         params: RemoveOffExchangeParams,
@@ -303,7 +306,7 @@ impl OffExchangeApi for OffExchangeApiClient {
         }
     }
 
-    /// create settlement for a trader
+    /// Create settlement for a trader. Learn more about Fireblocks Off Exchange in the following [guide](https://developers.fireblocks.com/docs/off-exchange). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn settle_off_exchange_trades(
         &self,
         params: SettleOffExchangeTradesParams,

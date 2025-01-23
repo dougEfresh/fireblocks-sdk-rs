@@ -17,6 +17,10 @@ use {
 
 #[async_trait]
 pub trait SmartTransfersApi: Send + Sync {
+    async fn approve_dv_p_ticket_term(
+        &self,
+        params: ApproveDvPTicketTermParams,
+    ) -> Result<models::SmartTransferTicketTermResponse, Error<ApproveDvPTicketTermError>>;
     async fn cancel_ticket(
         &self,
         params: CancelTicketParams,
@@ -41,10 +45,17 @@ pub trait SmartTransfersApi: Send + Sync {
         &self,
         params: FulfillTicketParams,
     ) -> Result<models::SmartTransferTicketResponse, Error<FulfillTicketError>>;
+    async fn fund_dvp_ticket(
+        &self,
+        params: FundDvpTicketParams,
+    ) -> Result<models::SmartTransferTicketResponse, Error<FundDvpTicketError>>;
     async fn fund_ticket_term(
         &self,
         params: FundTicketTermParams,
     ) -> Result<models::SmartTransferTicketTermResponse, Error<FundTicketTermError>>;
+    async fn get_smart_transfer_statistic(
+        &self,
+    ) -> Result<models::SmartTransferStatistic, Error<GetSmartTransferStatisticError>>;
     async fn get_smart_transfer_user_groups(
         &self,
     ) -> Result<models::SmartTransferUserGroupsResponse, Error<GetSmartTransferUserGroupsError>>;
@@ -90,6 +101,20 @@ impl SmartTransfersApiClient {
     pub fn new(configuration: Arc<configuration::Configuration>) -> Self {
         Self { configuration }
     }
+}
+
+/// struct for passing parameters to the method [`approve_dv_p_ticket_term`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct ApproveDvPTicketTermParams {
+    pub ticket_id: String,
+    pub term_id: String,
+    pub smart_transfer_approve_term: models::SmartTransferApproveTerm,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
 }
 
 /// struct for passing parameters to the method [`cancel_ticket`]
@@ -149,6 +174,19 @@ pub struct FindTicketTermByIdParams {
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
 pub struct FulfillTicketParams {
     pub ticket_id: String,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+}
+
+/// struct for passing parameters to the method [`fund_dvp_ticket`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct FundDvpTicketParams {
+    pub ticket_id: String,
+    pub smart_transfer_fund_dvp_ticket: models::SmartTransferFundDvpTicket,
     /// A unique identifier for the request. If the request is sent multiple
     /// times with the same idempotency key, the server will return the same
     /// response as the first request. The idempotency key is valid for 24
@@ -287,7 +325,64 @@ pub struct UpdateTicketTermParams {
 
 #[async_trait]
 impl SmartTransfersApi for SmartTransfersApiClient {
-    /// Cancel Smart Transfer ticket
+    /// Set funding source for ticket term and creating approving transaction
+    /// for contract to transfer asset
+    async fn approve_dv_p_ticket_term(
+        &self,
+        params: ApproveDvPTicketTermParams,
+    ) -> Result<models::SmartTransferTicketTermResponse, Error<ApproveDvPTicketTermError>> {
+        let ApproveDvPTicketTermParams {
+            ticket_id,
+            term_id,
+            smart_transfer_approve_term,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/smart_transfers/{ticketId}/terms/{termId}/dvp/approve",
+            local_var_configuration.base_path,
+            ticketId = crate::apis::urlencode(ticket_id),
+            termId = crate::apis::urlencode(term_id)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+        local_var_req_builder = local_var_req_builder.json(&smart_transfer_approve_term);
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            serde_json::from_str(&local_var_content).map_err(Error::from)
+        } else {
+            let local_var_entity: Option<ApproveDvPTicketTermError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Cancel Smart Transfer ticket. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn cancel_ticket(
         &self,
         params: CancelTicketParams,
@@ -338,7 +433,7 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         }
     }
 
-    /// Creates new Smart Transfer ticket
+    /// Creates new Smart Transfer ticket. Learn more about Fireblocks Smart Transfers in the following [guide](https://developers.fireblocks.com/docs/execute-smart-transfers). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_ticket(
         &self,
         params: CreateTicketParams,
@@ -386,7 +481,7 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         }
     }
 
-    /// Creates new smart transfer ticket term (when the ticket status is DRAFT)
+    /// Creates new smart transfer ticket term (when the ticket status is DRAFT). Learn more about Fireblocks Smart Transfers in the following [guide](https://developers.fireblocks.com/docs/execute-smart-transfers). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_ticket_term(
         &self,
         params: CreateTicketTermParams,
@@ -439,7 +534,8 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         }
     }
 
-    /// Find Smart Transfer ticket by id
+    /// Find Smart Transfer ticket by id. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn find_ticket_by_id(
         &self,
         params: FindTicketByIdParams,
@@ -483,7 +579,8 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         }
     }
 
-    /// Find a specific term of a specific Smart Transfer ticket
+    /// Find a specific term of a specific Smart Transfer ticket. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn find_ticket_term_by_id(
         &self,
         params: FindTicketTermByIdParams,
@@ -529,7 +626,8 @@ impl SmartTransfersApi for SmartTransfersApiClient {
     }
 
     /// Manually fulfill ticket, in case when all terms (legs) are funded
-    /// manually
+    /// manually. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor.
     async fn fulfill_ticket(
         &self,
         params: FulfillTicketParams,
@@ -580,8 +678,62 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         }
     }
 
+    /// Create or fulfill dvp ticket order
+    async fn fund_dvp_ticket(
+        &self,
+        params: FundDvpTicketParams,
+    ) -> Result<models::SmartTransferTicketResponse, Error<FundDvpTicketError>> {
+        let FundDvpTicketParams {
+            ticket_id,
+            smart_transfer_fund_dvp_ticket,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/smart_transfers/{ticketId}/dvp/fund",
+            local_var_configuration.base_path,
+            ticketId = crate::apis::urlencode(ticket_id)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+        local_var_req_builder = local_var_req_builder.json(&smart_transfer_fund_dvp_ticket);
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            serde_json::from_str(&local_var_content).map_err(Error::from)
+        } else {
+            let local_var_entity: Option<FundDvpTicketError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
     /// Set funding source for ticket term (in case of ASYNC tickets, this will
-    /// execute transfer immediately)
+    /// execute transfer immediately). </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn fund_ticket_term(
         &self,
         params: FundTicketTermParams,
@@ -636,7 +788,48 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         }
     }
 
-    /// Get Smart Transfer user groups
+    /// Get smart transfer statistic
+    async fn get_smart_transfer_statistic(
+        &self,
+    ) -> Result<models::SmartTransferStatistic, Error<GetSmartTransferStatisticError>> {
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/smart_transfers/statistic",
+            local_var_configuration.base_path
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            serde_json::from_str(&local_var_content).map_err(Error::from)
+        } else {
+            let local_var_entity: Option<GetSmartTransferStatisticError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Get Smart Transfer user groups. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_smart_transfer_user_groups(
         &self,
     ) -> Result<models::SmartTransferUserGroupsResponse, Error<GetSmartTransferUserGroupsError>>
@@ -677,7 +870,8 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         }
     }
 
-    /// Manually set ticket term transaction
+    /// Manually set ticket term transaction. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn manually_fund_ticket_term(
         &self,
         params: ManuallyFundTicketTermParams,
@@ -732,7 +926,8 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         }
     }
 
-    /// Delete ticket term when ticket is in DRAFT status
+    /// Delete ticket term when ticket is in DRAFT status. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn remove_ticket_term(
         &self,
         params: RemoveTicketTermParams,
@@ -777,7 +972,9 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         }
     }
 
-    /// Finds Smart Transfer tickets that match the submitted criteria
+    /// Finds Smart Transfer tickets that match the submitted criteria.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor,   Viewer.
     async fn search_tickets(
         &self,
         params: SearchTicketsParams,
@@ -883,7 +1080,8 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         }
     }
 
-    /// Set external id Smart Transfer ticket
+    /// Set external id Smart Transfer ticket. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn set_external_ref_id(
         &self,
         params: SetExternalRefIdParams,
@@ -936,7 +1134,8 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         }
     }
 
-    /// Set expiration date on Smart Transfer ticket
+    /// Set expiration date on Smart Transfer ticket. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn set_ticket_expiration(
         &self,
         params: SetTicketExpirationParams,
@@ -990,7 +1189,8 @@ impl SmartTransfersApi for SmartTransfersApiClient {
     }
 
     /// Set Smart Transfers user group to receive email notifications for Smart
-    /// Transfers
+    /// Transfers. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor.
     async fn set_user_groups(
         &self,
         params: SetUserGroupsParams,
@@ -1042,7 +1242,9 @@ impl SmartTransfersApi for SmartTransfersApiClient {
     }
 
     /// Submit Smart Transfer ticket - change status into ready for approval if
-    /// auto approval is not turned on, or OPEN if auto approval is on
+    /// auto approval is not turned on, or OPEN if auto approval is on.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn submit_ticket(
         &self,
         params: SubmitTicketParams,
@@ -1095,7 +1297,8 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         }
     }
 
-    /// Update ticket term (when ticket status is DRAFT)
+    /// Update ticket term (when ticket status is DRAFT). </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn update_ticket_term(
         &self,
         params: UpdateTicketTermParams,
@@ -1149,6 +1352,16 @@ impl SmartTransfersApi for SmartTransfersApiClient {
             Err(Error::ResponseError(local_var_error))
         }
     }
+}
+
+/// struct for typed errors of method [`approve_dv_p_ticket_term`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ApproveDvPTicketTermError {
+    Status403(models::SmartTransferForbiddenResponse),
+    Status404(models::SmartTransferNotFoundResponse),
+    Status422(models::SmartTransferBadRequestResponse),
+    UnknownValue(serde_json::Value),
 }
 
 /// struct for typed errors of method [`cancel_ticket`]
@@ -1207,6 +1420,16 @@ pub enum FulfillTicketError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`fund_dvp_ticket`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum FundDvpTicketError {
+    Status403(models::SmartTransferForbiddenResponse),
+    Status404(models::SmartTransferNotFoundResponse),
+    Status422(models::SmartTransferBadRequestResponse),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`fund_ticket_term`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -1214,6 +1437,15 @@ pub enum FundTicketTermError {
     Status403(models::SmartTransferForbiddenResponse),
     Status404(models::SmartTransferNotFoundResponse),
     Status422(models::SmartTransferBadRequestResponse),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`get_smart_transfer_statistic`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GetSmartTransferStatisticError {
+    Status403(models::SmartTransferForbiddenResponse),
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
 

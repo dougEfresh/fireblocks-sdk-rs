@@ -83,7 +83,7 @@ pub struct RedeemFundsToLinkedDdaParams {
 
 #[async_trait]
 impl FiatAccountsApi for FiatAccountsApiClient {
-    /// Deposits funds from the linked DDA.
+    /// Deposits funds from the linked DDA. Learn more about Fireblocks FIAT Connectivity in the following [guide](https://developers.fireblocks.com/docs/connect-to-exchanges-and-fiat-providers). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn deposit_funds_from_linked_dda(
         &self,
         params: DepositFundsFromLinkedDdaParams,
@@ -137,7 +137,8 @@ impl FiatAccountsApi for FiatAccountsApiClient {
         }
     }
 
-    /// Returns a fiat account by ID.
+    /// Returns a fiat account by ID. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn get_fiat_account(
         &self,
         params: GetFiatAccountParams,
@@ -181,7 +182,8 @@ impl FiatAccountsApi for FiatAccountsApiClient {
         }
     }
 
-    /// Returns all fiat accounts.
+    /// Returns all fiat accounts. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn get_fiat_accounts(
         &self,
     ) -> Result<Vec<models::FiatAccount>, Error<GetFiatAccountsError>> {
@@ -218,7 +220,7 @@ impl FiatAccountsApi for FiatAccountsApiClient {
         }
     }
 
-    /// Redeems funds to the linked DDA.
+    /// Redeems funds to the linked DDA. Learn more about Fireblocks FIAT Connectivity in the following [guide](https://developers.fireblocks.com/docs/connect-to-exchanges-and-fiat-providers). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn redeem_funds_to_linked_dda(
         &self,
         params: RedeemFundsToLinkedDdaParams,

@@ -19,7 +19,7 @@ Method | HTTP request | Description
 > models::ExternalWalletAsset add_contract_asset(contract_id, asset_id, idempotency_key, add_contract_asset_request)
 Add an Asset to a Whitelisted Contract
 
-Adds an asset to an existing whitelisted contract.
+Adds an asset to an existing whitelisted contract. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -52,7 +52,7 @@ No authorization required
 > models::UnmanagedWallet create_contract(idempotency_key, create_contract_request)
 Create a Whitelisted Contract
 
-Creates a new whitelisted contract.
+Creates a new whitelisted contract.  Learn more about Whitelisted Smart Contracts [here](https://developers.fireblocks.com/docs/whitelist-addresses#contracts).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -83,7 +83,7 @@ No authorization required
 > delete_contract(contract_id)
 Delete a Whitelisted Contract
 
-Deletes a whitelisted contract by Fireblocks Contract ID
+Deletes a whitelisted contract by Fireblocks Contract ID. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -113,7 +113,7 @@ No authorization required
 > delete_contract_asset(contract_id, asset_id)
 Delete a Whitelisted Contract's Asset
 
-Deletes a whitelisted contract's asset by Fireblocks Contract ID and Asset ID.
+Deletes a whitelisted contract's asset by Fireblocks Contract ID and Asset ID. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -144,7 +144,7 @@ No authorization required
 > models::UnmanagedWallet get_contract(contract_id)
 Find a Specific Whitelisted Contract
 
-Returns a whitelisted contract by Fireblocks Contract ID
+Returns a whitelisted contract by Fireblocks Contract ID.  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -174,7 +174,7 @@ No authorization required
 > models::ExternalWalletAsset get_contract_asset(contract_id, asset_id)
 Find a whitelisted contract's asset
 
-Returns a whitelisted contract's asset by ID.
+Returns a whitelisted contract's asset by ID.  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -205,7 +205,7 @@ No authorization required
 > Vec<models::UnmanagedWallet> get_contracts()
 List Whitelisted Contracts
 
-Gets a list of whitelisted contracts.
+Gets a list of whitelisted contracts. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 

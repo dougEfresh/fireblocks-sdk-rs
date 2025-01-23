@@ -64,7 +64,7 @@ pub struct ResendWebhooksParams {
 
 #[async_trait]
 impl WebhooksApi for WebhooksApiClient {
-    /// Resends webhook notifications for a transaction by its unique identifier
+    /// Resends webhook notifications for a transaction by its unique identifier. Learn more about Fireblocks Webhooks in the following [guide](https://developers.fireblocks.com/docs/configure-webhooks). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn resend_transaction_webhooks(
         &self,
         params: ResendTransactionWebhooksParams,
@@ -118,7 +118,7 @@ impl WebhooksApi for WebhooksApiClient {
         }
     }
 
-    /// Resends all failed webhook notifications
+    /// Resends all failed webhook notifications. Learn more about Fireblocks Webhooks in the following [guide](https://developers.fireblocks.com/docs/configure-webhooks). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn resend_webhooks(
         &self,
         params: ResendWebhooksParams,

@@ -7,11 +7,11 @@ Method | HTTP request | Description
 [**create_internal_wallet**](WhitelistedInternalWalletsApi.md#create_internal_wallet) | **POST** /internal_wallets | Create an internal wallet
 [**create_internal_wallet_asset**](WhitelistedInternalWalletsApi.md#create_internal_wallet_asset) | **POST** /internal_wallets/{walletId}/{assetId} | Add an asset to an internal wallet
 [**delete_internal_wallet**](WhitelistedInternalWalletsApi.md#delete_internal_wallet) | **DELETE** /internal_wallets/{walletId} | Delete an internal wallet
-[**delete_internal_wallet_asset**](WhitelistedInternalWalletsApi.md#delete_internal_wallet_asset) | **DELETE** /internal_wallets/{walletId}/{assetId} | Delete a whitelisted address from an internal wallet
+[**delete_internal_wallet_asset**](WhitelistedInternalWalletsApi.md#delete_internal_wallet_asset) | **DELETE** /internal_wallets/{walletId}/{assetId} | Delete a whitelisted address
 [**get_internal_wallet**](WhitelistedInternalWalletsApi.md#get_internal_wallet) | **GET** /internal_wallets/{walletId} | Get assets for internal wallet
 [**get_internal_wallet_asset**](WhitelistedInternalWalletsApi.md#get_internal_wallet_asset) | **GET** /internal_wallets/{walletId}/{assetId} | Get an asset from an internal wallet
 [**get_internal_wallets**](WhitelistedInternalWalletsApi.md#get_internal_wallets) | **GET** /internal_wallets | List internal wallets
-[**set_customer_ref_id_for_internal_wallet**](WhitelistedInternalWalletsApi.md#set_customer_ref_id_for_internal_wallet) | **POST** /internal_wallets/{walletId}/set_customer_ref_id | Set an AML/KYT customer reference ID for an internal wallet
+[**set_customer_ref_id_for_internal_wallet**](WhitelistedInternalWalletsApi.md#set_customer_ref_id_for_internal_wallet) | **POST** /internal_wallets/{walletId}/set_customer_ref_id | Set an AML/KYT customer reference ID for internal wallet
 
 
 
@@ -20,7 +20,7 @@ Method | HTTP request | Description
 > models::UnmanagedWallet create_internal_wallet(idempotency_key, create_wallet_request)
 Create an internal wallet
 
-Creates a new internal wallet with the requested name.
+Creates a new internal wallet with the requested name. Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets)  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -51,7 +51,7 @@ No authorization required
 > models::WalletAsset create_internal_wallet_asset(wallet_id, asset_id, idempotency_key, create_internal_wallet_asset_request)
 Add an asset to an internal wallet
 
-Adds an asset to an existing internal wallet.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks 
+Adds an asset to an existing internal wallet.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks    Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets) </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -84,7 +84,7 @@ No authorization required
 > delete_internal_wallet(wallet_id)
 Delete an internal wallet
 
-Deletes an internal wallet by ID.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks 
+Deletes an internal wallet by ID.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -112,9 +112,9 @@ No authorization required
 ## delete_internal_wallet_asset
 
 > delete_internal_wallet_asset(wallet_id, asset_id)
-Delete a whitelisted address from an internal wallet
+Delete a whitelisted address
 
-Deletes a whitelisted address (for an asset) from an internal wallet.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks 
+Deletes a whitelisted address (for an asset) from an internal wallet.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -145,7 +145,7 @@ No authorization required
 > models::UnmanagedWallet get_internal_wallet(wallet_id)
 Get assets for internal wallet
 
-Returns all assets in an internal wallet by ID.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks 
+Returns all assets in an internal wallet by ID.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks   </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -175,7 +175,7 @@ No authorization required
 > models::WalletAsset get_internal_wallet_asset(wallet_id, asset_id)
 Get an asset from an internal wallet
 
-Returns information for an asset in an internal wallet.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks 
+Returns information for an asset in an internal wallet.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -206,7 +206,7 @@ No authorization required
 > Vec<models::UnmanagedWallet> get_internal_wallets()
 List internal wallets
 
-Gets a list of internal wallets.   **Note**: BTC-based assets belonging to whitelisted addresses cannot be retrieved between 00:00 UTC and 00:01 UTC daily due to third-party provider, Blockchair, being unavailable for this 60 second period.  Please wait until the next minute to retrieve BTC-based assets.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.  - You can see the balance of the Internal Wallet via Fireblocks - You cannot initiate transactions from Internal Wallets through Fireblocks 
+Gets a list of internal wallets.   **Note**: BTC-based assets belonging to whitelisted addresses cannot be retrieved between 00:00 UTC and 00:01 UTC daily due to third-party provider, Blockchair, being unavailable for this 60 second period.  Please wait until the next minute to retrieve BTC-based assets.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.  - You can see the balance of the Internal Wallet via Fireblocks - You cannot initiate transactions from Internal Wallets through Fireblocks </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -231,9 +231,9 @@ No authorization required
 ## set_customer_ref_id_for_internal_wallet
 
 > set_customer_ref_id_for_internal_wallet(wallet_id, set_customer_ref_id_request, idempotency_key)
-Set an AML/KYT customer reference ID for an internal wallet
+Set an AML/KYT customer reference ID for internal wallet
 
-Sets an AML/KYT customer reference ID for the specific internal wallet.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks 
+Sets an AML/KYT customer reference ID for the specific internal wallet.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks    Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets) </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 

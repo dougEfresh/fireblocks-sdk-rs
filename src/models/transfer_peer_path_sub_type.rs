@@ -29,6 +29,8 @@ pub enum TransferPeerPathSubType {
     Bittrex,
     #[serde(rename = "BLINC")]
     Blinc,
+    #[serde(rename = "BULLISHEXCHANGE")]
+    Bullishexchange,
     #[serde(rename = "BYBIT")]
     Bybit,
     #[serde(rename = "CIRCLE")]
@@ -89,6 +91,7 @@ impl std::fmt::Display for TransferPeerPathSubType {
             Self::Bitstamp => write!(f, "BITSTAMP"),
             Self::Bittrex => write!(f, "BITTREX"),
             Self::Blinc => write!(f, "BLINC"),
+            Self::Bullishexchange => write!(f, "BULLISHEXCHANGE"),
             Self::Bybit => write!(f, "BYBIT"),
             Self::Circle => write!(f, "CIRCLE"),
             Self::Coinbaseexchange => write!(f, "COINBASEEXCHANGE"),

@@ -206,7 +206,8 @@ pub struct UnlinkCollectionParams {
 
 #[async_trait]
 impl TokenizationApi for TokenizationApiClient {
-    /// Burn tokens in a collection
+    /// Burn tokens in a collection. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn burn_collection_token(
         &self,
         params: BurnCollectionTokenParams,
@@ -259,7 +260,8 @@ impl TokenizationApi for TokenizationApiClient {
         }
     }
 
-    /// Create a new collection and link it as a token
+    /// Create a new collection and link it as a token. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn create_new_collection(
         &self,
         params: CreateNewCollectionParams,
@@ -310,7 +312,8 @@ impl TokenizationApi for TokenizationApiClient {
         }
     }
 
-    /// Get collection token details by id
+    /// Get collection token details by id. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn fetch_collection_token_details(
         &self,
         params: FetchCollectionTokenDetailsParams,
@@ -355,7 +358,8 @@ impl TokenizationApi for TokenizationApiClient {
         }
     }
 
-    /// Get a collection by id
+    /// Get a collection by id. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor, Viewer.
     async fn get_collection_by_id(
         &self,
         params: GetCollectionByIdParams,
@@ -399,7 +403,8 @@ impl TokenizationApi for TokenizationApiClient {
         }
     }
 
-    /// Get collections (paginated)
+    /// Get collections (paginated). </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_linked_collections(
         &self,
         params: GetLinkedCollectionsParams,
@@ -459,7 +464,8 @@ impl TokenizationApi for TokenizationApiClient {
         }
     }
 
-    /// Return a linked token, with its status and metadata.
+    /// Return a linked token, with its status and metadata.  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin.
     async fn get_linked_token(
         &self,
         params: GetLinkedTokenParams,
@@ -503,7 +509,8 @@ impl TokenizationApi for TokenizationApiClient {
         }
     }
 
-    /// Return all linked tokens (paginated)
+    /// Return all linked tokens (paginated).  </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn get_linked_tokens(
         &self,
         params: GetLinkedTokensParams,
@@ -566,7 +573,8 @@ impl TokenizationApi for TokenizationApiClient {
     /// Stellar/Ripple, it links a newly created token directly to the workspace
     /// without deploying a contract. Returns the token link with status
     /// \"PENDING\" until the token is deployed or \"SUCCESS\" if no deployment
-    /// is needed.
+    /// is needed. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor, Viewer.
     async fn issue_new_token(
         &self,
         params: IssueNewTokenParams,
@@ -615,7 +623,8 @@ impl TokenizationApi for TokenizationApiClient {
         }
     }
 
-    /// Link an a contract
+    /// Link a contract. </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor, Viewer.
     async fn link(&self, params: LinkParams) -> Result<models::TokenLinkDto, Error<LinkError>> {
         let LinkParams {
             token_link_request_dto,
@@ -662,7 +671,8 @@ impl TokenizationApi for TokenizationApiClient {
         }
     }
 
-    /// Mint tokens and upload metadata
+    /// Mint tokens and upload metadata. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn mint_collection_token(
         &self,
         params: MintCollectionTokenParams,
@@ -717,7 +727,8 @@ impl TokenizationApi for TokenizationApiClient {
 
     /// Unlink a token. The token will be unlinked from the workspace. The token
     /// will not be deleted on chain nor the refId, only the link to the
-    /// workspace will be removed.
+    /// workspace will be removed. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor, Viewer.
     async fn unlink(&self, params: UnlinkParams) -> Result<(), Error<UnlinkError>> {
         let UnlinkParams { id } = params;
 
@@ -758,7 +769,8 @@ impl TokenizationApi for TokenizationApiClient {
         }
     }
 
-    /// Delete a collection link
+    /// Delete a collection link. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor.
     async fn unlink_collection(
         &self,
         params: UnlinkCollectionParams,

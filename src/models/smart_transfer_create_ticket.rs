@@ -49,6 +49,8 @@ impl SmartTransferCreateTicket {
 pub enum Type {
     #[serde(rename = "ASYNC")]
     Async,
+    #[serde(rename = "DVP")]
+    Dvp,
 }
 
 impl Default for Type {

@@ -109,9 +109,7 @@ pub struct InternalTransferParams {
 
 #[async_trait]
 impl ExchangeAccountsApi for ExchangeAccountsApiClient {
-    /// Convert exchange account funds from the source asset to the destination
-    /// asset. Coinbase (USD to USDC, USDC to USD) and Bitso (MXN to USD) are
-    /// supported conversions
+    /// Convert exchange account funds from the source asset to the destination asset. Coinbase (USD to USDC, USDC to USD) and Bitso (MXN to USD) are supported conversions. Learn more about Fireblocks Exchange Connectivity in the following [guide](https://developers.fireblocks.com/docs/connect-to-exchanges-and-fiat-providers). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn convert_assets(
         &self,
         params: ConvertAssetsParams,
@@ -164,7 +162,8 @@ impl ExchangeAccountsApi for ExchangeAccountsApiClient {
         }
     }
 
-    /// Returns an exchange account by ID
+    /// Returns an exchange account by ID. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn get_exchange_account(
         &self,
         params: GetExchangeAccountParams,
@@ -210,7 +209,8 @@ impl ExchangeAccountsApi for ExchangeAccountsApiClient {
         }
     }
 
-    /// Returns an asset for an exchange account
+    /// Returns an asset for an exchange account. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin.
     async fn get_exchange_account_asset(
         &self,
         params: GetExchangeAccountAssetParams,
@@ -258,7 +258,8 @@ impl ExchangeAccountsApi for ExchangeAccountsApiClient {
         }
     }
 
-    /// Returns a list of the connected exchange accounts in your workspace
+    /// Returns a list of the connected exchange accounts in your workspace.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_paged_exchange_accounts(
         &self,
         params: GetPagedExchangeAccountsParams,
@@ -314,7 +315,7 @@ impl ExchangeAccountsApi for ExchangeAccountsApiClient {
         }
     }
 
-    /// Transfers funds between trading accounts under the same exchange account
+    /// Transfers funds between trading accounts under the same exchange account. Learn more about Fireblocks Exchange Connectivity in the following [guide](https://developers.fireblocks.com/docs/connect-to-exchanges-and-fiat-providers). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn internal_transfer(
         &self,
         params: InternalTransferParams,

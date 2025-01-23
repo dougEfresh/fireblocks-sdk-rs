@@ -13,6 +13,7 @@
 | Bitstamp | BITSTAMP |
 | Bittrex | BITTREX |
 | Blinc | BLINC |
+| Bullishexchange | BULLISHEXCHANGE |
 | Bybit | BYBIT |
 | Circle | CIRCLE |
 | Coinbaseexchange | COINBASEEXCHANGE |

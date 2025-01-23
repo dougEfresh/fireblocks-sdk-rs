@@ -89,6 +89,8 @@ pub struct UpdateGasStationConfigurationByAssetIdParams {
 #[async_trait]
 impl GasStationApi for GasStationApiClient {
     /// Returns gas station settings and balances for a requested asset.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn get_gas_station_by_asset_id(
         &self,
         params: GetGasStationByAssetIdParams,
@@ -132,7 +134,8 @@ impl GasStationApi for GasStationApiClient {
         }
     }
 
-    /// Returns gas station settings and ETH balance.
+    /// Returns gas station settings and ETH balance. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_gas_station_info(
         &self,
     ) -> Result<models::GasStationPropertiesResponse, Error<GetGasStationInfoError>> {
@@ -169,7 +172,7 @@ impl GasStationApi for GasStationApiClient {
         }
     }
 
-    /// Configures gas station settings for ETH.
+    /// Configures gas station settings for ETH. Learn more about the Fireblocks Gas Station in the following [guide](https://developers.fireblocks.com/docs/work-with-gas-station). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn update_gas_station_configuration(
         &self,
         params: UpdateGasStationConfigurationParams,
@@ -223,7 +226,7 @@ impl GasStationApi for GasStationApiClient {
         }
     }
 
-    /// Configures gas station settings for a requested asset.
+    /// Configures gas station settings for a requested asset. Learn more about the Fireblocks Gas Station in the following [guide](https://developers.fireblocks.com/docs/work-with-gas-station). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn update_gas_station_configuration_by_asset_id(
         &self,
         params: UpdateGasStationConfigurationByAssetIdParams,

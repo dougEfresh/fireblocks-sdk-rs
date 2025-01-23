@@ -21,6 +21,10 @@ pub trait ContractInteractionsApi: Send + Sync {
         &self,
         params: GetDeployedContractAbiParams,
     ) -> Result<models::ContractAbiResponseDto, Error<GetDeployedContractAbiError>>;
+    async fn get_transaction_receipt(
+        &self,
+        params: GetTransactionReceiptParams,
+    ) -> Result<models::TransactionReceiptResponse, Error<GetTransactionReceiptError>>;
     async fn read_call_function(
         &self,
         params: ReadCallFunctionParams,
@@ -48,12 +52,22 @@ pub struct GetDeployedContractAbiParams {
     /// The contract's onchain address
     pub contract_address: String,
     /// The blockchain base assetId
-    pub asset_id: String,
+    pub base_asset_id: String,
     /// A unique identifier for the request. If the request is sent multiple
     /// times with the same idempotency key, the server will return the same
     /// response as the first request. The idempotency key is valid for 24
     /// hours.
     pub idempotency_key: Option<String>,
+}
+
+/// struct for passing parameters to the method [`get_transaction_receipt`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct GetTransactionReceiptParams {
+    /// The blockchain base assetId
+    pub base_asset_id: String,
+    /// The transaction hash
+    pub tx_hash: String,
 }
 
 /// struct for passing parameters to the method [`read_call_function`]
@@ -63,7 +77,7 @@ pub struct ReadCallFunctionParams {
     /// The contract's onchain address
     pub contract_address: String,
     /// The blockchain base assetId
-    pub asset_id: String,
+    pub base_asset_id: String,
     pub read_call_function_dto: models::ReadCallFunctionDto,
     /// A unique identifier for the request. If the request is sent multiple
     /// times with the same idempotency key, the server will return the same
@@ -79,7 +93,7 @@ pub struct WriteCallFunctionParams {
     /// The contract's onchain address
     pub contract_address: String,
     /// The blockchain base assetId
-    pub asset_id: String,
+    pub base_asset_id: String,
     pub write_call_function_dto: models::WriteCallFunctionDto,
     /// A unique identifier for the request. If the request is sent multiple
     /// times with the same idempotency key, the server will return the same
@@ -91,14 +105,14 @@ pub struct WriteCallFunctionParams {
 #[async_trait]
 impl ContractInteractionsApi for ContractInteractionsApiClient {
     /// Return deployed contract's ABI by blockchain native asset id and
-    /// contract address
+    /// contract address. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_deployed_contract_abi(
         &self,
         params: GetDeployedContractAbiParams,
     ) -> Result<models::ContractAbiResponseDto, Error<GetDeployedContractAbiError>> {
         let GetDeployedContractAbiParams {
             contract_address,
-            asset_id,
+            base_asset_id,
             idempotency_key,
         } = params;
 
@@ -107,11 +121,11 @@ impl ContractInteractionsApi for ContractInteractionsApiClient {
         let local_var_client = &local_var_configuration.client;
 
         let local_var_uri_str = format!(
-            "{}/contract_interactions/base_asset_id/{assetId}/contract_address/{contractAddress}/\
-             functions",
+            "{}/contract_interactions/base_asset_id/{baseAssetId}/contract_address/\
+             {contractAddress}/functions",
             local_var_configuration.base_path,
             contractAddress = crate::apis::urlencode(contract_address),
-            assetId = crate::apis::urlencode(asset_id)
+            baseAssetId = crate::apis::urlencode(base_asset_id)
         );
         let mut local_var_req_builder =
             local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -145,15 +159,65 @@ impl ContractInteractionsApi for ContractInteractionsApiClient {
         }
     }
 
+    /// Retrieve the transaction receipt by blockchain native asset ID and
+    /// transaction hash  </br>Endpoint Permission: Admin, Non-Signing Admin.
+    async fn get_transaction_receipt(
+        &self,
+        params: GetTransactionReceiptParams,
+    ) -> Result<models::TransactionReceiptResponse, Error<GetTransactionReceiptError>> {
+        let GetTransactionReceiptParams {
+            base_asset_id,
+            tx_hash,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/contract_interactions/base_asset_id/{baseAssetId}/tx_hash/{txHash}/receipt",
+            local_var_configuration.base_path,
+            baseAssetId = crate::apis::urlencode(base_asset_id),
+            txHash = crate::apis::urlencode(tx_hash)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            serde_json::from_str(&local_var_content).map_err(Error::from)
+        } else {
+            let local_var_entity: Option<GetTransactionReceiptError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
     /// Call a read function on a deployed contract by blockchain native asset
-    /// id and contract address
+    /// id and contract address. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn read_call_function(
         &self,
         params: ReadCallFunctionParams,
     ) -> Result<Vec<models::ParameterWithValue>, Error<ReadCallFunctionError>> {
         let ReadCallFunctionParams {
             contract_address,
-            asset_id,
+            base_asset_id,
             read_call_function_dto,
             idempotency_key,
         } = params;
@@ -163,11 +227,11 @@ impl ContractInteractionsApi for ContractInteractionsApiClient {
         let local_var_client = &local_var_configuration.client;
 
         let local_var_uri_str = format!(
-            "{}/contract_interactions/base_asset_id/{assetId}/contract_address/{contractAddress}/\
-             functions/read",
+            "{}/contract_interactions/base_asset_id/{baseAssetId}/contract_address/\
+             {contractAddress}/functions/read",
             local_var_configuration.base_path,
             contractAddress = crate::apis::urlencode(contract_address),
-            assetId = crate::apis::urlencode(asset_id)
+            baseAssetId = crate::apis::urlencode(base_asset_id)
         );
         let mut local_var_req_builder =
             local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
@@ -205,14 +269,14 @@ impl ContractInteractionsApi for ContractInteractionsApiClient {
     /// Call a write function on a deployed contract by blockchain native asset
     /// id and contract address. This creates an onchain transaction, thus it is
     /// an async operation. It returns a transaction id that can be polled for
-    /// status check
+    /// status check.  </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn write_call_function(
         &self,
         params: WriteCallFunctionParams,
     ) -> Result<models::WriteCallFunctionResponseDto, Error<WriteCallFunctionError>> {
         let WriteCallFunctionParams {
             contract_address,
-            asset_id,
+            base_asset_id,
             write_call_function_dto,
             idempotency_key,
         } = params;
@@ -222,11 +286,11 @@ impl ContractInteractionsApi for ContractInteractionsApiClient {
         let local_var_client = &local_var_configuration.client;
 
         let local_var_uri_str = format!(
-            "{}/contract_interactions/base_asset_id/{assetId}/contract_address/{contractAddress}/\
-             functions/write",
+            "{}/contract_interactions/base_asset_id/{baseAssetId}/contract_address/\
+             {contractAddress}/functions/write",
             local_var_configuration.base_path,
             contractAddress = crate::apis::urlencode(contract_address),
-            assetId = crate::apis::urlencode(asset_id)
+            baseAssetId = crate::apis::urlencode(base_asset_id)
         );
         let mut local_var_req_builder =
             local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
@@ -266,6 +330,14 @@ impl ContractInteractionsApi for ContractInteractionsApiClient {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetDeployedContractAbiError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`get_transaction_receipt`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GetTransactionReceiptError {
     DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }

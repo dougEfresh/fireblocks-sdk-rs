@@ -15,11 +15,11 @@ pub struct AuditLogData {
     pub id: Option<String>,
     /// The timestamp of the audit log
     #[serde(rename = "timestamp", skip_serializing_if = "Option::is_none")]
-    pub timestamp: Option<String>,
+    pub timestamp: Option<f64>,
     /// The timestamp of the audit log creation
     #[serde(rename = "createdAt", skip_serializing_if = "Option::is_none")]
-    pub created_at: Option<String>,
-    /// The user name of the user that performed the action
+    pub created_at: Option<f64>,
+    /// The user who performed the action
     #[serde(rename = "user", skip_serializing_if = "Option::is_none")]
     pub user: Option<String>,
     /// The subject of the action
@@ -28,15 +28,12 @@ pub struct AuditLogData {
     /// The event that was performed
     #[serde(rename = "event", skip_serializing_if = "Option::is_none")]
     pub event: Option<String>,
-    /// The workspace ID of the audit log
+    /// The tenant ID of the audit log
     #[serde(rename = "tenantId", skip_serializing_if = "Option::is_none")]
     pub tenant_id: Option<String>,
-    /// The user ID of the user that performed the action
+    /// The user ID of the audit log
     #[serde(rename = "userId", skip_serializing_if = "Option::is_none")]
     pub user_id: Option<String>,
-    /// Workspace Name
-    #[serde(rename = "workspace", skip_serializing_if = "Option::is_none")]
-    pub workspace: Option<String>,
 }
 
 impl AuditLogData {
@@ -50,7 +47,6 @@ impl AuditLogData {
             event: None,
             tenant_id: None,
             user_id: None,
-            workspace: None,
         }
     }
 }

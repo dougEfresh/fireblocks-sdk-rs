@@ -76,20 +76,7 @@ pub struct GetPayoutParams {
 
 #[async_trait]
 impl PaymentsPayoutApi for PaymentsPayoutApiClient {
-    /// **Note:** The reference content in this section documents the Payments
-    /// Engine endpoint. The Payments Engine endpoints include APIs available
-    /// only for customers with Payments Engine enabled on their accounts. </br>
-    /// </br>These endpoints are currently in beta and might be subject to
-    /// changes.</br> </br>If you want to learn more about Fireblocks Payments
-    /// Engine, please contact your Fireblocks Customer Success Manager or email
-    /// CSM@fireblocks.com. </br> </br> <b u>Create a payout instruction
-    /// set.</b> </u></br> A payout instruction set is a set of instructions for
-    /// distributing payments from a single payment account to a list of payee
-    /// accounts. </br> The instruction set defines: </br> <ul> <li>the payment
-    /// account and its account type (vault, exchange, or fiat). </li> <li>the
-    /// account type (vault account, exchange account, whitelisted address,
-    /// network connection, fiat account, or merchant account), the amount, and
-    /// the asset of payment for each payee account.</li> </ul>
+    /// **Note:** The reference content in this section documents the Payments Engine endpoint. The Payments Engine endpoints include APIs available only for customers with Payments Engine enabled on their accounts. </br> </br>These endpoints are currently in beta and might be subject to changes.</br> </br>If you want to learn more about Fireblocks Payments Engine, please contact your Fireblocks Customer Success Manager or email CSM@fireblocks.com. </br> </br> <b u>Create a payout instruction set.</b> </u></br> A payout instruction set is a set of instructions for distributing payments from a single payment account to a list of payee accounts. </br> The instruction set defines: </br> <ul> <li>the payment account and its account type (vault, exchange, or fiat). </li> <li>the account type (vault account, exchange account, whitelisted address, network connection, fiat account, or merchant account), the amount, and the asset of payment for each payee account.</li> </ul> Learn more about Fireblocks Payments - Payouts in the following [guide](https://developers.fireblocks.com/docs/create-payouts). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn create_payout(
         &self,
         params: CreatePayoutParams,
@@ -149,7 +136,8 @@ impl PaymentsPayoutApi for PaymentsPayoutApiClient {
     /// payout instruction set from a payment account with an already active
     /// payout the active payout will complete before the new payout instruction
     /// set can be executed. </br> You cannot execute the same payout
-    /// instruction set more than once.
+    /// instruction set more than once. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn execute_payout_action(
         &self,
         params: ExecutePayoutActionParams,
@@ -206,7 +194,8 @@ impl PaymentsPayoutApi for PaymentsPayoutApiClient {
     /// </br>These endpoints are currently in beta and might be subject to
     /// changes.</br> </br>If you want to learn more about Fireblocks Payments
     /// Engine, please contact your Fireblocks Customer Success Manager or email
-    /// CSM@fireblocks.com. </br>
+    /// CSM@fireblocks.com. </br> </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn get_payout(
         &self,
         params: GetPayoutParams,

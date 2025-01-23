@@ -22,7 +22,7 @@ pub struct ConversionOperationExecutionParamsExecutionParams {
         rename = "slippageBasisPoints",
         skip_serializing_if = "Option::is_none"
     )]
-    pub slippage_basis_points: Option<u32>,
+    pub slippage_basis_points: Option<u16>,
 }
 
 impl ConversionOperationExecutionParamsExecutionParams {

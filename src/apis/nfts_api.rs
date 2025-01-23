@@ -142,7 +142,7 @@ pub struct GetOwnershipTokensParams {
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
 pub struct ListOwnedCollectionsParams {
-    /// Non-Custodial Wallet ID
+    /// Tenant's Non-Custodial Wallet ID
     pub ncw_id: Option<String>,
     /// Wallet type, it can be `VAULT_ACCOUNT` or `END_USER_WALLET`
     pub wallet_type: Option<String>,
@@ -257,7 +257,8 @@ pub struct UpdateTokensOwnershipStatusParams {
 
 #[async_trait]
 impl NftsApi for NftsApiClient {
-    /// Returns the requested token data.
+    /// Returns the requested token data. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn get_nft(
         &self,
         params: GetNftParams,
@@ -301,7 +302,8 @@ impl NftsApi for NftsApiClient {
         }
     }
 
-    /// Returns the requested tokens data.
+    /// Returns the requested tokens data. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn get_nfts(
         &self,
         params: GetNftsParams,
@@ -379,7 +381,8 @@ impl NftsApi for NftsApiClient {
         }
     }
 
-    /// Returns all tokens and their data in your workspace.
+    /// Returns all tokens and their data in your workspace.  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_ownership_tokens(
         &self,
         params: GetOwnershipTokensParams,
@@ -508,7 +511,8 @@ impl NftsApi for NftsApiClient {
         }
     }
 
-    /// Returns all collections in your workspace
+    /// Returns all collections in your workspace. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn list_owned_collections(
         &self,
         params: ListOwnedCollectionsParams,
@@ -608,7 +612,8 @@ impl NftsApi for NftsApiClient {
     }
 
     /// Returns all owned distinct tokens (for your workspace) and their data in
-    /// your workspace.
+    /// your workspace. </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor.
     async fn list_owned_tokens(
         &self,
         params: ListOwnedTokensParams,
@@ -712,7 +717,7 @@ impl NftsApi for NftsApiClient {
         }
     }
 
-    /// Updates the latest token metadata.
+    /// Updates the latest token metadata. Learn more about Fireblocks NFT management in the following [guide](https://developers.fireblocks.com/reference/deploy-an-nft-collection).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn refresh_nft_metadata(
         &self,
         params: RefreshNftMetadataParams,
@@ -763,7 +768,7 @@ impl NftsApi for NftsApiClient {
         }
     }
 
-    /// Updates all tokens and balances per blockchain and vault account.
+    /// Updates all tokens and balances per blockchain and vault account. Learn more about Fireblocks NFT management in the following [guide](https://developers.fireblocks.com/reference/deploy-an-nft-collection).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn update_ownership_tokens(
         &self,
         params: UpdateOwnershipTokensParams,
@@ -819,6 +824,8 @@ impl NftsApi for NftsApiClient {
     }
 
     /// Updates token status for a workspace, in all workspace vaults.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn update_token_ownership_status(
         &self,
         params: UpdateTokenOwnershipStatusParams,
@@ -872,7 +879,8 @@ impl NftsApi for NftsApiClient {
     }
 
     /// Updates tokens spam property for a workspace's token ownerships, in all
-    /// vault accounts.
+    /// vault accounts.  </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor.
     async fn update_tokens_ownership_spam(
         &self,
         params: UpdateTokensOwnershipSpamParams,
@@ -924,6 +932,8 @@ impl NftsApi for NftsApiClient {
     }
 
     /// Updates tokens status for a workspace, in all vault accounts.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn update_tokens_ownership_status(
         &self,
         params: UpdateTokensOwnershipStatusParams,

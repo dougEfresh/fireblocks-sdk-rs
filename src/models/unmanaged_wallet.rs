@@ -13,23 +13,23 @@ use {
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct UnmanagedWallet {
-    #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<String>,
-    #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
+    #[serde(rename = "id")]
+    pub id: String,
+    #[serde(rename = "name")]
+    pub name: String,
     #[serde(rename = "customerRefId", skip_serializing_if = "Option::is_none")]
     pub customer_ref_id: Option<String>,
-    #[serde(rename = "assets", skip_serializing_if = "Option::is_none")]
-    pub assets: Option<Vec<models::WalletAsset>>,
+    #[serde(rename = "assets")]
+    pub assets: Vec<models::WalletAsset>,
 }
 
 impl UnmanagedWallet {
-    pub fn new() -> UnmanagedWallet {
+    pub fn new(id: String, name: String, assets: Vec<models::WalletAsset>) -> UnmanagedWallet {
         UnmanagedWallet {
-            id: None,
-            name: None,
+            id,
+            name,
             customer_ref_id: None,
-            assets: None,
+            assets,
         }
     }
 }

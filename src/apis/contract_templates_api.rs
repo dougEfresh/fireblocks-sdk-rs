@@ -103,6 +103,10 @@ pub struct GetContractTemplateByIdParams {
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
 pub struct GetContractTemplatesParams {
+    /// Items per page (max 100)
+    pub limit: Option<f64>,
+    /// Paging offset
+    pub offset: Option<f64>,
     /// Page cursor to get the next page
     pub page_cursor: Option<String>,
     /// Number of items per page, requesting more then max will return max items
@@ -141,7 +145,8 @@ pub struct UploadContractTemplateParams {
 #[async_trait]
 impl ContractTemplatesApi for ContractTemplatesApiClient {
     /// Delete a contract by id. allowed only for private contract templates.
-    /// Notice: it is irreversible!
+    /// Notice: it is irreversible! </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn delete_contract_template_by_id(
         &self,
         params: DeleteContractTemplateByIdParams,
@@ -188,8 +193,9 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
     }
 
     /// Deploy a new contract by contract template id. If you wish to deploy a
-    /// token (ERC20, ERC721 etc), and create asset please use POST
-    /// /tokenization
+    /// token (ERC20, ERC721 etc), and create asset please use `POST
+    /// /tokenization`. </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor, Viewer.
     async fn deploy_contract(
         &self,
         params: DeployContractParams,
@@ -242,7 +248,8 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
         }
     }
 
-    /// Return contract template's constructor ABI
+    /// Return contract template's constructor ABI. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_constructor_by_contract_template_id(
         &self,
         params: GetConstructorByContractTemplateIdParams,
@@ -293,7 +300,8 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
         }
     }
 
-    /// Return detailed information about the contract template
+    /// Return detailed information about the contract template. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_contract_template_by_id(
         &self,
         params: GetContractTemplateByIdParams,
@@ -340,12 +348,15 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
     }
 
     /// Return minimal representation of all the contract templates available
-    /// for the workspace
+    /// for the workspace. </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor, Viewer.
     async fn get_contract_templates(
         &self,
         params: GetContractTemplatesParams,
     ) -> Result<models::TemplatesPaginatedResponse, Error<GetContractTemplatesError>> {
         let GetContractTemplatesParams {
+            limit,
+            offset,
             page_cursor,
             page_size,
             r#type,
@@ -363,6 +374,14 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
         let mut local_var_req_builder =
             local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+        if let Some(ref local_var_str) = limit {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("limit", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = offset {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("offset", &local_var_str.to_string())]);
+        }
         if let Some(ref local_var_str) = page_cursor {
             local_var_req_builder =
                 local_var_req_builder.query(&[("pageCursor", &local_var_str.to_string())]);
@@ -404,7 +423,8 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
         }
     }
 
-    /// Return contract template`s function ABI by signature
+    /// Return contract template`s function ABI by signature. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_function_abi_by_contract_template_id(
         &self,
         params: GetFunctionAbiByContractTemplateIdParams,
@@ -454,7 +474,7 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
     }
 
     /// Upload a new contract template. This contract template will be available
-    /// for the workspace
+    /// for the workspace. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn upload_contract_template(
         &self,
         params: UploadContractTemplateParams,
