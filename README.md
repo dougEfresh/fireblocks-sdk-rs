@@ -116,7 +116,7 @@ Create a .env file
 cp .env-sameple .env
 ```
 
-Edit .env and configure your API and secret key (in FIREBLOCKS_SECRET or FIREBLOCKS_SECRET_FILE). You also need to create some whitlisted (see [tests/wallets.rs](./tests/wallets.rs) for details)
+Edit .env and configure your API and secret key in FIREBLOCKS_SECRET or FIREBLOCKS_SECRET_FILE. You also need to create some whitlisted (see [tests/wallets.rs](./tests/wallets.rs) for details)
 
 Run tests:
 ```shell

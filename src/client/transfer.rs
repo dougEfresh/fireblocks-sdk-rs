@@ -33,7 +33,7 @@ impl Client {
             WalletType::Contract => TransferPeerPathType::Contract,
         };
         if fee_level.is_some() {
-            req.fee_level = req.fee_level
+            req.fee_level = fee_level;
         }
         req.source = Some(SourceTransferPeerPath {
             r#type: TransferPeerPathType::VaultAccount,

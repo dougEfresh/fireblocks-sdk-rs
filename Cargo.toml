@@ -33,6 +33,7 @@ return_self_not_must_use = "allow"
 missing_errors_doc = "allow"
 option_if_let_else = "warn"
 nursery = { level = "deny", priority = -1 }
+doc_markdown = "allow"
 
 [features]
 default = ["page", "bon"]
