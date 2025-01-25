@@ -89,7 +89,7 @@ impl PolicyEditorBetaApi for PolicyEditorBetaApiClient {
     /// endpoints are currently in beta and might be subject to changes. If you
     /// want to participate and learn more about the Fireblocks TAP, please
     /// contact your Fireblocks Customer Success Manager or send an email to
-    /// CSM@fireblocks.com.
+    /// CSM@fireblocks.com. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_active_policy(
         &self,
     ) -> Result<models::PolicyAndValidationResponse, Error<GetActivePolicyError>> {
@@ -130,7 +130,7 @@ impl PolicyEditorBetaApi for PolicyEditorBetaApiClient {
     /// endpoints are currently in beta and might be subject to changes. If you
     /// want to participate and learn more about the Fireblocks TAP, please
     /// contact your Fireblocks Customer Success Manager or send an email to
-    /// CSM@fireblocks.com.
+    /// CSM@fireblocks.com. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_draft(
         &self,
     ) -> Result<models::DraftReviewAndValidationResponse, Error<GetDraftError>> {
@@ -171,7 +171,8 @@ impl PolicyEditorBetaApi for PolicyEditorBetaApiClient {
     /// **Note:** These endpoints are currently in beta and might be subject to
     /// changes. If you want to participate and learn more about the Fireblocks
     /// TAP, please contact your Fireblocks Customer Success Manager or send an
-    /// email to CSM@fireblocks.com.
+    /// email to CSM@fireblocks.com. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn publish_draft(
         &self,
         params: PublishDraftParams,
@@ -223,7 +224,8 @@ impl PolicyEditorBetaApi for PolicyEditorBetaApiClient {
     /// </br> **Note:** These endpoints are currently in beta and might be
     /// subject to changes. If you want to participate and learn more about the
     /// Fireblocks TAP, please contact your Fireblocks Customer Success Manager
-    /// or send an email to CSM@fireblocks.com.
+    /// or send an email to CSM@fireblocks.com. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn publish_policy_rules(
         &self,
         params: PublishPolicyRulesParams,
@@ -271,11 +273,7 @@ impl PolicyEditorBetaApi for PolicyEditorBetaApiClient {
         }
     }
 
-    /// Update the draft and return its validation. </br> **Note:** These
-    /// endpoints are currently in beta and might be subject to changes. If you
-    /// want to participate and learn more about the Fireblocks TAP, please
-    /// contact your Fireblocks Customer Success Manager or send an email to
-    /// CSM@fireblocks.com.
+    /// Update the draft and return its validation. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. Learn more about Fireblocks Transaction Authorization Policy in the following [guide](https://developers.fireblocks.com/docs/set-transaction-authorization-policy). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn update_draft(
         &self,
         params: UpdateDraftParams,

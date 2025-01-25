@@ -12,14 +12,14 @@ Method | HTTP request | Description
 [**get_audit_logs**](WorkspaceManagementApi.md#get_audit_logs) | **GET** /management/audit_logs | Get audit logs
 [**get_audits**](WorkspaceManagementApi.md#get_audits) | **GET** /audits | Get audit logs
 [**get_console_users**](WorkspaceManagementApi.md#get_console_users) | **GET** /management/users | Get console users
-[**get_ota_status**](WorkspaceManagementApi.md#get_ota_status) | **GET** /management/ota | Returns current One Time Address status
+[**get_ota_status**](WorkspaceManagementApi.md#get_ota_status) | **GET** /management/ota | Returns current OTA status
 [**get_user_group**](WorkspaceManagementApi.md#get_user_group) | **GET** /management/user_groups/{groupId} | Get user group
 [**get_user_groups**](WorkspaceManagementApi.md#get_user_groups) | **GET** /management/user_groups | List user groups
 [**get_users**](WorkspaceManagementApi.md#get_users) | **GET** /users | List users
 [**get_whitelist_ip_addresses**](WorkspaceManagementApi.md#get_whitelist_ip_addresses) | **GET** /management/api_users/{userId}/whitelist_ip_addresses | Get whitelisted ip addresses for an API Key
 [**get_workspace_status**](WorkspaceManagementApi.md#get_workspace_status) | **GET** /management/workspace_status | Returns current workspace status
 [**reset_device**](WorkspaceManagementApi.md#reset_device) | **POST** /management/users/{id}/reset_device | Resets device
-[**set_ota_status**](WorkspaceManagementApi.md#set_ota_status) | **PUT** /management/ota | Enable or disable transactions to One Time Addresses
+[**set_ota_status**](WorkspaceManagementApi.md#set_ota_status) | **PUT** /management/ota | Enable or disable transactions to OTA
 [**update_user_group**](WorkspaceManagementApi.md#update_user_group) | **PUT** /management/user_groups/{groupId} | Update user group
 
 
@@ -29,7 +29,7 @@ Method | HTTP request | Description
 > create_api_user(idempotency_key, create_api_user)
 Create API Key
 
-Create a new API key in your workspace
+Create a new API key in your workspace. Learn more about Fireblocks API Keys management in the following [guide](https://developers.fireblocks.com/docs/manage-api-keys). </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -60,7 +60,7 @@ No authorization required
 > create_console_user(idempotency_key, create_console_user)
 Create console user
 
-Create console users in your workspace  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. 
+Create console users in your workspace - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. Learn more about Fireblocks Users management in the following [guide](https://developers.fireblocks.com/docs/manage-users). </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -91,7 +91,7 @@ No authorization required
 > models::CreateUserGroupResponse create_user_group(user_group_create_request, idempotency_key)
 Create user group
 
-Create a new user group.  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. 
+Create a new user group.  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. Learn more about Fireblocks Users management in the following [guide](https://developers.fireblocks.com/docs/manage-users). </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -122,7 +122,7 @@ No authorization required
 > delete_user_group(group_id)
 Delete user group
 
-Delete a user group by ID.</br> - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. 
+Delete a user group by ID.</br> - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -152,7 +152,7 @@ No authorization required
 > models::GetApiUsersResponse get_api_users()
 Get API Keys
 
-List all API keys in your workspace.  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. 
+List all API keys in your workspace. - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -179,7 +179,7 @@ No authorization required
 > models::GetAuditLogsResponse get_audit_logs(time_period, cursor)
 Get audit logs
 
-Get Audit logs for the last Day/Week.  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. 
+Get Audit logs for the last Day/Week.  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -210,7 +210,7 @@ No authorization required
 > models::GetAuditLogsResponseDto get_audits(time_period)
 Get audit logs
 
-Deprecated. Please use the `GET /management/audit_logs` endpoint instead.
+Deprecated. Please use the `GET /management/audit_logs` endpoint instead. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -240,7 +240,7 @@ No authorization required
 > models::GetConsoleUsersResponse get_console_users()
 Get console users
 
-Get console users for your workspace.  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. 
+Get console users for your workspace. - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -265,9 +265,9 @@ No authorization required
 ## get_ota_status
 
 > models::GetOtaStatusResponse get_ota_status()
-Returns current One Time Address status
+Returns current OTA status
 
-Returns current One Time Address status  Learn more about [One Time Addresses](https://support.fireblocks.io/hc/en-us/articles/4409104568338-One-Time-Address-OTA-feature)  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. 
+Returns current One Time Address status. Learn more about [One Time Addresses](https://support.fireblocks.io/hc/en-us/articles/4409104568338-One-Time-Address-OTA-feature) - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -294,7 +294,7 @@ No authorization required
 > models::UserGroupResponse get_user_group(group_id)
 Get user group
 
-Get a user group by ID  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. 
+Get a user group by ID  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -324,7 +324,7 @@ No authorization required
 > Vec<models::UserGroupResponse> get_user_groups()
 List user groups
 
-Get all user groups in your workspace  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. 
+Get all user groups in your workspace  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -351,7 +351,7 @@ No authorization required
 > Vec<models::UserResponse> get_users()
 List users
 
-DEPRECATED - please use `GET /management/users` instead 
+DEPRECATED - please use `GET /management/users` instead </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -378,7 +378,7 @@ No authorization required
 > models::GetWhitelistIpAddressesResponse get_whitelist_ip_addresses(user_id)
 Get whitelisted ip addresses for an API Key
 
-Get a list of the whitelisted IP addresses for a specific API Key  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. 
+Get a list of the whitelisted IP addresses for a specific API Key - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -408,7 +408,7 @@ No authorization required
 > models::GetWorkspaceStatusResponse get_workspace_status()
 Returns current workspace status
 
-Returns current workspace status (Beta)  **Note**:  - This endpoint is now in Beta, disabled for general availability at this time.  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. 
+Returns current workspace status (Beta). **Note**: - This endpoint is now in Beta, disabled for general availability at this time. - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions.  </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -435,7 +435,7 @@ No authorization required
 > reset_device(id, idempotency_key)
 Resets device
 
-Resets mobile device for given console user, that user will need to do mobile onboarding again.  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. 
+Resets mobile device for given console user, that user will need to do mobile onboarding again. - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -464,9 +464,9 @@ No authorization required
 ## set_ota_status
 
 > models::SetOtaStatusResponse set_ota_status(set_ota_status_request, idempotency_key)
-Enable or disable transactions to One Time Addresses
+Enable or disable transactions to OTA
 
-Enable or disable transactions to One Time Addresses (Non Whitelisted addresses)  Learn more about [One Time Addresses](https://support.fireblocks.io/hc/en-us/articles/4409104568338-One-Time-Address-OTA-feature)  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. 
+Enable or disable transactions to One Time Addresses (Non Whitelisted addresses). Learn more about [One Time Addresses](https://support.fireblocks.io/hc/en-us/articles/4409104568338-One-Time-Address-OTA-feature) - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -497,7 +497,7 @@ No authorization required
 > models::UserGroupCreateResponse update_user_group(group_id, user_group_update_request, idempotency_key)
 Update user group
 
-Update a user group by ID - Please note that this endpoint is available only for API keys with Admin permissions. 
+Update a user group by ID - Please note that this endpoint is available only for API keys with Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 

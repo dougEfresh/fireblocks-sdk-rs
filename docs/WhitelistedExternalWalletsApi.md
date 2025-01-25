@@ -17,10 +17,10 @@ Method | HTTP request | Description
 
 ## add_asset_to_external_wallet
 
-> models::ExternalWalletAssetDetail add_asset_to_external_wallet(wallet_id, asset_id, idempotency_key, add_asset_to_external_wallet_request)
+> models::ExternalWalletAsset add_asset_to_external_wallet(wallet_id, asset_id, idempotency_key, add_asset_to_external_wallet_request)
 Add an asset to an external wallet.
 
-Adds an asset to an existing external wallet.
+Adds an asset to an existing external wallet. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -34,7 +34,7 @@ Name | Type | Description  | Required | Notes
 
 ### Return type
 
-[**models::ExternalWalletAssetDetail**](ExternalWalletAssetDetail.md)
+[**models::ExternalWalletAsset**](ExternalWalletAsset.md)
 
 ### Authorization
 
@@ -50,10 +50,10 @@ No authorization required
 
 ## create_external_wallet
 
-> models::UnmanagedExternalWallet create_external_wallet(idempotency_key, create_wallet_request)
+> models::UnmanagedWallet create_external_wallet(idempotency_key, create_wallet_request)
 Create an external wallet
 
-Creates a new external wallet with the requested name.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. 
+Creates a new external wallet with the requested name.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. Learn more about Whitelisted External Wallet Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#external-wallets). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -65,7 +65,7 @@ Name | Type | Description  | Required | Notes
 
 ### Return type
 
-[**models::UnmanagedExternalWallet**](UnmanagedExternalWallet.md)
+[**models::UnmanagedWallet**](UnmanagedWallet.md)
 
 ### Authorization
 
@@ -84,7 +84,7 @@ No authorization required
 > delete_external_wallet(wallet_id)
 Delete an external wallet
 
-Deletes an external wallet by ID.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. 
+Deletes an external wallet by ID.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -111,10 +111,10 @@ No authorization required
 
 ## get_external_wallet
 
-> models::UnmanagedExternalWallet get_external_wallet(wallet_id)
+> models::UnmanagedWallet get_external_wallet(wallet_id)
 Find an external wallet
 
-Returns an external wallet by ID.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. 
+Returns an external wallet by ID.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -125,7 +125,7 @@ Name | Type | Description  | Required | Notes
 
 ### Return type
 
-[**models::UnmanagedExternalWallet**](UnmanagedExternalWallet.md)
+[**models::UnmanagedWallet**](UnmanagedWallet.md)
 
 ### Authorization
 
@@ -141,10 +141,10 @@ No authorization required
 
 ## get_external_wallet_asset
 
-> models::ExternalWalletAssetDetail get_external_wallet_asset(wallet_id, asset_id)
+> models::ExternalWalletAsset get_external_wallet_asset(wallet_id, asset_id)
 Get an asset from an external wallet
 
-Returns an external wallet by wallet ID and asset ID.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. 
+Returns an external wallet by wallet ID and asset ID.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor,   Viewer.
 
 ### Parameters
 
@@ -156,7 +156,7 @@ Name | Type | Description  | Required | Notes
 
 ### Return type
 
-[**models::ExternalWalletAssetDetail**](ExternalWalletAssetDetail.md)
+[**models::ExternalWalletAsset**](ExternalWalletAsset.md)
 
 ### Authorization
 
@@ -172,10 +172,10 @@ No authorization required
 
 ## get_external_wallets
 
-> Vec<models::UnmanagedExternalWallet> get_external_wallets()
+> Vec<models::UnmanagedWallet> get_external_wallets()
 List external wallets
 
-Gets a list of external wallets under the workspace.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. 
+Gets a list of external wallets under the workspace.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -183,7 +183,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**Vec<models::UnmanagedExternalWallet>**](UnmanagedExternalWallet.md)
+[**Vec<models::UnmanagedWallet>**](UnmanagedWallet.md)
 
 ### Authorization
 
@@ -202,7 +202,7 @@ No authorization required
 > remove_asset_from_external_wallet(wallet_id, asset_id)
 Delete an asset from an external wallet
 
-Deletes an external wallet asset by ID.
+Deletes an external wallet asset by ID. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -233,7 +233,7 @@ No authorization required
 > set_external_wallet_customer_ref_id(wallet_id, set_customer_ref_id_request, idempotency_key)
 Set an AML customer reference ID for an external wallet
 
-Sets an AML/KYT customer reference ID for the specific external wallet.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. 
+Sets an AML/KYT customer reference ID for the specific external wallet.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. Learn more about Whitelisted External Wallet Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#external-wallets). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 

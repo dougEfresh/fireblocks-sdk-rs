@@ -203,7 +203,7 @@ pub struct UpdateUserGroupParams {
 
 #[async_trait]
 impl WorkspaceManagementApi for WorkspaceManagementApiClient {
-    /// Create a new API key in your workspace
+    /// Create a new API key in your workspace. Learn more about Fireblocks API Keys management in the following [guide](https://developers.fireblocks.com/docs/manage-api-keys). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn create_api_user(
         &self,
         params: CreateApiUserParams,
@@ -252,8 +252,7 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         }
     }
 
-    /// Create console users in your workspace  - Please note that this endpoint
-    /// is available only for API keys with Admin/Non Signing Admin permissions.
+    /// Create console users in your workspace - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. Learn more about Fireblocks Users management in the following [guide](https://developers.fireblocks.com/docs/manage-users). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn create_console_user(
         &self,
         params: CreateConsoleUserParams,
@@ -301,8 +300,7 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         }
     }
 
-    /// Create a new user group.  - Please note that this endpoint is available
-    /// only for API keys with Admin/Non Signing Admin permissions.
+    /// Create a new user group.  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. Learn more about Fireblocks Users management in the following [guide](https://developers.fireblocks.com/docs/manage-users). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn create_user_group(
         &self,
         params: CreateUserGroupParams,
@@ -355,6 +353,7 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
 
     /// Delete a user group by ID.</br> - Please note that this endpoint is
     /// available only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn delete_user_group(
         &self,
         params: DeleteUserGroupParams,
@@ -398,8 +397,9 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         }
     }
 
-    /// List all API keys in your workspace.  - Please note that this endpoint
-    /// is available only for API keys with Admin/Non Signing Admin permissions.
+    /// List all API keys in your workspace. - Please note that this endpoint is
+    /// available only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_api_users(&self) -> Result<models::GetApiUsersResponse, Error<GetApiUsersError>> {
         let local_var_configuration = &self.configuration;
 
@@ -437,6 +437,7 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
 
     /// Get Audit logs for the last Day/Week.  - Please note that this endpoint
     /// is available only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_audit_logs(
         &self,
         params: GetAuditLogsParams,
@@ -491,7 +492,7 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
     }
 
     /// Deprecated. Please use the `GET /management/audit_logs` endpoint
-    /// instead.
+    /// instead. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_audits(
         &self,
         params: GetAuditsParams,
@@ -535,8 +536,9 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         }
     }
 
-    /// Get console users for your workspace.  - Please note that this endpoint
+    /// Get console users for your workspace. - Please note that this endpoint
     /// is available only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_console_users(
         &self,
     ) -> Result<models::GetConsoleUsersResponse, Error<GetConsoleUsersError>> {
@@ -573,7 +575,7 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         }
     }
 
-    /// Returns current One Time Address status  Learn more about [One Time Addresses](https://support.fireblocks.io/hc/en-us/articles/4409104568338-One-Time-Address-OTA-feature)  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions.
+    /// Returns current One Time Address status. Learn more about [One Time Addresses](https://support.fireblocks.io/hc/en-us/articles/4409104568338-One-Time-Address-OTA-feature) - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_ota_status(
         &self,
     ) -> Result<models::GetOtaStatusResponse, Error<GetOtaStatusError>> {
@@ -612,6 +614,7 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
 
     /// Get a user group by ID  - Please note that this endpoint is available
     /// only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_user_group(
         &self,
         params: GetUserGroupParams,
@@ -657,6 +660,7 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
 
     /// Get all user groups in your workspace  - Please note that this endpoint
     /// is available only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_user_groups(
         &self,
     ) -> Result<Vec<models::UserGroupResponse>, Error<GetUserGroupsError>> {
@@ -696,7 +700,8 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         }
     }
 
-    /// DEPRECATED - please use `GET /management/users` instead
+    /// DEPRECATED - please use `GET /management/users` instead </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin.
     async fn get_users(&self) -> Result<Vec<models::UserResponse>, Error<GetUsersError>> {
         let local_var_configuration = &self.configuration;
 
@@ -731,9 +736,10 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         }
     }
 
-    /// Get a list of the whitelisted IP addresses for a specific API Key  -
+    /// Get a list of the whitelisted IP addresses for a specific API Key -
     /// Please note that this endpoint is available only for API keys with
-    /// Admin/Non Signing Admin permissions.
+    /// Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn get_whitelist_ip_addresses(
         &self,
         params: GetWhitelistIpAddressesParams,
@@ -777,10 +783,11 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         }
     }
 
-    /// Returns current workspace status (Beta)  **Note**:  - This endpoint is
-    /// now in Beta, disabled for general availability at this time.  - Please
+    /// Returns current workspace status (Beta). **Note**: - This endpoint is
+    /// now in Beta, disabled for general availability at this time. - Please
     /// note that this endpoint is available only for API keys with Admin/Non
-    /// Signing Admin permissions.
+    /// Signing Admin permissions.  </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn get_workspace_status(
         &self,
     ) -> Result<models::GetWorkspaceStatusResponse, Error<GetWorkspaceStatusError>> {
@@ -821,8 +828,9 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
     }
 
     /// Resets mobile device for given console user, that user will need to do
-    /// mobile onboarding again.  - Please note that this endpoint is available
+    /// mobile onboarding again. - Please note that this endpoint is available
     /// only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn reset_device(&self, params: ResetDeviceParams) -> Result<(), Error<ResetDeviceError>> {
         let ResetDeviceParams {
             id,
@@ -870,7 +878,7 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         }
     }
 
-    /// Enable or disable transactions to One Time Addresses (Non Whitelisted addresses)  Learn more about [One Time Addresses](https://support.fireblocks.io/hc/en-us/articles/4409104568338-One-Time-Address-OTA-feature)  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions.
+    /// Enable or disable transactions to One Time Addresses (Non Whitelisted addresses). Learn more about [One Time Addresses](https://support.fireblocks.io/hc/en-us/articles/4409104568338-One-Time-Address-OTA-feature) - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn set_ota_status(
         &self,
         params: SetOtaStatusParams,
@@ -919,7 +927,8 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
     }
 
     /// Update a user group by ID - Please note that this endpoint is available
-    /// only for API keys with Admin permissions.
+    /// only for API keys with Admin permissions. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin.
     async fn update_user_group(
         &self,
         params: UpdateUserGroupParams,

@@ -4,19 +4,19 @@ All URIs are relative to *https://api.fireblocks.io/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**create**](DAppConnectionsApi.md#create) | **POST** /connections/wc | Create a new dApp connection.
-[**get**](DAppConnectionsApi.md#get) | **GET** /connections | List all open dApp connections
-[**remove**](DAppConnectionsApi.md#remove) | **DELETE** /connections/wc/{id} | Remove an existing dApp connection
-[**submit**](DAppConnectionsApi.md#submit) | **PUT** /connections/wc/{id} | Respond to a pending dApp connection request
+[**create**](DAppConnectionsApi.md#create) | **POST** /connections/wc | Create a new Web3 connection.
+[**get**](DAppConnectionsApi.md#get) | **GET** /connections | List all open Web3 connections
+[**remove**](DAppConnectionsApi.md#remove) | **DELETE** /connections/wc/{id} | Remove an existing Web3 connection
+[**submit**](DAppConnectionsApi.md#submit) | **PUT** /connections/wc/{id} | Respond to a pending connection
 
 
 
 ## create
 
 > models::CreateConnectionResponse create(create_connection_request, idempotency_key)
-Create a new dApp connection.
+Create a new Web3 connection.
 
-Initiate a new dApp connection.  * Note: After this succeeds, make a request to `PUT /v1/connections/wc/{id}` (below) to approve or reject the new Web3 connection.
+Initiate a new Web3 connection.  * Note: After this succeeds, make a request to `PUT /v1/connections/wc/{id}` (below) to approve or reject the new Web3 connection. Learn more about Fireblocks Wallet Link in the following [guide](https://developers.fireblocks.com/docs/web3-wallet-link). </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -45,9 +45,9 @@ No authorization required
 ## get
 
 > models::GetConnectionsResponse get(order, filter, sort, page_size, next)
-List all open dApp connections
+List all open Web3 connections
 
-List all open dApp connections.
+List all open Web3 connections. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -79,9 +79,9 @@ No authorization required
 ## remove
 
 > remove(id)
-Remove an existing dApp connection
+Remove an existing Web3 connection
 
-Remove an existing dApp connection
+Remove an existing Web3 connection.  </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -109,9 +109,9 @@ No authorization required
 ## submit
 
 > submit(id, respond_to_connection_request, idempotency_key)
-Respond to a pending dApp connection request
+Respond to a pending connection
 
-Submit a response to *approve* or *reject* an initiated dApp connection.  * Note: This call is used to complete your `POST /v1/connections/wc/` request.  After this succeeds, your new dApp connection is created and functioning. 
+Submit a response to *approve* or *reject* an initiated Web3 connection. * Note: This call is used to complete your `POST /v1/connections/wc/` request. After this succeeds, your new Web3 connection is created and functioning.  </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 

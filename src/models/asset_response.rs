@@ -18,17 +18,17 @@ pub struct AssetResponse {
     #[serde(rename = "assetClass")]
     pub asset_class: AssetClass,
     #[serde(rename = "onchain")]
-    pub onchain: models::AssetResponseOnchain,
+    pub onchain: models::AssetOnchain,
     #[serde(rename = "metadata")]
-    pub metadata: models::AssetResponseMetadata,
+    pub metadata: models::AssetMetadata,
 }
 
 impl AssetResponse {
     pub fn new(
         legacy_id: String,
         asset_class: AssetClass,
-        onchain: models::AssetResponseOnchain,
-        metadata: models::AssetResponseMetadata,
+        onchain: models::AssetOnchain,
+        metadata: models::AssetMetadata,
     ) -> AssetResponse {
         AssetResponse {
             legacy_id,

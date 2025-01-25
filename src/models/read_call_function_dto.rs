@@ -13,13 +13,12 @@ use {
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ReadCallFunctionDto {
-    /// The abi of the read function you wish to call
     #[serde(rename = "abiFunction")]
-    pub abi_function: Vec<models::ReadAbiFunction>,
+    pub abi_function: models::ReadAbiFunction,
 }
 
 impl ReadCallFunctionDto {
-    pub fn new(abi_function: Vec<models::ReadAbiFunction>) -> ReadCallFunctionDto {
+    pub fn new(abi_function: models::ReadAbiFunction) -> ReadCallFunctionDto {
         ReadCallFunctionDto { abi_function }
     }
 }

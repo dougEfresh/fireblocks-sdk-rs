@@ -20,11 +20,11 @@ pub trait WhitelistedExternalWalletsApi: Send + Sync {
     async fn add_asset_to_external_wallet(
         &self,
         params: AddAssetToExternalWalletParams,
-    ) -> Result<models::ExternalWalletAssetDetail, Error<AddAssetToExternalWalletError>>;
+    ) -> Result<models::ExternalWalletAsset, Error<AddAssetToExternalWalletError>>;
     async fn create_external_wallet(
         &self,
         params: CreateExternalWalletParams,
-    ) -> Result<models::UnmanagedExternalWallet, Error<CreateExternalWalletError>>;
+    ) -> Result<models::UnmanagedWallet, Error<CreateExternalWalletError>>;
     async fn delete_external_wallet(
         &self,
         params: DeleteExternalWalletParams,
@@ -32,14 +32,14 @@ pub trait WhitelistedExternalWalletsApi: Send + Sync {
     async fn get_external_wallet(
         &self,
         params: GetExternalWalletParams,
-    ) -> Result<models::UnmanagedExternalWallet, Error<GetExternalWalletError>>;
+    ) -> Result<models::UnmanagedWallet, Error<GetExternalWalletError>>;
     async fn get_external_wallet_asset(
         &self,
         params: GetExternalWalletAssetParams,
-    ) -> Result<models::ExternalWalletAssetDetail, Error<GetExternalWalletAssetError>>;
+    ) -> Result<models::ExternalWalletAsset, Error<GetExternalWalletAssetError>>;
     async fn get_external_wallets(
         &self,
-    ) -> Result<Vec<models::UnmanagedExternalWallet>, Error<GetExternalWalletsError>>;
+    ) -> Result<Vec<models::UnmanagedWallet>, Error<GetExternalWalletsError>>;
     async fn remove_asset_from_external_wallet(
         &self,
         params: RemoveAssetFromExternalWalletParams,
@@ -142,11 +142,12 @@ pub struct SetExternalWalletCustomerRefIdParams {
 
 #[async_trait]
 impl WhitelistedExternalWalletsApi for WhitelistedExternalWalletsApiClient {
-    /// Adds an asset to an existing external wallet.
+    /// Adds an asset to an existing external wallet. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn add_asset_to_external_wallet(
         &self,
         params: AddAssetToExternalWalletParams,
-    ) -> Result<models::ExternalWalletAssetDetail, Error<AddAssetToExternalWalletError>> {
+    ) -> Result<models::ExternalWalletAsset, Error<AddAssetToExternalWalletError>> {
         let AddAssetToExternalWalletParams {
             wallet_id,
             asset_id,
@@ -197,15 +198,11 @@ impl WhitelistedExternalWalletsApi for WhitelistedExternalWalletsApiClient {
         }
     }
 
-    /// Creates a new external wallet with the requested name.  External Wallet
-    /// is a whitelisted address of a wallet that belongs to your
-    /// users/counterparties.  - You cannot see the balance of the external
-    /// wallet. - You cannot initiate transactions from an external wallet as
-    /// the source via Fireblocks.
+    /// Creates a new external wallet with the requested name.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. Learn more about Whitelisted External Wallet Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#external-wallets). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_external_wallet(
         &self,
         params: CreateExternalWalletParams,
-    ) -> Result<models::UnmanagedExternalWallet, Error<CreateExternalWalletError>> {
+    ) -> Result<models::UnmanagedWallet, Error<CreateExternalWalletError>> {
         let CreateExternalWalletParams {
             idempotency_key,
             create_wallet_request,
@@ -253,6 +250,8 @@ impl WhitelistedExternalWalletsApi for WhitelistedExternalWalletsApiClient {
     /// address of a wallet that belongs to your users/counterparties.  - You
     /// cannot see the balance of the external wallet. - You cannot initiate
     /// transactions from an external wallet as the source via Fireblocks.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn delete_external_wallet(
         &self,
         params: DeleteExternalWalletParams,
@@ -300,10 +299,12 @@ impl WhitelistedExternalWalletsApi for WhitelistedExternalWalletsApiClient {
     /// address of a wallet that belongs to your users/counterparties.  - You
     /// cannot see the balance of the external wallet. - You cannot initiate
     /// transactions from an external wallet as the source via Fireblocks.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_external_wallet(
         &self,
         params: GetExternalWalletParams,
-    ) -> Result<models::UnmanagedExternalWallet, Error<GetExternalWalletError>> {
+    ) -> Result<models::UnmanagedWallet, Error<GetExternalWalletError>> {
         let GetExternalWalletParams { wallet_id } = params;
 
         let local_var_configuration = &self.configuration;
@@ -347,11 +348,12 @@ impl WhitelistedExternalWalletsApi for WhitelistedExternalWalletsApiClient {
     /// is a whitelisted address of a wallet that belongs to your
     /// users/counterparties.  - You cannot see the balance of the external
     /// wallet. - You cannot initiate transactions from an external wallet as
-    /// the source via Fireblocks.
+    /// the source via Fireblocks. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor,   Viewer.
     async fn get_external_wallet_asset(
         &self,
         params: GetExternalWalletAssetParams,
-    ) -> Result<models::ExternalWalletAssetDetail, Error<GetExternalWalletAssetError>> {
+    ) -> Result<models::ExternalWalletAsset, Error<GetExternalWalletAssetError>> {
         let GetExternalWalletAssetParams {
             wallet_id,
             asset_id,
@@ -399,10 +401,11 @@ impl WhitelistedExternalWalletsApi for WhitelistedExternalWalletsApiClient {
     /// a whitelisted address of a wallet that belongs to your
     /// users/counterparties.  - You cannot see the balance of the external
     /// wallet. - You cannot initiate transactions from an external wallet as
-    /// the source via Fireblocks.
+    /// the source via Fireblocks. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor, Viewer.
     async fn get_external_wallets(
         &self,
-    ) -> Result<Vec<models::UnmanagedExternalWallet>, Error<GetExternalWalletsError>> {
+    ) -> Result<Vec<models::UnmanagedWallet>, Error<GetExternalWalletsError>> {
         let local_var_configuration = &self.configuration;
 
         let local_var_client = &local_var_configuration.client;
@@ -436,7 +439,8 @@ impl WhitelistedExternalWalletsApi for WhitelistedExternalWalletsApiClient {
         }
     }
 
-    /// Deletes an external wallet asset by ID.
+    /// Deletes an external wallet asset by ID. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn remove_asset_from_external_wallet(
         &self,
         params: RemoveAssetFromExternalWalletParams,
@@ -484,11 +488,7 @@ impl WhitelistedExternalWalletsApi for WhitelistedExternalWalletsApiClient {
         }
     }
 
-    /// Sets an AML/KYT customer reference ID for the specific external wallet.
-    /// External Wallet is a whitelisted address of a wallet that belongs to
-    /// your users/counterparties.  - You cannot see the balance of the external
-    /// wallet. - You cannot initiate transactions from an external wallet as
-    /// the source via Fireblocks.
+    /// Sets an AML/KYT customer reference ID for the specific external wallet.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. Learn more about Whitelisted External Wallet Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#external-wallets). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn set_external_wallet_customer_ref_id(
         &self,
         params: SetExternalWalletCustomerRefIdParams,

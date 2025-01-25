@@ -146,6 +146,7 @@ impl DAppConnectionsApi for DAppConnectionsApiClient {
         &self,
         params: GetParams,
     ) -> Result<models::GetConnectionsResponse, Error<GetError>> {
+        #[allow(unused_variables)]
         let GetParams {
             order,
             filter,
@@ -166,10 +167,10 @@ impl DAppConnectionsApi for DAppConnectionsApiClient {
             local_var_req_builder =
                 local_var_req_builder.query(&[("order", &local_var_str.to_string())]);
         }
-        if let Some(ref local_var_str) = filter {
-            local_var_req_builder =
-                local_var_req_builder.query(&[("filter", &local_var_str.to_string())]);
-        }
+        // if let Some(ref local_var_str) = filter {
+        // local_var_req_builder = local_var_req_builder.query(&[("filter",
+        // &local_var_str.to_string())]);
+        //}
         if let Some(ref local_var_str) = sort {
             local_var_req_builder =
                 local_var_req_builder.query(&[("sort", &local_var_str.to_string())]);

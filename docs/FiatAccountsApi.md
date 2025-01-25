@@ -16,7 +16,7 @@ Method | HTTP request | Description
 > models::DepositFundsFromLinkedDdaResponse deposit_funds_from_linked_dda(account_id, idempotency_key, funds)
 Deposit funds from DDA
 
-Deposits funds from the linked DDA.
+Deposits funds from the linked DDA. Learn more about Fireblocks FIAT Connectivity in the following [guide](https://developers.fireblocks.com/docs/connect-to-exchanges-and-fiat-providers). </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -48,7 +48,7 @@ No authorization required
 > models::FiatAccount get_fiat_account(account_id)
 Find a specific fiat account
 
-Returns a fiat account by ID.
+Returns a fiat account by ID. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -78,7 +78,7 @@ No authorization required
 > Vec<models::FiatAccount> get_fiat_accounts()
 List fiat accounts
 
-Returns all fiat accounts.
+Returns all fiat accounts. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -105,7 +105,7 @@ No authorization required
 > models::RedeemFundsToLinkedDdaResponse redeem_funds_to_linked_dda(account_id, idempotency_key, funds)
 Redeem funds to DDA
 
-Redeems funds to the linked DDA.
+Redeems funds to the linked DDA. Learn more about Fireblocks FIAT Connectivity in the following [guide](https://developers.fireblocks.com/docs/connect-to-exchanges-and-fiat-providers). </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 

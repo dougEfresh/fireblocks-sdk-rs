@@ -20,32 +20,36 @@ pub trait StakingApi: Send + Sync {
     async fn approve_terms_of_service_by_provider_id(
         &self,
         params: ApproveTermsOfServiceByProviderIdParams,
-    ) -> Result<serde_json::Value, Error<ApproveTermsOfServiceByProviderIdError>>;
-    async fn execute_action(
+    ) -> Result<(), Error<ApproveTermsOfServiceByProviderIdError>>;
+    async fn claim_rewards(
         &self,
-        params: ExecuteActionParams,
-    ) -> Result<models::ExecuteActionResponse, Error<ExecuteActionError>>;
+        params: ClaimRewardsParams,
+    ) -> Result<(), Error<ClaimRewardsError>>;
     async fn get_all_delegations(
         &self,
         params: GetAllDelegationsParams,
-    ) -> Result<Vec<models::DelegationDto>, Error<GetAllDelegationsError>>;
+    ) -> Result<Vec<models::Delegation>, Error<GetAllDelegationsError>>;
     async fn get_chain_info(
         &self,
         params: GetChainInfoParams,
-    ) -> Result<models::ChainInfoResponseDto, Error<GetChainInfoError>>;
-    async fn get_chains(&self) -> Result<Vec<String>, Error<GetChainsError>>;
+    ) -> Result<models::ChainInfoResponse, Error<GetChainInfoError>>;
+    async fn get_chains(&self) -> Result<Vec<models::ChainDescriptor>, Error<GetChainsError>>;
     async fn get_delegation_by_id(
         &self,
         params: GetDelegationByIdParams,
-    ) -> Result<models::DelegationDto, Error<GetDelegationByIdError>>;
-    async fn get_providers(&self) -> Result<Vec<models::ProviderDto>, Error<GetProvidersError>>;
-    async fn get_summary(&self) -> Result<models::DelegationSummaryDto, Error<GetSummaryError>>;
+    ) -> Result<models::Delegation, Error<GetDelegationByIdError>>;
+    async fn get_providers(&self) -> Result<Vec<models::Provider>, Error<GetProvidersError>>;
+    async fn get_summary(&self) -> Result<models::DelegationSummary, Error<GetSummaryError>>;
     async fn get_summary_by_vault(
         &self,
     ) -> Result<
-        std::collections::HashMap<String, models::DelegationSummaryDto>,
+        std::collections::HashMap<String, models::DelegationSummary>,
         Error<GetSummaryByVaultError>,
     >;
+    async fn split(&self, params: SplitParams) -> Result<models::SplitResponse, Error<SplitError>>;
+    async fn stake(&self, params: StakeParams) -> Result<models::StakeResponse, Error<StakeError>>;
+    async fn unstake(&self, params: UnstakeParams) -> Result<(), Error<UnstakeError>>;
+    async fn withdraw(&self, params: WithdrawParams) -> Result<(), Error<WithdrawError>>;
 }
 
 pub struct StakingApiClient {
@@ -64,7 +68,7 @@ impl StakingApiClient {
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
 pub struct ApproveTermsOfServiceByProviderIdParams {
     /// The unique identifier of the staking provider
-    pub provider_id: String,
+    pub provider_id: models::StakingProvider,
     /// A unique identifier for the request. If the request is sent multiple
     /// times with the same idempotency key, the server will return the same
     /// response as the first request. The idempotency key is valid for 24
@@ -72,15 +76,13 @@ pub struct ApproveTermsOfServiceByProviderIdParams {
     pub idempotency_key: Option<String>,
 }
 
-/// struct for passing parameters to the method [`execute_action`]
+/// struct for passing parameters to the method [`claim_rewards`]
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
-pub struct ExecuteActionParams {
-    /// The protocol identifier (e.g. \"ETH\"/\"SOL\") to use
+pub struct ClaimRewardsParams {
+    /// The protocol identifier (e.g. \"MATIC\"/\"SOL\") to use
     pub chain_descriptor: String,
-    /// The operation that can be executed on a vault/position
-    pub action_id: String,
-    pub execute_action_request: models::ExecuteActionRequest,
+    pub claim_rewards_request: models::ClaimRewardsRequest,
     /// A unique identifier for the request. If the request is sent multiple
     /// times with the same idempotency key, the server will return the same
     /// response as the first request. The idempotency key is valid for 24
@@ -92,18 +94,20 @@ pub struct ExecuteActionParams {
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
 pub struct GetAllDelegationsParams {
-    /// Use \"ETH\" / \"SOL\"/ \"MATIC\" in order to obtain information related
-    /// to the specific blockchain network or retrieve information about all
-    /// chains that have data available by providing no argument.
-    pub chain_descriptor: Option<String>,
+    /// Use \"ETH\" / \"SOL\" / \"MATIC\" / \"STETH_ETH\" in order to obtain
+    /// information related to the specific blockchain network or retrieve
+    /// information about all chains that have data available by providing no
+    /// argument.
+    pub chain_descriptor: Option<models::ChainDescriptor>,
 }
 
 /// struct for passing parameters to the method [`get_chain_info`]
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
 pub struct GetChainInfoParams {
-    /// The protocol identifier (e.g. \"ETH\"/\"SOL\"/\"MATIC\") to use
-    pub chain_descriptor: String,
+    /// The protocol identifier (e.g. \"ETH\"/\"SOL\"/\"MATIC\"/\"STETH_ETH\")
+    /// to use
+    pub chain_descriptor: models::ChainDescriptor,
 }
 
 /// struct for passing parameters to the method [`get_delegation_by_id`]
@@ -114,15 +118,72 @@ pub struct GetDelegationByIdParams {
     pub id: String,
 }
 
+/// struct for passing parameters to the method [`split`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct SplitParams {
+    /// The protocol identifier (e.g. \"SOL\"/\"SOL_TEST\") to use
+    pub chain_descriptor: String,
+    pub split_request: models::SplitRequest,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+}
+
+/// struct for passing parameters to the method [`stake`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct StakeParams {
+    /// The protocol identifier (e.g. \"ETH\"/\"SOL\"/\"MATIC\") to use
+    pub chain_descriptor: models::ChainDescriptor,
+    pub stake_request: models::StakeRequest,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+}
+
+/// struct for passing parameters to the method [`unstake`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct UnstakeParams {
+    /// The protocol identifier (e.g. \"ETH\"/\"SOL\"/\"MATIC\") to use
+    pub chain_descriptor: models::ChainDescriptor,
+    pub unstake_request: models::UnstakeRequest,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+}
+
+/// struct for passing parameters to the method [`withdraw`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct WithdrawParams {
+    /// The protocol identifier (e.g. \"ETH\"/\"SOL\"/\"MATIC\") to use
+    pub chain_descriptor: models::ChainDescriptor,
+    pub withdraw_request: models::WithdrawRequest,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+}
+
 #[async_trait]
 impl StakingApi for StakingApiClient {
     /// Approve the terms of service of the staking provider. This must be
     /// called before performing a staking action for the first time with this
-    /// provider.
+    /// provider. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor.
     async fn approve_terms_of_service_by_provider_id(
         &self,
         params: ApproveTermsOfServiceByProviderIdParams,
-    ) -> Result<serde_json::Value, Error<ApproveTermsOfServiceByProviderIdError>> {
+    ) -> Result<(), Error<ApproveTermsOfServiceByProviderIdError>> {
         let ApproveTermsOfServiceByProviderIdParams {
             provider_id,
             idempotency_key,
@@ -135,7 +196,7 @@ impl StakingApi for StakingApiClient {
         let local_var_uri_str = format!(
             "{}/staking/providers/{providerId}/approveTermsOfService",
             local_var_configuration.base_path,
-            providerId = crate::apis::urlencode(provider_id)
+            providerId = provider_id.to_string()
         );
         let mut local_var_req_builder =
             local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
@@ -156,7 +217,7 @@ impl StakingApi for StakingApiClient {
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            Ok(())
         } else {
             let local_var_entity: Option<ApproveTermsOfServiceByProviderIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -169,15 +230,14 @@ impl StakingApi for StakingApiClient {
         }
     }
 
-    /// Perform a chain-specific staking action (e.g. stake, unstake, withdraw).
-    async fn execute_action(
+    /// Perform a chain-specific Claim Rewards.
+    async fn claim_rewards(
         &self,
-        params: ExecuteActionParams,
-    ) -> Result<models::ExecuteActionResponse, Error<ExecuteActionError>> {
-        let ExecuteActionParams {
+        params: ClaimRewardsParams,
+    ) -> Result<(), Error<ClaimRewardsError>> {
+        let ClaimRewardsParams {
             chain_descriptor,
-            action_id,
-            execute_action_request,
+            claim_rewards_request,
             idempotency_key,
         } = params;
 
@@ -186,10 +246,9 @@ impl StakingApi for StakingApiClient {
         let local_var_client = &local_var_configuration.client;
 
         let local_var_uri_str = format!(
-            "{}/staking/chains/{chainDescriptor}/{actionId}",
+            "{}/staking/chains/{chainDescriptor}/claim_rewards",
             local_var_configuration.base_path,
-            chainDescriptor = crate::apis::urlencode(chain_descriptor),
-            actionId = crate::apis::urlencode(action_id)
+            chainDescriptor = crate::apis::urlencode(chain_descriptor)
         );
         let mut local_var_req_builder =
             local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
@@ -202,7 +261,7 @@ impl StakingApi for StakingApiClient {
             local_var_req_builder =
                 local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
         }
-        local_var_req_builder = local_var_req_builder.json(&execute_action_request);
+        local_var_req_builder = local_var_req_builder.json(&claim_rewards_request);
 
         let local_var_req = local_var_req_builder.build()?;
         let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -211,9 +270,9 @@ impl StakingApi for StakingApiClient {
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            Ok(())
         } else {
-            let local_var_entity: Option<ExecuteActionError> =
+            let local_var_entity: Option<ClaimRewardsError> =
                 serde_json::from_str(&local_var_content).ok();
             let local_var_error = ResponseContent {
                 status: local_var_status,
@@ -225,11 +284,12 @@ impl StakingApi for StakingApiClient {
     }
 
     /// Return detailed information on all staking positions, including the
-    /// staked amount, rewards, status and more.
+    /// staked amount, rewards, status and more. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_all_delegations(
         &self,
         params: GetAllDelegationsParams,
-    ) -> Result<Vec<models::DelegationDto>, Error<GetAllDelegationsError>> {
+    ) -> Result<Vec<models::Delegation>, Error<GetAllDelegationsError>> {
         let GetAllDelegationsParams { chain_descriptor } = params;
 
         let local_var_configuration = &self.configuration;
@@ -270,11 +330,12 @@ impl StakingApi for StakingApiClient {
     }
 
     /// Return chain-specific, staking-related information summary (e.g. epoch
-    /// details, lockup durations, estimated rewards, etc.).
+    /// details, lockup durations, estimated rewards, etc.). </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_chain_info(
         &self,
         params: GetChainInfoParams,
-    ) -> Result<models::ChainInfoResponseDto, Error<GetChainInfoError>> {
+    ) -> Result<models::ChainInfoResponse, Error<GetChainInfoError>> {
         let GetChainInfoParams { chain_descriptor } = params;
 
         let local_var_configuration = &self.configuration;
@@ -284,7 +345,7 @@ impl StakingApi for StakingApiClient {
         let local_var_uri_str = format!(
             "{}/staking/chains/{chainDescriptor}/chainInfo",
             local_var_configuration.base_path,
-            chainDescriptor = crate::apis::urlencode(chain_descriptor)
+            chainDescriptor = chain_descriptor.to_string()
         );
         let mut local_var_req_builder =
             local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -314,8 +375,9 @@ impl StakingApi for StakingApiClient {
         }
     }
 
-    /// Return an alphabetical list of supported chains.
-    async fn get_chains(&self) -> Result<Vec<String>, Error<GetChainsError>> {
+    /// Return an alphabetical list of supported chains. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+    async fn get_chains(&self) -> Result<Vec<models::ChainDescriptor>, Error<GetChainsError>> {
         let local_var_configuration = &self.configuration;
 
         let local_var_client = &local_var_configuration.client;
@@ -350,11 +412,12 @@ impl StakingApi for StakingApiClient {
     }
 
     /// Return detailed information on a staking position, including the staked
-    /// amount, rewards, status and more.
+    /// amount, rewards, status and more. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn get_delegation_by_id(
         &self,
         params: GetDelegationByIdParams,
-    ) -> Result<models::DelegationDto, Error<GetDelegationByIdError>> {
+    ) -> Result<models::Delegation, Error<GetDelegationByIdError>> {
         let GetDelegationByIdParams { id } = params;
 
         let local_var_configuration = &self.configuration;
@@ -394,8 +457,9 @@ impl StakingApi for StakingApiClient {
         }
     }
 
-    /// Return information on all the available staking providers.
-    async fn get_providers(&self) -> Result<Vec<models::ProviderDto>, Error<GetProvidersError>> {
+    /// Return information on all the available staking providers. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+    async fn get_providers(&self) -> Result<Vec<models::Provider>, Error<GetProvidersError>> {
         let local_var_configuration = &self.configuration;
 
         let local_var_client = &local_var_configuration.client;
@@ -431,7 +495,9 @@ impl StakingApi for StakingApiClient {
 
     /// Return a summary of all vaults, categorized by their status (active,
     /// inactive), the total amounts staked and total rewards per-chain.
-    async fn get_summary(&self) -> Result<models::DelegationSummaryDto, Error<GetSummaryError>> {
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
+    async fn get_summary(&self) -> Result<models::DelegationSummary, Error<GetSummaryError>> {
         let local_var_configuration = &self.configuration;
 
         let local_var_client = &local_var_configuration.client;
@@ -470,10 +536,12 @@ impl StakingApi for StakingApiClient {
 
     /// Return a summary for each vault, categorized by their status (active,
     /// inactive), the total amounts staked and total rewards per-chain.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn get_summary_by_vault(
         &self,
     ) -> Result<
-        std::collections::HashMap<String, models::DelegationSummaryDto>,
+        std::collections::HashMap<String, models::DelegationSummary>,
         Error<GetSummaryByVaultError>,
     > {
         let local_var_configuration = &self.configuration;
@@ -511,6 +579,206 @@ impl StakingApi for StakingApiClient {
             Err(Error::ResponseError(local_var_error))
         }
     }
+
+    /// Perform a SOL/SOL_TEST Split on a stake account.
+    async fn split(&self, params: SplitParams) -> Result<models::SplitResponse, Error<SplitError>> {
+        let SplitParams {
+            chain_descriptor,
+            split_request,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/staking/chains/{chainDescriptor}/split",
+            local_var_configuration.base_path,
+            chainDescriptor = crate::apis::urlencode(chain_descriptor)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+        local_var_req_builder = local_var_req_builder.json(&split_request);
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            serde_json::from_str(&local_var_content).map_err(Error::from)
+        } else {
+            let local_var_entity: Option<SplitError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Perform a chain-specific Stake.
+    async fn stake(&self, params: StakeParams) -> Result<models::StakeResponse, Error<StakeError>> {
+        let StakeParams {
+            chain_descriptor,
+            stake_request,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/staking/chains/{chainDescriptor}/stake",
+            local_var_configuration.base_path,
+            chainDescriptor = chain_descriptor.to_string()
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+        local_var_req_builder = local_var_req_builder.json(&stake_request);
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            serde_json::from_str(&local_var_content).map_err(Error::from)
+        } else {
+            let local_var_entity: Option<StakeError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Execute an Unstake operation
+    async fn unstake(&self, params: UnstakeParams) -> Result<(), Error<UnstakeError>> {
+        let UnstakeParams {
+            chain_descriptor,
+            unstake_request,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/staking/chains/{chainDescriptor}/unstake",
+            local_var_configuration.base_path,
+            chainDescriptor = chain_descriptor.to_string()
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+        local_var_req_builder = local_var_req_builder.json(&unstake_request);
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            Ok(())
+        } else {
+            let local_var_entity: Option<UnstakeError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Perform a chain-specific Withdraw.
+    async fn withdraw(&self, params: WithdrawParams) -> Result<(), Error<WithdrawError>> {
+        let WithdrawParams {
+            chain_descriptor,
+            withdraw_request,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/staking/chains/{chainDescriptor}/withdraw",
+            local_var_configuration.base_path,
+            chainDescriptor = chain_descriptor.to_string()
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+        local_var_req_builder = local_var_req_builder.json(&withdraw_request);
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            Ok(())
+        } else {
+            let local_var_entity: Option<WithdrawError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
 }
 
 /// struct for typed errors of method
@@ -518,13 +786,15 @@ impl StakingApi for StakingApiClient {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ApproveTermsOfServiceByProviderIdError {
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method [`execute_action`]
+/// struct for typed errors of method [`claim_rewards`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum ExecuteActionError {
+pub enum ClaimRewardsError {
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
 
@@ -532,6 +802,7 @@ pub enum ExecuteActionError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetAllDelegationsError {
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
 
@@ -539,6 +810,7 @@ pub enum GetAllDelegationsError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetChainInfoError {
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
 
@@ -546,6 +818,7 @@ pub enum GetChainInfoError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetChainsError {
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
 
@@ -553,6 +826,7 @@ pub enum GetChainsError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetDelegationByIdError {
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
 
@@ -560,6 +834,7 @@ pub enum GetDelegationByIdError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetProvidersError {
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
 
@@ -567,6 +842,7 @@ pub enum GetProvidersError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetSummaryError {
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
 
@@ -574,5 +850,38 @@ pub enum GetSummaryError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetSummaryByVaultError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`split`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum SplitError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`stake`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum StakeError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`unstake`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum UnstakeError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`withdraw`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum WithdrawError {
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }

@@ -101,17 +101,19 @@ pub fn parse_deep_object(prefix: &str, value: &serde_json::Value) -> Vec<(String
 }
 
 pub mod blockchains_assets_api;
+pub mod blockchains_assets_beta_api;
 pub mod compliance_api;
 pub mod contract_interactions_api;
 pub mod contract_templates_api;
-pub mod cosigners_beta_api;
 pub mod d_app_connections_api;
 pub mod deployed_contracts_api;
 pub mod exchange_accounts_api;
 pub mod fiat_accounts_api;
 pub mod fireblocks_network_api;
 pub mod gas_station_api;
+pub mod job_management_api;
 pub mod key_link_beta_api;
+pub mod keys_beta_api;
 pub mod nfts_api;
 pub mod off_exchange_api;
 pub mod payments_payout_api;
@@ -122,6 +124,7 @@ pub mod tokenization_api;
 pub mod transactions_api;
 pub mod vaults_api;
 pub mod webhooks_api;
+pub mod webhooks_v2_beta_api;
 pub mod whitelisted_contracts_api;
 pub mod whitelisted_external_wallets_api;
 pub mod whitelisted_internal_wallets_api;
@@ -133,17 +136,21 @@ use std::sync::Arc;
 
 pub trait Api {
     fn blockchains_assets_api(&self) -> &dyn blockchains_assets_api::BlockchainsAssetsApi;
+    fn blockchains_assets_beta_api(
+        &self,
+    ) -> &dyn blockchains_assets_beta_api::BlockchainsAssetsBetaApi;
     fn compliance_api(&self) -> &dyn compliance_api::ComplianceApi;
     fn contract_interactions_api(&self) -> &dyn contract_interactions_api::ContractInteractionsApi;
     fn contract_templates_api(&self) -> &dyn contract_templates_api::ContractTemplatesApi;
-    fn cosigners_beta_api(&self) -> &dyn cosigners_beta_api::CosignersBetaApi;
     fn d_app_connections_api(&self) -> &dyn d_app_connections_api::DAppConnectionsApi;
     fn deployed_contracts_api(&self) -> &dyn deployed_contracts_api::DeployedContractsApi;
     fn exchange_accounts_api(&self) -> &dyn exchange_accounts_api::ExchangeAccountsApi;
     fn fiat_accounts_api(&self) -> &dyn fiat_accounts_api::FiatAccountsApi;
     fn fireblocks_network_api(&self) -> &dyn fireblocks_network_api::FireblocksNetworkApi;
     fn gas_station_api(&self) -> &dyn gas_station_api::GasStationApi;
+    fn job_management_api(&self) -> &dyn job_management_api::JobManagementApi;
     fn key_link_beta_api(&self) -> &dyn key_link_beta_api::KeyLinkBetaApi;
+    fn keys_beta_api(&self) -> &dyn keys_beta_api::KeysBetaApi;
     fn nfts_api(&self) -> &dyn nfts_api::NftsApi;
     fn off_exchange_api(&self) -> &dyn off_exchange_api::OffExchangeApi;
     fn payments_payout_api(&self) -> &dyn payments_payout_api::PaymentsPayoutApi;
@@ -154,6 +161,7 @@ pub trait Api {
     fn transactions_api(&self) -> &dyn transactions_api::TransactionsApi;
     fn vaults_api(&self) -> &dyn vaults_api::VaultsApi;
     fn webhooks_api(&self) -> &dyn webhooks_api::WebhooksApi;
+    fn webhooks_v2_beta_api(&self) -> &dyn webhooks_v2_beta_api::WebhooksV2BetaApi;
     fn whitelisted_contracts_api(&self) -> &dyn whitelisted_contracts_api::WhitelistedContractsApi;
     fn whitelisted_external_wallets_api(
         &self,
@@ -166,17 +174,19 @@ pub trait Api {
 
 pub struct ApiClient {
     blockchains_assets_api: Box<dyn blockchains_assets_api::BlockchainsAssetsApi>,
+    blockchains_assets_beta_api: Box<dyn blockchains_assets_beta_api::BlockchainsAssetsBetaApi>,
     compliance_api: Box<dyn compliance_api::ComplianceApi>,
     contract_interactions_api: Box<dyn contract_interactions_api::ContractInteractionsApi>,
     contract_templates_api: Box<dyn contract_templates_api::ContractTemplatesApi>,
-    cosigners_beta_api: Box<dyn cosigners_beta_api::CosignersBetaApi>,
     d_app_connections_api: Box<dyn d_app_connections_api::DAppConnectionsApi>,
     deployed_contracts_api: Box<dyn deployed_contracts_api::DeployedContractsApi>,
     exchange_accounts_api: Box<dyn exchange_accounts_api::ExchangeAccountsApi>,
     fiat_accounts_api: Box<dyn fiat_accounts_api::FiatAccountsApi>,
     fireblocks_network_api: Box<dyn fireblocks_network_api::FireblocksNetworkApi>,
     gas_station_api: Box<dyn gas_station_api::GasStationApi>,
+    job_management_api: Box<dyn job_management_api::JobManagementApi>,
     key_link_beta_api: Box<dyn key_link_beta_api::KeyLinkBetaApi>,
+    keys_beta_api: Box<dyn keys_beta_api::KeysBetaApi>,
     nfts_api: Box<dyn nfts_api::NftsApi>,
     off_exchange_api: Box<dyn off_exchange_api::OffExchangeApi>,
     payments_payout_api: Box<dyn payments_payout_api::PaymentsPayoutApi>,
@@ -187,6 +197,7 @@ pub struct ApiClient {
     transactions_api: Box<dyn transactions_api::TransactionsApi>,
     vaults_api: Box<dyn vaults_api::VaultsApi>,
     webhooks_api: Box<dyn webhooks_api::WebhooksApi>,
+    webhooks_v2_beta_api: Box<dyn webhooks_v2_beta_api::WebhooksV2BetaApi>,
     whitelisted_contracts_api: Box<dyn whitelisted_contracts_api::WhitelistedContractsApi>,
     whitelisted_external_wallets_api:
         Box<dyn whitelisted_external_wallets_api::WhitelistedExternalWalletsApi>,
@@ -201,6 +212,11 @@ impl ApiClient {
             blockchains_assets_api: Box::new(
                 blockchains_assets_api::BlockchainsAssetsApiClient::new(configuration.clone()),
             ),
+            blockchains_assets_beta_api: Box::new(
+                blockchains_assets_beta_api::BlockchainsAssetsBetaApiClient::new(
+                    configuration.clone(),
+                ),
+            ),
             compliance_api: Box::new(compliance_api::ComplianceApiClient::new(
                 configuration.clone(),
             )),
@@ -212,9 +228,6 @@ impl ApiClient {
             contract_templates_api: Box::new(
                 contract_templates_api::ContractTemplatesApiClient::new(configuration.clone()),
             ),
-            cosigners_beta_api: Box::new(cosigners_beta_api::CosignersBetaApiClient::new(
-                configuration.clone(),
-            )),
             d_app_connections_api: Box::new(d_app_connections_api::DAppConnectionsApiClient::new(
                 configuration.clone(),
             )),
@@ -233,9 +246,13 @@ impl ApiClient {
             gas_station_api: Box::new(gas_station_api::GasStationApiClient::new(
                 configuration.clone(),
             )),
+            job_management_api: Box::new(job_management_api::JobManagementApiClient::new(
+                configuration.clone(),
+            )),
             key_link_beta_api: Box::new(key_link_beta_api::KeyLinkBetaApiClient::new(
                 configuration.clone(),
             )),
+            keys_beta_api: Box::new(keys_beta_api::KeysBetaApiClient::new(configuration.clone())),
             nfts_api: Box::new(nfts_api::NftsApiClient::new(configuration.clone())),
             off_exchange_api: Box::new(off_exchange_api::OffExchangeApiClient::new(
                 configuration.clone(),
@@ -258,6 +275,9 @@ impl ApiClient {
             )),
             vaults_api: Box::new(vaults_api::VaultsApiClient::new(configuration.clone())),
             webhooks_api: Box::new(webhooks_api::WebhooksApiClient::new(configuration.clone())),
+            webhooks_v2_beta_api: Box::new(webhooks_v2_beta_api::WebhooksV2BetaApiClient::new(
+                configuration.clone(),
+            )),
             whitelisted_contracts_api: Box::new(
                 whitelisted_contracts_api::WhitelistedContractsApiClient::new(
                     configuration.clone(),
@@ -285,6 +305,12 @@ impl Api for ApiClient {
         self.blockchains_assets_api.as_ref()
     }
 
+    fn blockchains_assets_beta_api(
+        &self,
+    ) -> &dyn blockchains_assets_beta_api::BlockchainsAssetsBetaApi {
+        self.blockchains_assets_beta_api.as_ref()
+    }
+
     fn compliance_api(&self) -> &dyn compliance_api::ComplianceApi {
         self.compliance_api.as_ref()
     }
@@ -295,10 +321,6 @@ impl Api for ApiClient {
 
     fn contract_templates_api(&self) -> &dyn contract_templates_api::ContractTemplatesApi {
         self.contract_templates_api.as_ref()
-    }
-
-    fn cosigners_beta_api(&self) -> &dyn cosigners_beta_api::CosignersBetaApi {
-        self.cosigners_beta_api.as_ref()
     }
 
     fn d_app_connections_api(&self) -> &dyn d_app_connections_api::DAppConnectionsApi {
@@ -325,8 +347,16 @@ impl Api for ApiClient {
         self.gas_station_api.as_ref()
     }
 
+    fn job_management_api(&self) -> &dyn job_management_api::JobManagementApi {
+        self.job_management_api.as_ref()
+    }
+
     fn key_link_beta_api(&self) -> &dyn key_link_beta_api::KeyLinkBetaApi {
         self.key_link_beta_api.as_ref()
+    }
+
+    fn keys_beta_api(&self) -> &dyn keys_beta_api::KeysBetaApi {
+        self.keys_beta_api.as_ref()
     }
 
     fn nfts_api(&self) -> &dyn nfts_api::NftsApi {
@@ -367,6 +397,10 @@ impl Api for ApiClient {
 
     fn webhooks_api(&self) -> &dyn webhooks_api::WebhooksApi {
         self.webhooks_api.as_ref()
+    }
+
+    fn webhooks_v2_beta_api(&self) -> &dyn webhooks_v2_beta_api::WebhooksV2BetaApi {
+        self.webhooks_v2_beta_api.as_ref()
     }
 
     fn whitelisted_contracts_api(&self) -> &dyn whitelisted_contracts_api::WhitelistedContractsApi {

@@ -282,6 +282,8 @@ pub struct UnfreezeTransactionParams {
 impl TransactionsApi for TransactionsApiClient {
     /// Cancels a transaction by Fireblocks Transaction ID.  Can be used only
     /// for transactions that did not get to the BROADCASTING state.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn cancel_transaction(
         &self,
         params: CancelTransactionParams,
@@ -337,7 +339,7 @@ impl TransactionsApi for TransactionsApiClient {
         }
     }
 
-    /// Creates a new transaction. This endpoint can be used for regular Transfers, Contract Calls, Raw & Typed message signing. - For Transfers, the required parameters are: `assetId`, `source`, `destination` and `amount`.  - For Contract Calls, the required parameters are: `operation.CONTRACT_CALL`, `assetId` (Base Asset), `source`, `destination`, `amount` (usually 0) and `extraParameters` object with `contractCallData` string.  - For RAW and Typed messages signing, the required parameters are: `operation.RAW/TYPED_MESSAGE`, `assetId` or `derivationPath`, `source` or `derivationPath`, `extraParameters` with [rawMessageData object](https://developers.fireblocks.com/reference/raw-signing-objects).  - Typed Message Signing is supported for the following asset IDs: 'ETH', 'BTC' and 'TRX'. [Typed Message Signing Guide](https://developers.fireblocks.com/docs/typed-message-signing-overview).  - For MEV Protection configuration the required parameters are:   `extraParameters` with the [`nodeControls` object](https://developers.fireblocks.com/reference/transaction-objects#nodecontrols)   Note: MEV Protection is a premium feature. Please contact your Customer Success Manager or the Fireblocks Support team for more information.
+    /// Creates a new transaction. This endpoint can be used for regular Transfers, Contract Calls, Raw & Typed message signing. - For Transfers, the required parameters are: `assetId`, `source`, `destination` and `amount`.  - For Contract Calls, the required parameters are: `operation.CONTRACT_CALL`, `assetId` (Base Asset), `source`, `destination`, `amount` (usually 0) and `extraParameters` object with `contractCallData` string.  - For RAW and Typed messages signing, the required parameters are: `operation.RAW/TYPED_MESSAGE`, `assetId` or `derivationPath`, `source` or `derivationPath`, `extraParameters` with [rawMessageData object](https://developers.fireblocks.com/reference/raw-signing-objects).  - Typed Message Signing is supported for the following asset IDs: 'ETH', 'BTC' and 'TRX'. [Typed Message Signing Guide](https://developers.fireblocks.com/docs/typed-message-signing-overview).  - For MEV Protection configuration the required parameters are:   `extraParameters` with the [`nodeControls` object](https://developers.fireblocks.com/reference/transaction-objects#nodecontrols)   Note: MEV Protection is a premium feature. Please contact your Customer Success Manager or the Fireblocks Support team for more information.  - To create ZEC transaction, please call [Get unspent UTXO Input endpoint](https://developers.fireblocks.com/reference/getunspentinputs) to get the amount and use it as an input under `networkfee` on this endpoint. Please use this formula `(0.0001 + 0.00005*N) where N is the number of inputs` to calculate the fee needed and use it as an input under networkFee field Learn more about Fireblocks Transactions management in the following [guide](https://developers.fireblocks.com/reference/create-transactions). </br>Endpoint Permission: Admin, Signer, Editor.
     async fn create_transaction(
         &self,
         params: CreateTransactionParams,
@@ -391,7 +393,8 @@ impl TransactionsApi for TransactionsApiClient {
     }
 
     /// Drops a stuck ETH (EVM) transaction and creates a replacement
-    /// transaction with 0 amount.
+    /// transaction with 0 amount. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor.
     async fn drop_transaction(
         &self,
         params: DropTransactionParams,
@@ -449,10 +452,7 @@ impl TransactionsApi for TransactionsApiClient {
         }
     }
 
-    /// Estimates the transaction fee for a specific transaction request. This
-    /// endpoint simulates a transaction which means that the system will expect
-    /// to have the requested asset and balance in the specified wallet.   *
-    /// Note: Supports all Fireblocks assets except ZCash (ZEC).
+    /// Estimates the transaction fee for a specific transaction request. This endpoint simulates a transaction which means that the system will expect to have the requested asset and balance in the specified wallet.   **Note**: Supports all Fireblocks assets except ZCash (ZEC). Learn more about Fireblocks Fee Management in the following [guide](https://developers.fireblocks.com/reference/estimate-transaction-fee). </br>Endpoint Permission: Admin, Signer, Approver, Editor.
     async fn estimate_transaction_fee(
         &self,
         params: EstimateTransactionFeeParams,
@@ -506,7 +506,8 @@ impl TransactionsApi for TransactionsApiClient {
     /// Freezes a transaction by ID.  Usually used for AML integrations when the
     /// incoming funds should be quarantined. For account based assets - the
     /// entire amount of the transaction is frozen  For UTXO based assets - all
-    /// UTXOs of the specified transaction are frozen
+    /// UTXOs of the specified transaction are frozen </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin.
     async fn freeze_transaction(
         &self,
         params: FreezeTransactionParams,
@@ -563,6 +564,8 @@ impl TransactionsApi for TransactionsApiClient {
     }
 
     /// Get a specific transaction data by Fireblocks Transaction ID
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_transaction(
         &self,
         params: GetTransactionParams,
@@ -606,7 +609,8 @@ impl TransactionsApi for TransactionsApiClient {
         }
     }
 
-    /// Returns transaction by external transaction ID.
+    /// Returns transaction by external transaction ID. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_transaction_by_external_id(
         &self,
         params: GetTransactionByExternalIdParams,
@@ -650,7 +654,8 @@ impl TransactionsApi for TransactionsApiClient {
         }
     }
 
-    /// Get the transaction history for your workspace.
+    /// Get the transaction history for your workspace. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_transactions(
         &self,
         params: GetTransactionsParams,
@@ -748,9 +753,6 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            // let v: serde_json::Value = serde_json::from_str(&local_var_content).unwrap();
-            // let v: String = serde_json::to_string_pretty(&v).unwrap();
-            // tracing::error!("\n{v}\n");
             serde_json::from_str(&local_var_content).map_err(Error::from)
         } else {
             let local_var_entity: Option<GetTransactionsError> =
@@ -766,7 +768,8 @@ impl TransactionsApi for TransactionsApiClient {
 
     /// Rescan transaction by running an async job. </br>  **Note**: - These
     /// endpoints are currently in beta and might be subject to changes. - We
-    /// limit the amount of the transaction to 16 per request.
+    /// limit the amount of the transaction to 16 per request.  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn rescan_transactions_beta(
         &self,
         params: RescanTransactionsBetaParams,
@@ -817,7 +820,8 @@ impl TransactionsApi for TransactionsApiClient {
     }
 
     /// Overrides the required number of confirmations for transaction
-    /// completion by transaction hash.
+    /// completion by transaction hash. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn set_confirmation_threshold_by_transaction_hash(
         &self,
         params: SetConfirmationThresholdByTransactionHashParams,
@@ -874,7 +878,8 @@ impl TransactionsApi for TransactionsApiClient {
     }
 
     /// Overrides the required number of confirmations for transaction
-    /// completion Fireblocks Transaction ID.
+    /// completion Fireblocks Transaction ID. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn set_transaction_confirmation_threshold(
         &self,
         params: SetTransactionConfirmationThresholdParams,
@@ -931,7 +936,8 @@ impl TransactionsApi for TransactionsApiClient {
     }
 
     /// Unfreezes a transaction by Fireblocks Transaction ID and makes the
-    /// transaction available again.
+    /// transaction available again. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn unfreeze_transaction(
         &self,
         params: UnfreezeTransactionParams,

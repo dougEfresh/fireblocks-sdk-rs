@@ -16,6 +16,7 @@
 | OneTimeAddress | ONE_TIME_ADDRESS |
 | Unknown | UNKNOWN |
 | EndUserWallet | END_USER_WALLET |
+| ProgramCall | PROGRAM_CALL |
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

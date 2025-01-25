@@ -30,15 +30,15 @@ files:
   custom/models/d_app_connections_api.rs:
     templateType: SupportingFiles
     destinationFilename: d_app_connections_api.rs
-    folder: src/models/d_app_connections_api.rs
+    folder: src/models
   custom/models/signed_message_signature.rs:
     templateType: SupportingFiles
     destinationFilename: signed_message_signature.rs
-    folder: src/models/signed_message_signature.rs
+    folder: src/models
   custom/models/unsigned_message.rs:
     templateType: SupportingFiles
     destinationFilename: unsigned_message.rs
-    folder: src/models/unsigned_message.rs
+    folder: src/models
   custom/models/vault_accounts_paged_response.rs:
     templateType: SupportingFiles
     destinationFilename: vault_accounts_paged_response.rs
@@ -71,3 +71,8 @@ files:
     templateType: SupportingFiles
     destinationFilename: external_wallet_asset.rs
     folder: src/models
+  custom/models/extra_parameters.rs:
+    templateType: SupportingFiles
+    destinationFilename: extra_parameters.rs
+    folder: src/models
+

@@ -16,9 +16,8 @@ pub struct WriteCallFunctionDto {
     /// The vault account id this contract was deploy from
     #[serde(rename = "vaultAccountId")]
     pub vault_account_id: String,
-    /// The abi of the read function you wish to call
     #[serde(rename = "abiFunction")]
-    pub abi_function: Vec<models::WriteAbiFunction>,
+    pub abi_function: models::WriteAbiFunction,
     /// Amount in base asset. Being used in payable functions
     #[serde(rename = "amount", skip_serializing_if = "Option::is_none")]
     pub amount: Option<String>,
@@ -34,12 +33,23 @@ pub struct WriteCallFunctionDto {
     /// at your Fireblocks workspace
     #[serde(rename = "note", skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
+    /// Indicates whether the token should be created in a gasless manner,
+    /// utilizing the ERC-2771 standard. When set to true, the transaction will
+    /// be relayed by a designated relayer. The workspace must be configured to
+    /// use Fireblocks gasless relay.
+    #[serde(rename = "useGasless", skip_serializing_if = "Option::is_none")]
+    pub use_gasless: Option<bool>,
+    /// External id that can be used to identify the transaction in your system.
+    /// The unique identifier of the transaction outside of Fireblocks with max
+    /// length of 255 characters
+    #[serde(rename = "externalId", skip_serializing_if = "Option::is_none")]
+    pub external_id: Option<String>,
 }
 
 impl WriteCallFunctionDto {
     pub fn new(
         vault_account_id: String,
-        abi_function: Vec<models::WriteAbiFunction>,
+        abi_function: models::WriteAbiFunction,
     ) -> WriteCallFunctionDto {
         WriteCallFunctionDto {
             vault_account_id,
@@ -48,6 +58,8 @@ impl WriteCallFunctionDto {
             fee_level: None,
             fee: None,
             note: None,
+            use_gasless: None,
+            external_id: None,
         }
     }
 }

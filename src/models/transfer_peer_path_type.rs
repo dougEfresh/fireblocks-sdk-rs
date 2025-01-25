@@ -35,6 +35,8 @@ pub enum TransferPeerPathType {
     Unknown,
     #[serde(rename = "END_USER_WALLET")]
     EndUserWallet,
+    #[serde(rename = "PROGRAM_CALL")]
+    ProgramCall,
 }
 
 impl std::fmt::Display for TransferPeerPathType {
@@ -52,6 +54,7 @@ impl std::fmt::Display for TransferPeerPathType {
             Self::OneTimeAddress => write!(f, "ONE_TIME_ADDRESS"),
             Self::Unknown => write!(f, "UNKNOWN"),
             Self::EndUserWallet => write!(f, "END_USER_WALLET"),
+            Self::ProgramCall => write!(f, "PROGRAM_CALL"),
         }
     }
 }

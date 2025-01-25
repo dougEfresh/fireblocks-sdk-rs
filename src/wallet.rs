@@ -14,12 +14,11 @@ pub struct WalletContainer {
 impl From<UnmanagedWallet> for WalletContainer {
     fn from(value: UnmanagedWallet) -> Self {
         Self {
-            id: value.id.unwrap_or_default(),
-            name: value.name.unwrap_or_default(),
+            id: value.id,
+            name: value.name,
             customer_ref_id: value.customer_ref_id,
             assets: value
                 .assets
-                .unwrap_or_default()
                 .into_iter()
                 .map(|w| WalletAssetExternal {
                     id: w.id,

@@ -141,7 +141,7 @@ pub struct SetCustomerRefIdForInternalWalletParams {
 
 #[async_trait]
 impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
-    /// Creates a new internal wallet with the requested name.
+    /// Creates a new internal wallet with the requested name. Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets)  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_internal_wallet(
         &self,
         params: CreateInternalWalletParams,
@@ -189,10 +189,7 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
         }
     }
 
-    /// Adds an asset to an existing internal wallet.  Internal Wallets are
-    /// whitelisted wallets that belong to you outside of Fireblocks.    - You
-    /// can see the balance of the Internal Wallet via Fireblocks   - You cannot
-    /// initiate transactions from Internal Wallets through Fireblocks
+    /// Adds an asset to an existing internal wallet.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks    Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets) </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_internal_wallet_asset(
         &self,
         params: CreateInternalWalletAssetParams,
@@ -250,7 +247,8 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
     /// Deletes an internal wallet by ID.  Internal Wallets are whitelisted
     /// wallets that belong to you outside of Fireblocks.    - You can see the
     /// balance of the Internal Wallet via Fireblocks   - You cannot initiate
-    /// transactions from Internal Wallets through Fireblocks
+    /// transactions from Internal Wallets through Fireblocks  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn delete_internal_wallet(
         &self,
         params: DeleteInternalWalletParams,
@@ -298,7 +296,8 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
     /// Internal Wallets are whitelisted wallets that belong to you outside of
     /// Fireblocks.    - You can see the balance of the Internal Wallet via
     /// Fireblocks   - You cannot initiate transactions from Internal Wallets
-    /// through Fireblocks
+    /// through Fireblocks  </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor.
     async fn delete_internal_wallet_asset(
         &self,
         params: DeleteInternalWalletAssetParams,
@@ -350,6 +349,8 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
     /// whitelisted wallets that belong to you outside of Fireblocks.    - You
     /// can see the balance of the Internal Wallet via Fireblocks   - You cannot
     /// initiate transactions from Internal Wallets through Fireblocks
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_internal_wallet(
         &self,
         params: GetInternalWalletParams,
@@ -397,7 +398,8 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
     /// Wallets are whitelisted wallets that belong to you outside of
     /// Fireblocks.    - You can see the balance of the Internal Wallet via
     /// Fireblocks   - You cannot initiate transactions from Internal Wallets
-    /// through Fireblocks
+    /// through Fireblocks  </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor, Viewer.
     async fn get_internal_wallet_asset(
         &self,
         params: GetInternalWalletAssetParams,
@@ -452,7 +454,8 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
     /// BTC-based assets.  Internal Wallets are whitelisted wallets that belong
     /// to you outside of Fireblocks.  - You can see the balance of the Internal
     /// Wallet via Fireblocks - You cannot initiate transactions from Internal
-    /// Wallets through Fireblocks
+    /// Wallets through Fireblocks </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor, Viewer.
     async fn get_internal_wallets(
         &self,
     ) -> Result<Vec<models::UnmanagedWallet>, Error<GetInternalWalletsError>> {
@@ -489,11 +492,7 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
         }
     }
 
-    /// Sets an AML/KYT customer reference ID for the specific internal wallet.
-    /// Internal Wallets are whitelisted wallets that belong to you outside of
-    /// Fireblocks.    - You can see the balance of the Internal Wallet via
-    /// Fireblocks   - You cannot initiate transactions from Internal Wallets
-    /// through Fireblocks
+    /// Sets an AML/KYT customer reference ID for the specific internal wallet.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks    Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets) </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn set_customer_ref_id_for_internal_wallet(
         &self,
         params: SetCustomerRefIdForInternalWalletParams,

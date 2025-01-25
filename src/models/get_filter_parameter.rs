@@ -36,13 +36,6 @@ pub struct GetFilterParameter {
     pub app_name: Option<String>,
 }
 
-impl std::fmt::Display for GetFilterParameter {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        tracing::warn!("todo! GetFilterParameter toString");
-        write!(f, "")
-    }
-}
-
 impl GetFilterParameter {
     pub fn new() -> GetFilterParameter {
         GetFilterParameter {

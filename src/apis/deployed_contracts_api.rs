@@ -103,14 +103,15 @@ pub struct GetDeployedContractsParams {
     /// The contract's onchain address
     pub contract_address: Option<String>,
     /// The blockchain asset ID
-    pub asset_id: Option<String>,
+    pub base_asset_id: Option<String>,
     /// The contract template identifier
-    pub template_id: Option<String>,
+    pub contract_template_id: Option<String>,
 }
 
 #[async_trait]
 impl DeployedContractsApi for DeployedContractsApiClient {
-    /// Save contract ABI for the tenant
+    /// Save contract ABI for the tenant. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn add_contract_abi(
         &self,
         params: AddContractAbiParams,
@@ -161,7 +162,9 @@ impl DeployedContractsApi for DeployedContractsApiClient {
         }
     }
 
-    /// Fetch the ABI. If not found fetch the ABI from the block explorer
+    /// Fetch the ABI. If not found fetch the ABI from the block explorer.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn fetch_contract_abi(
         &self,
         params: FetchContractAbiParams,
@@ -213,7 +216,8 @@ impl DeployedContractsApi for DeployedContractsApiClient {
     }
 
     /// Return deployed contract data by blockchain native asset id and contract
-    /// address
+    /// address. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor, Viewer.
     async fn get_deployed_contract_by_address(
         &self,
         params: GetDeployedContractByAddressParams,
@@ -261,7 +265,8 @@ impl DeployedContractsApi for DeployedContractsApiClient {
         }
     }
 
-    /// Return deployed contract data by id
+    /// Return deployed contract data by id. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_deployed_contract_by_id(
         &self,
         params: GetDeployedContractByIdParams,
@@ -306,7 +311,8 @@ impl DeployedContractsApi for DeployedContractsApiClient {
     }
 
     /// Return a filtered lean representation of the deployed contracts data on
-    /// all blockchains (paginated)
+    /// all blockchains (paginated). </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_deployed_contracts(
         &self,
         params: GetDeployedContractsParams,
@@ -315,8 +321,8 @@ impl DeployedContractsApi for DeployedContractsApiClient {
             page_cursor,
             page_size,
             contract_address,
-            asset_id,
-            template_id,
+            base_asset_id,
+            contract_template_id,
         } = params;
 
         let local_var_configuration = &self.configuration;
@@ -342,13 +348,13 @@ impl DeployedContractsApi for DeployedContractsApiClient {
             local_var_req_builder =
                 local_var_req_builder.query(&[("contractAddress", &local_var_str.to_string())]);
         }
-        if let Some(ref local_var_str) = asset_id {
+        if let Some(ref local_var_str) = base_asset_id {
             local_var_req_builder =
-                local_var_req_builder.query(&[("assetId", &local_var_str.to_string())]);
+                local_var_req_builder.query(&[("baseAssetId", &local_var_str.to_string())]);
         }
-        if let Some(ref local_var_str) = template_id {
+        if let Some(ref local_var_str) = contract_template_id {
             local_var_req_builder =
-                local_var_req_builder.query(&[("templateId", &local_var_str.to_string())]);
+                local_var_req_builder.query(&[("contractTemplateId", &local_var_str.to_string())]);
         }
         if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
             local_var_req_builder = local_var_req_builder

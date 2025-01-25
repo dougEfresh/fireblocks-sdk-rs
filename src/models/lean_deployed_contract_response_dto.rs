@@ -20,8 +20,8 @@ pub struct LeanDeployedContractResponseDto {
     #[serde(rename = "contractTemplateId")]
     pub contract_template_id: String,
     /// The blockchain's base assetId
-    #[serde(rename = "baseAssetId")]
-    pub base_asset_id: String,
+    #[serde(rename = "blockchainId")]
+    pub blockchain_id: String,
 }
 
 impl LeanDeployedContractResponseDto {
@@ -29,13 +29,13 @@ impl LeanDeployedContractResponseDto {
         id: String,
         contract_address: String,
         contract_template_id: String,
-        base_asset_id: String,
+        blockchain_id: String,
     ) -> LeanDeployedContractResponseDto {
         LeanDeployedContractResponseDto {
             id,
             contract_address,
             contract_template_id,
-            base_asset_id,
+            blockchain_id,
         }
     }
 }

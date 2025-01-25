@@ -92,6 +92,10 @@ pub enum BlockchainDescriptor {
     XtzTest,
     #[serde(rename = "BASECHAIN_ETH")]
     BasechainEth,
+    #[serde(rename = "BASECHAIN_ETH_TEST3")]
+    BasechainEthTest3,
+    #[serde(rename = "BASECHAIN_ETH_TEST5")]
+    BasechainEthTest5,
     #[serde(rename = "ETHERLINK")]
     Etherlink,
     #[serde(rename = "ETHERLINK_TEST")]
@@ -102,6 +106,12 @@ pub enum BlockchainDescriptor {
     MantleTest,
     #[serde(rename = "GUN_GUNZILLA_TEST")]
     GunGunzillaTest,
+    #[serde(rename = "ETH_SONEIUM")]
+    EthSoneium,
+    #[serde(rename = "SONEIUM_MINATO_TEST")]
+    SoneiumMinatoTest,
+    #[serde(rename = "IOTX_IOTEX")]
+    IotxIotex,
 }
 
 impl Default for BlockchainDescriptor {

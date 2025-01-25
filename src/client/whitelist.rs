@@ -63,6 +63,7 @@ impl Client {
                     .await
                     .map_err(|e| FireblocksError::FetchWalletCreateError(e.to_string()))?
                     .id
+                    .unwrap_or_default()
             }
             WalletType::Internal => {
                 let api = self.api_client.whitelisted_internal_wallets_api();
@@ -158,7 +159,6 @@ impl Client {
                     .await
                     .map_err(|e| FireblocksError::FetchWalletCreateError(e.to_string()))?
                     .id
-                    .unwrap_or_default()
             }
             WalletType::Contract => {
                 let api = self.api_client.whitelisted_contracts_api();
@@ -171,7 +171,6 @@ impl Client {
                     .await
                     .map_err(|e| FireblocksError::FetchWalletCreateError(e.to_string()))?
                     .id
-                    .unwrap_or_default()
             }
         };
         Ok(id)

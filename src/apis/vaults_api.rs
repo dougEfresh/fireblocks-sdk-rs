@@ -21,10 +21,18 @@ pub trait VaultsApi: Send + Sync {
         &self,
         params: ActivateAssetForVaultAccountParams,
     ) -> Result<models::CreateVaultAssetResponse, Error<ActivateAssetForVaultAccountError>>;
+    async fn create_assets_bulk(
+        &self,
+        params: CreateAssetsBulkParams,
+    ) -> Result<models::JobCreated, Error<CreateAssetsBulkError>>;
     async fn create_legacy_address(
         &self,
         params: CreateLegacyAddressParams,
     ) -> Result<models::CreateAddressResponse, Error<CreateLegacyAddressError>>;
+    async fn create_multiple_accounts(
+        &self,
+        params: CreateMultipleAccountsParams,
+    ) -> Result<models::JobCreated, Error<CreateMultipleAccountsError>>;
     async fn create_vault_account(
         &self,
         params: CreateVaultAccountParams,
@@ -80,11 +88,11 @@ pub trait VaultsApi: Send + Sync {
     async fn get_vault_assets(
         &self,
         params: GetVaultAssetsParams,
-    ) -> Result<Vec<models::VaultAssetNumber>, Error<GetVaultAssetsError>>;
+    ) -> Result<Vec<models::VaultAsset>, Error<GetVaultAssetsError>>;
     async fn get_vault_balance_by_asset(
         &self,
         params: GetVaultBalanceByAssetParams,
-    ) -> Result<models::VaultAssetNumber, Error<GetVaultBalanceByAssetError>>;
+    ) -> Result<models::VaultAsset, Error<GetVaultBalanceByAssetError>>;
     async fn hide_vault_account(
         &self,
         params: HideVaultAccountParams,
@@ -145,6 +153,18 @@ pub struct ActivateAssetForVaultAccountParams {
     pub idempotency_key: Option<String>,
 }
 
+/// struct for passing parameters to the method [`create_assets_bulk`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct CreateAssetsBulkParams {
+    pub create_assets_bulk_request: models::CreateAssetsBulkRequest,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+}
+
 /// struct for passing parameters to the method [`create_legacy_address`]
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
@@ -155,6 +175,18 @@ pub struct CreateLegacyAddressParams {
     pub asset_id: String,
     /// The segwit address to translate
     pub address_id: String,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+}
+
+/// struct for passing parameters to the method [`create_multiple_accounts`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct CreateMultipleAccountsParams {
+    pub create_multiple_accounts_request: models::CreateMultipleAccountsRequest,
     /// A unique identifier for the request. If the request is sent multiple
     /// times with the same idempotency key, the server will return the same
     /// response as the first request. The idempotency key is valid for 24
@@ -250,7 +282,8 @@ pub struct GetPagedVaultAccountsParams {
     pub name_prefix: Option<String>,
     pub name_suffix: Option<String>,
     /// Specifying minAmountThreshold will filter accounts with balances greater
-    /// than this value, otherwise, it will return all accounts.
+    /// than this value, otherwise, it will return all accounts. The amount set
+    /// in this parameter is the native asset amount and not its USD value.
     pub min_amount_threshold: Option<f64>,
     pub asset_id: Option<String>,
     pub order_by: Option<String>,
@@ -486,7 +519,8 @@ pub struct UpdateVaultAccountAssetBalanceParams {
 impl VaultsApi for VaultsApiClient {
     /// Initiates activation for a wallet in a vault account.  Activation is
     /// required for tokens that need an on-chain transaction for creation (XLM
-    /// tokens, SOL tokens etc).
+    /// tokens, SOL tokens etc). </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor.
     async fn activate_asset_for_vault_account(
         &self,
         params: ActivateAssetForVaultAccountParams,
@@ -539,7 +573,60 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Converts an existing segwit address to the legacy format
+    /// Create multiple wallets for a given vault account by running an async
+    /// job. </br> **Note**: - These endpoints are currently in beta and might
+    /// be subject to changes. - We limit accounts to 10k per operation and 200k
+    /// per customer during beta testing. - Currently, we are only supporting
+    /// EVM wallets.
+    async fn create_assets_bulk(
+        &self,
+        params: CreateAssetsBulkParams,
+    ) -> Result<models::JobCreated, Error<CreateAssetsBulkError>> {
+        let CreateAssetsBulkParams {
+            create_assets_bulk_request,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!("{}/vault/assets/bulk", local_var_configuration.base_path);
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+        local_var_req_builder = local_var_req_builder.json(&create_assets_bulk_request);
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            serde_json::from_str(&local_var_content).map_err(Error::from)
+        } else {
+            let local_var_entity: Option<CreateAssetsBulkError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Converts an existing segwit address to the legacy format. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_legacy_address(
         &self,
         params: CreateLegacyAddressParams,
@@ -594,7 +681,60 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Creates a new vault account with the requested name
+    /// Create multiple vault accounts by running an async job. </br> **Note**:
+    /// - These endpoints are currently in beta and might be subject to changes.
+    /// - We limit accounts to 10k per operation and 200k per customer during
+    /// beta testing. </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor, Viewer.
+    async fn create_multiple_accounts(
+        &self,
+        params: CreateMultipleAccountsParams,
+    ) -> Result<models::JobCreated, Error<CreateMultipleAccountsError>> {
+        let CreateMultipleAccountsParams {
+            create_multiple_accounts_request,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str =
+            format!("{}/vault/accounts/bulk", local_var_configuration.base_path);
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+        local_var_req_builder = local_var_req_builder.json(&create_multiple_accounts_request);
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            serde_json::from_str(&local_var_content).map_err(Error::from)
+        } else {
+            let local_var_entity: Option<CreateMultipleAccountsError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Creates a new vault account with the requested name. Learn more about Fireblocks Vault Accounts in the following [guide](https://developers.fireblocks.com/reference/create-vault-account). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_vault_account(
         &self,
         params: CreateVaultAccountParams,
@@ -642,7 +782,7 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Creates a wallet for a specific asset in a vault account
+    /// Creates a wallet for a specific asset in a vault account. Learn more about Fireblocks Vault Wallets in the following [guide](https://developers.fireblocks.com/reference/create-vault-wallet). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_vault_account_asset(
         &self,
         params: CreateVaultAccountAssetParams,
@@ -699,7 +839,8 @@ impl VaultsApi for VaultsApiClient {
 
     /// Creates a new deposit address for an asset of a vault account. Should be
     /// used for UTXO or Tag/Memo based assets ONLY.  Requests with account
-    /// based assets will fail
+    /// based assets will fail.  </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn create_vault_account_asset_address(
         &self,
         params: CreateVaultAccountAssetAddressParams,
@@ -756,7 +897,8 @@ impl VaultsApi for VaultsApiClient {
 
     /// Get all vault wallets of the vault accounts in your workspace.  A vault
     /// wallet is an asset in a vault account.   This method allows fast
-    /// traversal of all account balances.
+    /// traversal of all account balances. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_asset_wallets(
         &self,
         params: GetAssetWalletsParams,
@@ -830,6 +972,8 @@ impl VaultsApi for VaultsApiClient {
 
     /// Get the maximum amount of a particular asset that can be spent in a
     /// single transaction from a specified vault account (UTXO assets only).
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_max_spendable_amount(
         &self,
         params: GetMaxSpendableAmountParams,
@@ -883,7 +1027,8 @@ impl VaultsApi for VaultsApiClient {
     }
 
     /// Gets all vault accounts in your workspace. This endpoint returns a
-    /// limited amount of results with a quick response time.
+    /// limited amount of results with a quick response time. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_paged_vault_accounts(
         &self,
         params: GetPagedVaultAccountsParams,
@@ -966,7 +1111,7 @@ impl VaultsApi for VaultsApiClient {
     }
 
     /// Gets the public key information based on derivation path and signing
-    /// algorithm.
+    /// algorithm. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_public_key_info(
         &self,
         params: GetPublicKeyInfoParams,
@@ -1036,7 +1181,8 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Get the public key information for a specific asset in a vault account
+    /// Get the public key information for a specific asset in a vault account.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_public_key_info_for_address(
         &self,
         params: GetPublicKeyInfoForAddressParams,
@@ -1093,7 +1239,9 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Returns unspent inputs information of an UTXO asset in a vault account
+    /// Returns unspent inputs information of an UTXO asset in a vault account.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_unspent_inputs(
         &self,
         params: GetUnspentInputsParams,
@@ -1141,7 +1289,8 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Get a vault account by its unique ID
+    /// Get a vault account by its unique ID. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_vault_account(
         &self,
         params: GetVaultAccountParams,
@@ -1185,7 +1334,9 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Returns a specific vault wallet balance information for a specific asset
+    /// Returns a specific vault wallet balance information for a specific
+    /// asset.  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor,   Viewer.
     async fn get_vault_account_asset(
         &self,
         params: GetVaultAccountAssetParams,
@@ -1242,7 +1393,8 @@ impl VaultsApi for VaultsApiClient {
     /// is unavailable. - Please use the GET
     /// /v1/vault/accounts/{vaultAccountId}/{assetId}/addresses_paginated
     /// endpoint to return all the wallet addresses associated with the
-    /// specified vault account and asset in a paginated list.
+    /// specified vault account and asset in a paginated list.  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_vault_account_asset_addresses(
         &self,
         params: GetVaultAccountAssetAddressesParams,
@@ -1291,7 +1443,8 @@ impl VaultsApi for VaultsApiClient {
     }
 
     /// Returns a paginated response of the addresses for a given vault account
-    /// and asset.
+    /// and asset. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor, Viewer.
     async fn get_vault_account_asset_addresses_paginated(
         &self,
         params: GetVaultAccountAssetAddressesPaginatedParams,
@@ -1356,10 +1509,12 @@ impl VaultsApi for VaultsApiClient {
     }
 
     /// Gets the assets amount summary for all accounts or filtered accounts.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_vault_assets(
         &self,
         params: GetVaultAssetsParams,
-    ) -> Result<Vec<models::VaultAssetNumber>, Error<GetVaultAssetsError>> {
+    ) -> Result<Vec<models::VaultAsset>, Error<GetVaultAssetsError>> {
         let GetVaultAssetsParams {
             account_name_prefix,
             account_name_suffix,
@@ -1406,11 +1561,13 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Get the total balance of an asset across all the vault accounts
+    /// Get the total balance of an asset across all the vault accounts.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_vault_balance_by_asset(
         &self,
         params: GetVaultBalanceByAssetParams,
-    ) -> Result<models::VaultAssetNumber, Error<GetVaultBalanceByAssetError>> {
+    ) -> Result<models::VaultAsset, Error<GetVaultBalanceByAssetError>> {
         let GetVaultBalanceByAssetParams { asset_id } = params;
 
         let local_var_configuration = &self.configuration;
@@ -1450,11 +1607,7 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Hides the requested vault account from the web console view. This
-    /// operation is required when creating thousands of vault accounts to serve
-    /// your end-users. Used for preventing the web console to be swamped with
-    /// too much vault accounts.  NOTE: Hiding the vault account from the web
-    /// console will also hide all the related transactions to/from this vault.
+    /// Hides the requested vault account from the web console view. This operation is required when creating thousands of vault accounts to serve your end-users. Used for preventing the web console to be swamped with too much vault accounts. Learn more in the following [guide](https://developers.fireblocks.com/docs/create-direct-custody-wallets#hiding-vault-accounts). NOTE: Hiding the vault account from the web console will also hide all the related transactions to/from this vault. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn hide_vault_account(
         &self,
         params: HideVaultAccountParams,
@@ -1505,7 +1658,8 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Sets an AML/KYT customer reference ID for a specific address
+    /// Sets an AML/KYT customer reference ID for a specific address.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn set_customer_ref_id_for_address(
         &self,
         params: SetCustomerRefIdForAddressParams,
@@ -1564,9 +1718,7 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Toggles the auto fueling property of the vault account to enabled or
-    /// disabled. Vault Accounts with 'autoFuel=true' are monitored and auto
-    /// fueled by the Fireblocks Gas Station.
+    /// Toggles the auto fueling property of the vault account to enabled or disabled. Vault Accounts with 'autoFuel=true' are monitored and auto fueled by the Fireblocks Gas Station. Learn more about the Fireblocks Gas Station in the following [guide](https://developers.fireblocks.com/docs/work-with-gas-station). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn set_vault_account_auto_fuel(
         &self,
         params: SetVaultAccountAutoFuelParams,
@@ -1619,7 +1771,7 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Assigns an AML/KYT customer reference ID for the vault account
+    /// Assigns an AML/KYT customer reference ID for the vault account. Learn more about Fireblocks AML management in the following [guide](https://developers.fireblocks.com/docs/define-aml-policies). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn set_vault_account_customer_ref_id(
         &self,
         params: SetVaultAccountCustomerRefIdParams,
@@ -1672,7 +1824,8 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Makes a hidden vault account visible in web console view
+    /// Makes a hidden vault account visible in web console view. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn unhide_vault_account(
         &self,
         params: UnhideVaultAccountParams,
@@ -1723,7 +1876,8 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Renames the requested vault account
+    /// Renames the requested vault account. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver.
     async fn update_vault_account(
         &self,
         params: UpdateVaultAccountParams,
@@ -1777,7 +1931,8 @@ impl VaultsApi for VaultsApiClient {
     }
 
     /// Updates the description of an existing address of an asset in a vault
-    /// account.
+    /// account. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor.
     async fn update_vault_account_asset_address(
         &self,
         params: UpdateVaultAccountAssetAddressParams,
@@ -1837,7 +1992,8 @@ impl VaultsApi for VaultsApiClient {
 
     /// Updates the balance of a specific asset in a vault account.  This API
     /// endpoint is subject to a strict rate limit. Should be used by clients in
-    /// very specific scenarios.
+    /// very specific scenarios.  </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor.
     async fn update_vault_account_asset_balance(
         &self,
         params: UpdateVaultAccountAssetBalanceParams,
@@ -1899,10 +2055,26 @@ pub enum ActivateAssetForVaultAccountError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`create_assets_bulk`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum CreateAssetsBulkError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`create_legacy_address`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum CreateLegacyAddressError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`create_multiple_accounts`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum CreateMultipleAccountsError {
     DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }

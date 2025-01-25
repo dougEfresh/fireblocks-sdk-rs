@@ -24,7 +24,7 @@ Method | HTTP request | Description
 > models::CollectionBurnResponseDto burn_collection_token(id, collection_burn_request_dto, idempotency_key)
 Burn tokens
 
-Burn tokens in a collection
+Burn tokens in a collection. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -56,7 +56,7 @@ No authorization required
 > models::CollectionLinkDto create_new_collection(collection_deploy_request_dto, idempotency_key)
 Create a new collection
 
-Create a new collection and link it as a token
+Create a new collection and link it as a token. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -87,7 +87,7 @@ No authorization required
 > models::CollectionLinkDto fetch_collection_token_details(id, token_id)
 Get collection token details
 
-Get collection token details by id
+Get collection token details by id. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -118,7 +118,7 @@ No authorization required
 > models::CollectionLinkDto get_collection_by_id(id)
 Get a collection by id
 
-Get a collection by id
+Get a collection by id. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -148,7 +148,7 @@ No authorization required
 > models::GetLinkedCollectionsPaginatedResponse get_linked_collections(page_cursor, page_size, status)
 Get collections
 
-Get collections (paginated)
+Get collections (paginated). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -180,7 +180,7 @@ No authorization required
 > models::TokenLinkDto get_linked_token(id)
 Return a linked token
 
-Return a linked token, with its status and metadata.
+Return a linked token, with its status and metadata.  </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -210,7 +210,7 @@ No authorization required
 > models::TokensPaginatedResponse get_linked_tokens(page_cursor, page_size, status)
 List all linked tokens
 
-Return all linked tokens (paginated)
+Return all linked tokens (paginated).  </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -242,7 +242,7 @@ No authorization required
 > models::TokenLinkDto issue_new_token(create_token_request_dto, idempotency_key)
 Issue a new token
 
-Facilitates the creation of a new token, supporting both EVM-based and Stellar/Ripple platforms. For EVM, it deploys the corresponding contract template to the blockchain and links the token to the workspace. For Stellar/Ripple, it links a newly created token directly to the workspace without deploying a contract. Returns the token link with status \"PENDING\" until the token is deployed or \"SUCCESS\" if no deployment is needed.
+Facilitates the creation of a new token, supporting both EVM-based and Stellar/Ripple platforms. For EVM, it deploys the corresponding contract template to the blockchain and links the token to the workspace. For Stellar/Ripple, it links a newly created token directly to the workspace without deploying a contract. Returns the token link with status \"PENDING\" until the token is deployed or \"SUCCESS\" if no deployment is needed. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -273,7 +273,7 @@ No authorization required
 > models::TokenLinkDto link(token_link_request_dto, idempotency_key)
 Link a contract
 
-Link an a contract
+Link a contract. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -304,7 +304,7 @@ No authorization required
 > models::CollectionMintResponseDto mint_collection_token(id, collection_mint_request_dto, idempotency_key)
 Mint tokens
 
-Mint tokens and upload metadata
+Mint tokens and upload metadata. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -336,7 +336,7 @@ No authorization required
 > unlink(id)
 Unlink a token
 
-Unlink a token. The token will be unlinked from the workspace. The token will not be deleted on chain nor the refId, only the link to the workspace will be removed.
+Unlink a token. The token will be unlinked from the workspace. The token will not be deleted on chain nor the refId, only the link to the workspace will be removed. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -366,7 +366,7 @@ No authorization required
 > unlink_collection(id)
 Delete a collection link
 
-Delete a collection link
+Delete a collection link. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 

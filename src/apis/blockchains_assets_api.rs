@@ -28,6 +28,10 @@ pub trait BlockchainsAssetsApi: Send + Sync {
         &self,
         params: RegisterNewAssetParams,
     ) -> Result<models::AssetResponse, Error<RegisterNewAssetError>>;
+    async fn set_asset_price(
+        &self,
+        params: SetAssetPriceParams,
+    ) -> Result<models::AssetPriceResponse, Error<SetAssetPriceError>>;
     async fn validate_address(
         &self,
         params: ValidateAddressParams,
@@ -64,6 +68,20 @@ pub struct RegisterNewAssetParams {
     pub register_new_asset_request: Option<models::RegisterNewAssetRequest>,
 }
 
+/// struct for passing parameters to the method [`set_asset_price`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct SetAssetPriceParams {
+    /// The ID of the asset
+    pub id: String,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+    pub set_asset_price_request: Option<models::SetAssetPriceRequest>,
+}
+
 /// struct for passing parameters to the method [`validate_address`]
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
@@ -76,12 +94,7 @@ pub struct ValidateAddressParams {
 
 #[async_trait]
 impl BlockchainsAssetsApi for BlockchainsAssetsApiClient {
-    /// Gets the estimated required fee for an asset. Fireblocks fetches,
-    /// calculates and caches the result every 30 seconds. Customers should
-    /// query this API while taking the caching interval into consideration.  -
-    /// For UTXO based assets, the response will contain the suggested fee per
-    /// byte - For ETH (and all EVM) based assets, the suggested gas price - For
-    /// XRP/XLM, the transaction fee
+    /// Gets the estimated required fee for an asset. Fireblocks fetches, calculates and caches the result every 30 seconds. Customers should query this API while taking the caching interval into consideration. Notes: - The `assetId` parameter does not support the ZCash (ZEC) asset. - The `networkFee` parameter is the `gasPrice` with a given delta added, multiplied by the gasLimit plus the delta. - The estimation provided depends on the asset type.     - For UTXO-based assets, the response contains the `feePerByte` parameter     - For ETH-based and all EVM based assets, the response will contain `gasPrice` parameter. This is calculated by adding the `baseFee` to the `actualPriority` based on the latest 12 blocks. The response for ETH-based  contains the `baseFee`, `gasPrice`, and `priorityFee` parameters.     - For ADA-based assets, the response will contain the parameter `networkFee` and `feePerByte` parameters.     - For XRP and XLM, the response will contain the transaction fee.     - For other assets, the response will contain the `networkFee` parameter.  Learn more about Fireblocks Fee Management in the following [guide](https://developers.fireblocks.com/reference/estimate-transaction-fee). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn estimate_network_fee(
         &self,
         params: EstimateNetworkFeeParams,
@@ -123,9 +136,10 @@ impl BlockchainsAssetsApi for BlockchainsAssetsApiClient {
         }
     }
 
-    /// Returns all asset types supported by Fireblocks.   The response includes
+    /// Returns all asset types supported by Fireblocks. The response includes
     /// all assets supported by Fireblocks globally in addition to assets added
-    /// to the specific workspace.
+    /// to the specific workspace. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor.
     async fn get_supported_assets(
         &self,
     ) -> Result<Vec<models::AssetTypeResponse>, Error<GetSupportedAssetsError>> {
@@ -162,9 +176,7 @@ impl BlockchainsAssetsApi for BlockchainsAssetsApiClient {
         }
     }
 
-    /// Register a new asset to a workspace and return the newly created asset's
-    /// details. Currently supported chains are: - EVM based chains - Stellar -
-    /// Algorand - TRON - NEAR - Solana
+    /// Register a new asset to a workspace and return the newly created asset's details. Currently supported chains are:    - EVM based chains   - Stellar   - Algorand   - TRON   - Solana  Learn more about Supporting Additional Assets in Fireblocks  in the following [guide](https://developers.fireblocks.com/docs/add-your-tokens-1). </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, NCW Admin, Editor, and Signer.
     async fn register_new_asset(
         &self,
         params: RegisterNewAssetParams,
@@ -212,7 +224,63 @@ impl BlockchainsAssetsApi for BlockchainsAssetsApiClient {
         }
     }
 
+    /// Set asset price for the given asset id. Returns the asset price
+    /// response.
+    async fn set_asset_price(
+        &self,
+        params: SetAssetPriceParams,
+    ) -> Result<models::AssetPriceResponse, Error<SetAssetPriceError>> {
+        let SetAssetPriceParams {
+            id,
+            idempotency_key,
+            set_asset_price_request,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/assets/prices/{id}",
+            local_var_configuration.base_path,
+            id = crate::apis::urlencode(id)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+        local_var_req_builder = local_var_req_builder.json(&set_asset_price_request);
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            serde_json::from_str(&local_var_content).map_err(Error::from)
+        } else {
+            let local_var_entity: Option<SetAssetPriceError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
     /// Checks if an address is valid and active (for XRP, DOT, XLM, and EOS).
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn validate_address(
         &self,
         params: ValidateAddressParams,
@@ -280,9 +348,20 @@ pub enum GetSupportedAssetsError {
 pub enum RegisterNewAssetError {
     Status400(models::AssetBadRequestErrorResponse),
     Status403(models::AssetForbiddenErrorResponse),
-    Status404(models::AssetNotFoundErrorResponse),
+    Status404(models::TokenInfoNotFoundErrorResponse),
     Status409(models::AssetConflictErrorResponse),
     Status500(models::AssetInternalServerErrorResponse),
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`set_asset_price`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum SetAssetPriceError {
+    Status403(models::AssetPriceForbiddenErrorResponse),
+    Status404(models::AssetPriceNotFoundErrorResponse),
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
 

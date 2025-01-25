@@ -121,7 +121,8 @@ pub struct GetContractAssetParams {
 
 #[async_trait]
 impl WhitelistedContractsApi for WhitelistedContractsApiClient {
-    /// Adds an asset to an existing whitelisted contract.
+    /// Adds an asset to an existing whitelisted contract. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn add_contract_asset(
         &self,
         params: AddContractAssetParams,
@@ -176,7 +177,7 @@ impl WhitelistedContractsApi for WhitelistedContractsApiClient {
         }
     }
 
-    /// Creates a new whitelisted contract.
+    /// Creates a new whitelisted contract.  Learn more about Whitelisted Smart Contracts [here](https://developers.fireblocks.com/docs/whitelist-addresses#contracts).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_contract(
         &self,
         params: CreateContractParams,
@@ -224,7 +225,8 @@ impl WhitelistedContractsApi for WhitelistedContractsApiClient {
         }
     }
 
-    /// Deletes a whitelisted contract by Fireblocks Contract ID
+    /// Deletes a whitelisted contract by Fireblocks Contract ID. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn delete_contract(
         &self,
         params: DeleteContractParams,
@@ -269,7 +271,8 @@ impl WhitelistedContractsApi for WhitelistedContractsApiClient {
     }
 
     /// Deletes a whitelisted contract's asset by Fireblocks Contract ID and
-    /// Asset ID.
+    /// Asset ID. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor.
     async fn delete_contract_asset(
         &self,
         params: DeleteContractAssetParams,
@@ -317,7 +320,8 @@ impl WhitelistedContractsApi for WhitelistedContractsApiClient {
         }
     }
 
-    /// Returns a whitelisted contract by Fireblocks Contract ID
+    /// Returns a whitelisted contract by Fireblocks Contract ID.  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_contract(
         &self,
         params: GetContractParams,
@@ -361,7 +365,8 @@ impl WhitelistedContractsApi for WhitelistedContractsApiClient {
         }
     }
 
-    /// Returns a whitelisted contract's asset by ID.
+    /// Returns a whitelisted contract's asset by ID.  </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_contract_asset(
         &self,
         params: GetContractAssetParams,
@@ -409,7 +414,8 @@ impl WhitelistedContractsApi for WhitelistedContractsApiClient {
         }
     }
 
-    /// Gets a list of whitelisted contracts.
+    /// Gets a list of whitelisted contracts. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn get_contracts(
         &self,
     ) -> Result<Vec<models::UnmanagedWallet>, Error<GetContractsError>> {

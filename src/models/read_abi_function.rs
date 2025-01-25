@@ -13,32 +13,32 @@ use {
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ReadAbiFunction {
-    #[serde(rename = "stateMutability")]
-    pub state_mutability: StateMutability,
-    #[serde(rename = "outputs", skip_serializing_if = "Option::is_none")]
-    pub outputs: Option<Vec<models::Parameter>>,
-    #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
-    #[serde(rename = "type")]
-    pub r#type: String,
     #[serde(rename = "inputs")]
     pub inputs: Vec<models::ParameterWithValue>,
+    #[serde(rename = "stateMutability")]
+    pub state_mutability: StateMutability,
+    #[serde(rename = "type")]
+    pub r#type: String,
+    #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(rename = "outputs", skip_serializing_if = "Option::is_none")]
+    pub outputs: Option<Vec<models::Parameter>>,
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
 }
 
 impl ReadAbiFunction {
     pub fn new(
+        inputs: Vec<models::ParameterWithValue>,
         state_mutability: StateMutability,
         r#type: String,
-        inputs: Vec<models::ParameterWithValue>,
     ) -> ReadAbiFunction {
         ReadAbiFunction {
-            state_mutability,
-            outputs: None,
-            name: None,
-            r#type,
             inputs,
+            state_mutability,
+            r#type,
+            name: None,
+            outputs: None,
             description: None,
         }
     }

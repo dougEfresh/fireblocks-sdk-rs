@@ -54,6 +54,10 @@ pub trait FireblocksNetworkApi: Send + Sync {
     async fn get_routing_policy_asset_groups(
         &self,
     ) -> Result<Vec<String>, Error<GetRoutingPolicyAssetGroupsError>>;
+    async fn search_network_ids(
+        &self,
+        params: SearchNetworkIdsParams,
+    ) -> Result<models::SearchNetworkIdsResponse, Error<SearchNetworkIdsError>>;
     async fn set_network_id_discoverability(
         &self,
         params: SetNetworkIdDiscoverabilityParams,
@@ -148,6 +152,22 @@ pub struct GetNetworkIdParams {
     pub network_id: String,
 }
 
+/// struct for passing parameters to the method [`search_network_ids`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct SearchNetworkIdsParams {
+    /// Search string - displayName networkId. Optional
+    pub search: Option<String>,
+    /// Exclude your networkIds. Optional, default false
+    pub exclude_self: Option<bool>,
+    /// Exclude connected networkIds. Optional, default false
+    pub exclude_connected: Option<bool>,
+    /// ID of the record after which to fetch $limit records
+    pub page_cursor: Option<String>,
+    /// Number of records to fetch. By default, it is 50
+    pub page_size: Option<f64>,
+}
+
 /// struct for passing parameters to the method
 /// [`set_network_id_discoverability`]
 #[derive(Clone, Debug)]
@@ -191,7 +211,8 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// The Fireblocks Network allows for flexibility around incoming deposits.
     /// A receiver can receive network deposits to locations other than
     /// Fireblocks. This endpoint validates whether future transactions are
-    /// routed to the displayed recipient or to a 3rd party.
+    /// routed to the displayed recipient or to a 3rd party.  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin.
     async fn check_third_party_routing(
         &self,
         params: CheckThirdPartyRoutingParams,
@@ -239,22 +260,7 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         }
     }
 
-    /// Initiates a new network connection.  **Note:** This API call is subject
-    /// to Flexible Routing Schemes.  Your routing policy defines how your
-    /// transactions are routed. You can choose 1 of the 3 different schemes
-    /// mentioned below for each asset type:   - **None**; Defines the profile
-    /// routing to no destination for that asset type. Incoming transactions to
-    /// asset types routed to `None` will fail.   - **Custom**; Route to an
-    /// account that you choose. If you remove the account, incoming
-    /// transactions will fail until you choose another one.   - **Default**;
-    /// Use the routing specified by the network profile the connection is
-    /// connected to. This scheme is also referred to as \"Profile Routing\"
-    /// Default Workspace Presets:   - Network Profile Crypto → **Custom**   -
-    /// Network Profile FIAT → **None**   - Network Connection Crypto →
-    /// **Default**   - Network Connection FIAT → **Default**  Supported asset
-    /// groups for routing police can be found at
-    /// `/network_ids/routing_policy_asset_groups`      - **Note**: By default,
-    /// Custom routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`).
+    /// Initiates a new network connection.  **Note:** This API call is subject to Flexible Routing Schemes.  Your routing policy defines how your transactions are routed. You can choose 1 of the 3 different schemes mentioned below for each asset type:   - **None**; Defines the profile routing to no destination for that asset type. Incoming transactions to asset types routed to `None` will fail.   - **Custom**; Route to an account that you choose. If you remove the account, incoming transactions will fail until you choose another one.   - **Default**; Use the routing specified by the network profile the connection is connected to. This scheme is also referred to as \"Profile Routing\"  Default Workspace Presets:   - Network Profile Crypto → **Custom**   - Network Profile FIAT → **None**   - Network Connection Crypto → **Default**   - Network Connection FIAT → **Default**  Supported asset groups for routing police can be found at `/network_ids/routing_policy_asset_groups` **Note**: By default, Custom routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`). Learn more about Fireblocks Network in the following [guide](https://developers.fireblocks.com/docs/connect-to-the-fireblocks-network). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn create_network_connection(
         &self,
         params: CreateNetworkConnectionParams,
@@ -317,8 +323,9 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// Network Profile FIAT → **None**   - Network Connection Crypto →
     /// **Default**   - Network Connection FIAT → **Default**  Supported asset
     /// groups for routing police can be found at
-    /// `/network_ids/routing_policy_asset_groups`      - **Note**: By default,
-    /// Custom routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`).
+    /// `/network_ids/routing_policy_asset_groups` **Note**: By default, Custom
+    /// routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`). </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin.
     async fn create_network_id(
         &self,
         params: CreateNetworkIdParams,
@@ -378,9 +385,10 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// connection is connected to. This scheme is also referred to as \"Profile
     /// Routing\"  Default Workspace Presets:   - Network Profile Crypto →
     /// **Custom**   - Network Profile FIAT → **None**   - Network Connection
-    /// Crypto → **Default**   - Network Connection FIAT → **Default**      -
+    /// Crypto → **Default**   - Network Connection FIAT → **Default**
     /// **Note**: By default, Custom routing scheme uses (`dstId` = `0`,
-    /// `dstType` = `VAULT`).
+    /// `dstType` = `VAULT`). </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn delete_network_connection(
         &self,
         params: DeleteNetworkConnectionParams,
@@ -436,9 +444,9 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// connected to. This scheme is also referred to as \"Profile Routing\"
     /// Default Workspace Presets:   - Network Profile Crypto → **Custom**   -
     /// Network Profile FIAT → **None**   - Network Connection Crypto →
-    /// **Default**   - Network Connection FIAT → **Default**      - **Note**:
-    /// By default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
-    /// `VAULT`).
+    /// **Default**   - Network Connection FIAT → **Default**  **Note**: By
+    /// default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
+    /// `VAULT`). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn delete_network_id(
         &self,
         params: DeleteNetworkIdParams,
@@ -494,9 +502,9 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// connected to. This scheme is also referred to as \"Profile Routing\"
     /// Default Workspace Presets:   - Network Profile Crypto → **Custom**   -
     /// Network Profile FIAT → **None**   - Network Connection Crypto →
-    /// **Default**   - Network Connection FIAT → **Default**      - **Note**:
-    /// By default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
-    /// `VAULT`).
+    /// **Default**   - Network Connection FIAT → **Default**  **Note**: By
+    /// default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
+    /// `VAULT`). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_network(
         &self,
         params: GetNetworkParams,
@@ -554,7 +562,7 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// Network Profile FIAT → **None**   - Network Connection Crypto →
     /// **Default**   - Network Connection FIAT → **Default**      - **Note**:
     /// By default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
-    /// `VAULT`).
+    /// `VAULT`).  </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_network_connections(
         &self,
     ) -> Result<Vec<models::NetworkConnectionResponse>, Error<GetNetworkConnectionsError>> {
@@ -604,9 +612,9 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// connected to. This scheme is also referred to as \"Profile Routing\"
     /// Default Workspace Presets:   - Network Profile Crypto → **Custom**   -
     /// Network Profile FIAT → **None**   - Network Connection Crypto →
-    /// **Default**   - Network Connection FIAT → **Default**      - **Note**:
-    /// By default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
-    /// `VAULT`).
+    /// **Default**   - Network Connection FIAT → **Default**  **Note**: By
+    /// default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
+    /// `VAULT`). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_network_id(
         &self,
         params: GetNetworkIdParams,
@@ -662,9 +670,10 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// connection is connected to. This scheme is also referred to as \"Profile
     /// Routing\"  Default Workspace Presets:   - Network Profile Crypto →
     /// **Custom**   - Network Profile FIAT → **None**   - Network Connection
-    /// Crypto → **Default**   - Network Connection FIAT → **Default**      -
+    /// Crypto → **Default**   - Network Connection FIAT → **Default**
     /// **Note**: By default, Custom routing scheme uses (`dstId` = `0`,
-    /// `dstType` = `VAULT`).
+    /// `dstType` = `VAULT`). </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn get_network_ids(
         &self,
     ) -> Result<Vec<models::NetworkIdResponse>, Error<GetNetworkIdsError>> {
@@ -704,7 +713,8 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// Retrieves a list of all enabled routing policy asset groups. Your
     /// routing policy defines how your transactions are routed. You can use one
     /// or more enabled routing policy asset groups to describe connection or
-    /// network id routing policy.
+    /// network id routing policy. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn get_routing_policy_asset_groups(
         &self,
     ) -> Result<Vec<String>, Error<GetRoutingPolicyAssetGroupsError>> {
@@ -744,6 +754,86 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         }
     }
 
+    /// Retrieves a list of all local and discoverable remote network IDs. Can
+    /// be filtered.  **Note:** This API call is subject to Flexible Routing
+    /// Schemes.  Your routing policy defines how your transactions are routed.
+    /// You can choose 1 of the 3 different schemes mentioned below for each
+    /// asset type:   - **None**; Defines the profile routing to no destination
+    /// for that asset type. Incoming transactions to asset types routed to
+    /// `None` will fail.   - **Custom**; Route to an account that you choose.
+    /// If you remove the account, incoming transactions will fail until you
+    /// choose another one.   - **Default**; Use the routing specified by the
+    /// network profile the connection is connected to. This scheme is also
+    /// referred to as \"Profile Routing\"  Default Workspace Presets:   -
+    /// Network Profile Crypto → **Custom**   - Network Profile FIAT → **None**
+    /// - Network Connection Crypto → **Default**   - Network Connection FIAT →
+    /// **Default**      - **Note**: By default, Custom routing scheme uses
+    /// (`dstId` = `0`, `dstType` = `VAULT`).
+    async fn search_network_ids(
+        &self,
+        params: SearchNetworkIdsParams,
+    ) -> Result<models::SearchNetworkIdsResponse, Error<SearchNetworkIdsError>> {
+        let SearchNetworkIdsParams {
+            search,
+            exclude_self,
+            exclude_connected,
+            page_cursor,
+            page_size,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!("{}/network_ids/search", local_var_configuration.base_path);
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_str) = search {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("search", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = exclude_self {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("excludeSelf", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = exclude_connected {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("excludeConnected", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = page_cursor {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("pageCursor", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = page_size {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            serde_json::from_str(&local_var_content).map_err(Error::from)
+        } else {
+            let local_var_entity: Option<SearchNetworkIdsError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
     /// Update whether or not the network ID is discoverable by others.
     /// **Note:** This API call is subject to Flexible Routing Schemes.  Your
     /// routing policy defines how your transactions are routed. You can choose
@@ -756,9 +846,10 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// connection is connected to. This scheme is also referred to as \"Profile
     /// Routing\"  Default Workspace Presets:   - Network Profile Crypto →
     /// **Custom**   - Network Profile FIAT → **None**   - Network Connection
-    /// Crypto → **Default**   - Network Connection FIAT → **Default**      -
+    /// Crypto → **Default**   - Network Connection FIAT → **Default**
     /// **Note**: By default, Custom routing scheme uses (`dstId` = `0`,
-    /// `dstType` = `VAULT`).
+    /// `dstType` = `VAULT`). </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn set_network_id_discoverability(
         &self,
         params: SetNetworkIdDiscoverabilityParams,
@@ -818,9 +909,9 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// connected to. This scheme is also referred to as \"Profile Routing\"
     /// Default Workspace Presets:   - Network Profile Crypto → **Custom**   -
     /// Network Profile FIAT → **None**   - Network Connection Crypto →
-    /// **Default**   - Network Connection FIAT → **Default**      - **Note**:
-    /// By default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
-    /// `VAULT`).
+    /// **Default**   - Network Connection FIAT → **Default**  **Note**: By
+    /// default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
+    /// `VAULT`). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn set_network_id_name(
         &self,
         params: SetNetworkIdNameParams,
@@ -882,8 +973,9 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// **Custom**   - Network Profile FIAT → **None**   - Network Connection
     /// Crypto → **Default**   - Network Connection FIAT → **Default**
     /// Supported asset groups for routing police can be found at
-    /// `/network_ids/routing_policy_asset_groups`      - **Note**: By default,
-    /// Custom routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`).
+    /// `/network_ids/routing_policy_asset_groups` **Note**: By default, Custom
+    /// routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`). </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin.
     async fn set_network_id_routing_policy(
         &self,
         params: SetNetworkIdRoutingPolicyParams,
@@ -945,8 +1037,9 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// **Custom**   - Network Profile FIAT → **None**   - Network Connection
     /// Crypto → **Default**   - Network Connection FIAT → **Default**
     /// Supported asset groups for routing police can be found at
-    /// `/network_ids/routing_policy_asset_groups`      - **Note**: By default,
-    /// Custom routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`).
+    /// `/network_ids/routing_policy_asset_groups` **Note**: By default, Custom
+    /// routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`).  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin.
     async fn set_routing_policy(
         &self,
         params: SetRoutingPolicyParams,
@@ -1071,6 +1164,14 @@ pub enum GetNetworkIdsError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetRoutingPolicyAssetGroupsError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`search_network_ids`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum SearchNetworkIdsError {
     DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }

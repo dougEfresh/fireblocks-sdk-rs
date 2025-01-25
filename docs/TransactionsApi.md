@@ -24,7 +24,7 @@ Method | HTTP request | Description
 > models::CancelTransactionResponse cancel_transaction(tx_id, x_end_user_wallet_id, idempotency_key)
 Cancel a transaction
 
-Cancels a transaction by Fireblocks Transaction ID.  Can be used only for transactions that did not get to the BROADCASTING state. 
+Cancels a transaction by Fireblocks Transaction ID.  Can be used only for transactions that did not get to the BROADCASTING state. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -56,7 +56,7 @@ No authorization required
 > models::CreateTransactionResponse create_transaction(transaction_request, x_end_user_wallet_id, idempotency_key)
 Create a new transaction
 
-Creates a new transaction. This endpoint can be used for regular Transfers, Contract Calls, Raw & Typed message signing. - For Transfers, the required parameters are: `assetId`, `source`, `destination` and `amount`.  - For Contract Calls, the required parameters are: `operation.CONTRACT_CALL`, `assetId` (Base Asset), `source`, `destination`, `amount` (usually 0) and `extraParameters` object with `contractCallData` string.  - For RAW and Typed messages signing, the required parameters are: `operation.RAW/TYPED_MESSAGE`, `assetId` or `derivationPath`, `source` or `derivationPath`, `extraParameters` with [rawMessageData object](https://developers.fireblocks.com/reference/raw-signing-objects).  - Typed Message Signing is supported for the following asset IDs: 'ETH', 'BTC' and 'TRX'. [Typed Message Signing Guide](https://developers.fireblocks.com/docs/typed-message-signing-overview).  - For MEV Protection configuration the required parameters are:   `extraParameters` with the [`nodeControls` object](https://developers.fireblocks.com/reference/transaction-objects#nodecontrols)   Note: MEV Protection is a premium feature. Please contact your Customer Success Manager or the Fireblocks Support team for more information. 
+Creates a new transaction. This endpoint can be used for regular Transfers, Contract Calls, Raw & Typed message signing. - For Transfers, the required parameters are: `assetId`, `source`, `destination` and `amount`.  - For Contract Calls, the required parameters are: `operation.CONTRACT_CALL`, `assetId` (Base Asset), `source`, `destination`, `amount` (usually 0) and `extraParameters` object with `contractCallData` string.  - For RAW and Typed messages signing, the required parameters are: `operation.RAW/TYPED_MESSAGE`, `assetId` or `derivationPath`, `source` or `derivationPath`, `extraParameters` with [rawMessageData object](https://developers.fireblocks.com/reference/raw-signing-objects).  - Typed Message Signing is supported for the following asset IDs: 'ETH', 'BTC' and 'TRX'. [Typed Message Signing Guide](https://developers.fireblocks.com/docs/typed-message-signing-overview).  - For MEV Protection configuration the required parameters are:   `extraParameters` with the [`nodeControls` object](https://developers.fireblocks.com/reference/transaction-objects#nodecontrols)   Note: MEV Protection is a premium feature. Please contact your Customer Success Manager or the Fireblocks Support team for more information.  - To create ZEC transaction, please call [Get unspent UTXO Input endpoint](https://developers.fireblocks.com/reference/getunspentinputs) to get the amount and use it as an input under `networkfee` on this endpoint. Please use this formula `(0.0001 + 0.00005*N) where N is the number of inputs` to calculate the fee needed and use it as an input under networkFee field Learn more about Fireblocks Transactions management in the following [guide](https://developers.fireblocks.com/reference/create-transactions). </br>Endpoint Permission: Admin, Signer, Editor.
 
 ### Parameters
 
@@ -88,7 +88,7 @@ No authorization required
 > models::DropTransactionResponse drop_transaction(tx_id, x_end_user_wallet_id, idempotency_key, drop_transaction_request)
 Drop ETH (EVM) transaction by ID
 
-Drops a stuck ETH (EVM) transaction and creates a replacement transaction with 0 amount.
+Drops a stuck ETH (EVM) transaction and creates a replacement transaction with 0 amount. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -121,7 +121,7 @@ No authorization required
 > models::EstimatedTransactionFeeResponse estimate_transaction_fee(idempotency_key, transaction_request)
 Estimate transaction fee
 
-Estimates the transaction fee for a specific transaction request. This endpoint simulates a transaction which means that the system will expect to have the requested asset and balance in the specified wallet.   * Note: Supports all Fireblocks assets except ZCash (ZEC). 
+Estimates the transaction fee for a specific transaction request. This endpoint simulates a transaction which means that the system will expect to have the requested asset and balance in the specified wallet.   **Note**: Supports all Fireblocks assets except ZCash (ZEC). Learn more about Fireblocks Fee Management in the following [guide](https://developers.fireblocks.com/reference/estimate-transaction-fee). </br>Endpoint Permission: Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -152,7 +152,7 @@ No authorization required
 > models::FreezeTransactionResponse freeze_transaction(tx_id, x_end_user_wallet_id, idempotency_key)
 Freeze a transaction
 
-Freezes a transaction by ID.  Usually used for AML integrations when the incoming funds should be quarantined. For account based assets - the entire amount of the transaction is frozen  For UTXO based assets - all UTXOs of the specified transaction are frozen 
+Freezes a transaction by ID.  Usually used for AML integrations when the incoming funds should be quarantined. For account based assets - the entire amount of the transaction is frozen  For UTXO based assets - all UTXOs of the specified transaction are frozen </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -184,7 +184,7 @@ No authorization required
 > models::TransactionResponse get_transaction(tx_id)
 Get a specific transaction by Fireblocks transaction ID
 
-Get a specific transaction data by Fireblocks Transaction ID
+Get a specific transaction data by Fireblocks Transaction ID </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -214,7 +214,7 @@ No authorization required
 > models::TransactionResponse get_transaction_by_external_id(external_tx_id)
 Get a specific transaction by external transaction ID
 
-Returns transaction by external transaction ID.
+Returns transaction by external transaction ID. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -244,7 +244,7 @@ No authorization required
 > Vec<models::TransactionResponse> get_transactions(before, after, status, order_by, sort, limit, source_type, source_id, dest_type, dest_id, assets, tx_hash, source_wallet_id, dest_wallet_id)
 Get transaction history
 
-Get the transaction history for your workspace.
+Get the transaction history for your workspace. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -287,7 +287,7 @@ No authorization required
 > Vec<models::ValidatedTransactionsForRescan> rescan_transactions_beta(rescan_transaction, idempotency_key)
 Rescan an array of transactions
 
-Rescan transaction by running an async job. </br>  **Note**: - These endpoints are currently in beta and might be subject to changes. - We limit the amount of the transaction to 16 per request. 
+Rescan transaction by running an async job. </br>  **Note**: - These endpoints are currently in beta and might be subject to changes. - We limit the amount of the transaction to 16 per request.  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor. 
 
 ### Parameters
 
@@ -318,7 +318,7 @@ No authorization required
 > models::SetConfirmationsThresholdResponse set_confirmation_threshold_by_transaction_hash(tx_hash, idempotency_key, set_confirmations_threshold_request)
 Set confirmation threshold by transaction hash
 
-Overrides the required number of confirmations for transaction completion by transaction hash.
+Overrides the required number of confirmations for transaction completion by transaction hash. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -350,7 +350,7 @@ No authorization required
 > models::SetConfirmationsThresholdResponse set_transaction_confirmation_threshold(tx_id, idempotency_key, set_confirmations_threshold_request)
 Set confirmation threshold by Fireblocks Transaction ID
 
-Overrides the required number of confirmations for transaction completion Fireblocks Transaction ID.
+Overrides the required number of confirmations for transaction completion Fireblocks Transaction ID. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
 
 ### Parameters
 
@@ -382,7 +382,7 @@ No authorization required
 > models::UnfreezeTransactionResponse unfreeze_transaction(tx_id, x_end_user_wallet_id, idempotency_key)
 Unfreeze a transaction
 
-Unfreezes a transaction by Fireblocks Transaction ID and makes the transaction available again.
+Unfreezes a transaction by Fireblocks Transaction ID and makes the transaction available again. </br>Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 

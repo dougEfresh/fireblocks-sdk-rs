@@ -12,6 +12,7 @@
 | Bitso | BITSO |
 | Bitstamp | BITSTAMP |
 | Bittrex | BITTREX |
+| Bullishexchange | BULLISHEXCHANGE |
 | Circle | CIRCLE |
 | Coinbasepro | COINBASEPRO |
 | Coinmetro | COINMETRO |

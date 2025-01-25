@@ -40,8 +40,8 @@ pub struct UnsignedMessage {
 
 impl UnsignedMessage {
     pub fn new(content: String) -> UnsignedMessage {
-        #[allow(clippy::unwrap_used)]
-        let content: serde_json::Value = serde_json::to_value(content).unwrap();
+        let content: serde_json::Value = serde_json::to_value(content)
+            .expect("failed to convert unsigend message to serde_json::Value");
         UnsignedMessage {
             pre_hash: None,
             content,

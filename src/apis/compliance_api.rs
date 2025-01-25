@@ -38,6 +38,10 @@ pub trait ComplianceApi: Send + Sync {
     async fn get_screening_policy(
         &self,
     ) -> Result<models::ScreeningProviderRulesConfigurationResponse, Error<GetScreeningPolicyError>>;
+    async fn get_vasp_for_vault(
+        &self,
+        params: GetVaspForVaultParams,
+    ) -> Result<models::TravelRuleVaspForVault, Error<GetVaspForVaultError>>;
     async fn get_vaspby_did(
         &self,
         params: GetVaspbyDidParams,
@@ -46,6 +50,17 @@ pub trait ComplianceApi: Send + Sync {
         &self,
         params: GetVaspsParams,
     ) -> Result<models::TravelRuleGetAllVaspsResponse, Error<GetVaspsError>>;
+    async fn retry_rejected_transaction_bypass_screening_checks(
+        &self,
+        params: RetryRejectedTransactionBypassScreeningChecksParams,
+    ) -> Result<
+        models::CreateTransactionResponse,
+        Error<RetryRejectedTransactionBypassScreeningChecksError>,
+    >;
+    async fn set_vasp_for_vault(
+        &self,
+        params: SetVaspForVaultParams,
+    ) -> Result<models::TravelRuleVaspForVault, Error<SetVaspForVaultError>>;
     async fn update_aml_screening_configuration(
         &self,
         params: UpdateAmlScreeningConfigurationParams,
@@ -53,10 +68,7 @@ pub trait ComplianceApi: Send + Sync {
     async fn update_screening_configuration(
         &self,
         params: UpdateScreeningConfigurationParams,
-    ) -> Result<
-        models::ScreeningUpdateConfigurationsRequest,
-        Error<UpdateScreeningConfigurationError>,
-    >;
+    ) -> Result<models::ScreeningUpdateConfigurations, Error<UpdateScreeningConfigurationError>>;
     async fn update_travel_rule_config(
         &self,
         params: UpdateTravelRuleConfigParams,
@@ -91,6 +103,14 @@ impl ComplianceApiClient {
     }
 }
 
+/// struct for passing parameters to the method [`get_vasp_for_vault`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct GetVaspForVaultParams {
+    /// The ID of the vault account
+    pub vault_account_id: String,
+}
+
 /// struct for passing parameters to the method [`get_vaspby_did`]
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
@@ -117,6 +137,34 @@ pub struct GetVaspsParams {
 }
 
 /// struct for passing parameters to the method
+/// [`retry_rejected_transaction_bypass_screening_checks`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct RetryRejectedTransactionBypassScreeningChecksParams {
+    /// The transaction id that was rejected by screening checks
+    pub tx_id: String,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+}
+
+/// struct for passing parameters to the method [`set_vasp_for_vault`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct SetVaspForVaultParams {
+    /// The ID of the vault account
+    pub vault_account_id: String,
+    pub travel_rule_vasp_for_vault: models::TravelRuleVaspForVault,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+}
+
+/// struct for passing parameters to the method
 /// [`update_aml_screening_configuration`]
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
@@ -133,6 +181,7 @@ pub struct UpdateAmlScreeningConfigurationParams {
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
 pub struct UpdateScreeningConfigurationParams {
+    pub screening_update_configurations: models::ScreeningUpdateConfigurations,
     /// A unique identifier for the request. If the request is sent multiple
     /// times with the same idempotency key, the server will return the same
     /// response as the first request. The idempotency key is valid for 24
@@ -192,7 +241,8 @@ pub struct ValidateTravelRuleTransactionParams {
 
 #[async_trait]
 impl ComplianceApi for ComplianceApiClient {
-    /// Get the post-screening policy for AML.
+    /// Get the post-screening policy for AML. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_aml_post_screening_policy(
         &self,
     ) -> Result<models::ScreeningPolicyResponse, Error<GetAmlPostScreeningPolicyError>> {
@@ -233,6 +283,8 @@ impl ComplianceApi for ComplianceApiClient {
     }
 
     /// Retrieves the configuration for Travel Rule screening policy.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_aml_screening_configuration(
         &self,
     ) -> Result<models::ScreeningConfigurationsRequest, Error<GetAmlScreeningConfigurationError>>
@@ -273,7 +325,8 @@ impl ComplianceApi for ComplianceApiClient {
         }
     }
 
-    /// Get the screening policy for AML.
+    /// Get the screening policy for AML. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_aml_screening_policy(
         &self,
     ) -> Result<
@@ -316,7 +369,8 @@ impl ComplianceApi for ComplianceApiClient {
         }
     }
 
-    /// Get the post-screening policy for Travel Rule.
+    /// Get the post-screening policy for Travel Rule. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_post_screening_policy(
         &self,
     ) -> Result<models::ScreeningPolicyResponse, Error<GetPostScreeningPolicyError>> {
@@ -357,6 +411,8 @@ impl ComplianceApi for ComplianceApiClient {
     }
 
     /// Retrieves the configuration for Travel Rule screening policy.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_screening_configuration(
         &self,
     ) -> Result<models::ScreeningConfigurationsRequest, Error<GetScreeningConfigurationError>> {
@@ -396,7 +452,8 @@ impl ComplianceApi for ComplianceApiClient {
         }
     }
 
-    /// Get the screening policy for Travel Rule.
+    /// Get the screening policy for Travel Rule. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_screening_policy(
         &self,
     ) -> Result<models::ScreeningProviderRulesConfigurationResponse, Error<GetScreeningPolicyError>>
@@ -437,13 +494,59 @@ impl ComplianceApi for ComplianceApiClient {
         }
     }
 
-    /// Get VASP Details.  Returns information about a VASP that has the
-    /// specified DID.  **Note:** The reference content in this section
-    /// documents the Travel Rule beta endpoint. The beta endpoint includes APIs
-    /// that are currently in preview and aren't yet generally available.  To
-    /// enroll in the beta and enable this endpoint, contact your Fireblocks
-    /// Customer Success Manager or send an email to
-    /// [CSM@fireblocks.com](mailto:CSM@fireblocks.com).
+    /// Get assigned VASP DID for a specific vault.  Returns empty `vaspDid`
+    /// string value in response if none assigned.
+    async fn get_vasp_for_vault(
+        &self,
+        params: GetVaspForVaultParams,
+    ) -> Result<models::TravelRuleVaspForVault, Error<GetVaspForVaultError>> {
+        let GetVaspForVaultParams { vault_account_id } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/screening/travel_rule/vault/{vaultAccountId}/vasp",
+            local_var_configuration.base_path,
+            vaultAccountId = crate::apis::urlencode(vault_account_id)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            serde_json::from_str(&local_var_content).map_err(Error::from)
+        } else {
+            let local_var_entity: Option<GetVaspForVaultError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Get VASP Details. Returns information about a VASP that has the
+    /// specified DID. **Note:** The reference content in this section documents
+    /// the Travel Rule beta endpoint. The beta endpoint includes APIs that are
+    /// currently in preview and aren't yet generally available. To enroll in
+    /// the beta and enable this endpoint, contact your Fireblocks Customer
+    /// Success Manager or send an email to
+    /// [CSM@fireblocks.com](mailto:CSM@fireblocks.com).  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_vaspby_did(
         &self,
         params: GetVaspbyDidParams,
@@ -491,13 +594,14 @@ impl ComplianceApi for ComplianceApiClient {
         }
     }
 
-    /// Get All VASPs.  Returns a list of VASPs. VASPs can be searched and
-    /// sorted and results are paginated.  **Note:** The reference content in
-    /// this section documents the Travel Rule beta endpoint. The beta endpoint
+    /// Get All VASPs. Returns a list of VASPs. VASPs can be searched and sorted
+    /// and results are paginated. **Note:** The reference content in this
+    /// section documents the Travel Rule beta endpoint. The beta endpoint
     /// includes APIs that are currently in preview and aren't yet generally
-    /// available.  To enroll in the beta and enable this endpoint, contact your
+    /// available. To enroll in the beta and enable this endpoint, contact your
     /// Fireblocks Customer Success Manager or send an email to
-    /// [CSM@fireblocks.com](mailto:CSM@fireblocks.com).
+    /// [CSM@fireblocks.com](mailto:CSM@fireblocks.com).  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_vasps(
         &self,
         params: GetVaspsParams,
@@ -561,8 +665,121 @@ impl ComplianceApi for ComplianceApiClient {
         }
     }
 
+    /// This endpoint is restricted to Admin API users and is only applicable to
+    /// outgoing transactions. Calling the \"Bypass Screening Policy\" API
+    /// endpoint triggers a new transaction, with the API user as the initiator,
+    /// bypassing the screening policy check </br>Endpoint Permission: Admin and
+    /// Non-Signing Admin.
+    async fn retry_rejected_transaction_bypass_screening_checks(
+        &self,
+        params: RetryRejectedTransactionBypassScreeningChecksParams,
+    ) -> Result<
+        models::CreateTransactionResponse,
+        Error<RetryRejectedTransactionBypassScreeningChecksError>,
+    > {
+        let RetryRejectedTransactionBypassScreeningChecksParams {
+            tx_id,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/screening/transaction/{txId}/bypass_screening_policy",
+            local_var_configuration.base_path,
+            txId = crate::apis::urlencode(tx_id)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            serde_json::from_str(&local_var_content).map_err(Error::from)
+        } else {
+            let local_var_entity: Option<RetryRejectedTransactionBypassScreeningChecksError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Sets the VASP DID for a specific vault.  Pass empty string to remove an
+    /// existing one.
+    async fn set_vasp_for_vault(
+        &self,
+        params: SetVaspForVaultParams,
+    ) -> Result<models::TravelRuleVaspForVault, Error<SetVaspForVaultError>> {
+        let SetVaspForVaultParams {
+            vault_account_id,
+            travel_rule_vasp_for_vault,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/screening/travel_rule/vault/{vaultAccountId}/vasp",
+            local_var_configuration.base_path,
+            vaultAccountId = crate::apis::urlencode(vault_account_id)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+        local_var_req_builder = local_var_req_builder.json(&travel_rule_vasp_for_vault);
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            serde_json::from_str(&local_var_content).map_err(Error::from)
+        } else {
+            let local_var_entity: Option<SetVaspForVaultError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
     /// Updates bypass screening, inbound delay, or outbound delay
-    /// configurations for AML.
+    /// configurations for AML. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor, Viewer.
     async fn update_aml_screening_configuration(
         &self,
         params: UpdateAmlScreeningConfigurationParams,
@@ -610,15 +827,16 @@ impl ComplianceApi for ComplianceApiClient {
         }
     }
 
-    /// Update Workspace screening configuration.
+    /// Update Tenant screening configuration. Learn more about Fireblocks AML management in the following [guide](https://developers.fireblocks.com/docs/define-aml-policies). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn update_screening_configuration(
         &self,
         params: UpdateScreeningConfigurationParams,
-    ) -> Result<
-        models::ScreeningUpdateConfigurationsRequest,
-        Error<UpdateScreeningConfigurationError>,
-    > {
-        let UpdateScreeningConfigurationParams { idempotency_key } = params;
+    ) -> Result<models::ScreeningUpdateConfigurations, Error<UpdateScreeningConfigurationError>>
+    {
+        let UpdateScreeningConfigurationParams {
+            screening_update_configurations,
+            idempotency_key,
+        } = params;
 
         let local_var_configuration = &self.configuration;
 
@@ -639,6 +857,7 @@ impl ComplianceApi for ComplianceApiClient {
             local_var_req_builder =
                 local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
         }
+        local_var_req_builder = local_var_req_builder.json(&screening_update_configurations);
 
         let local_var_req = local_var_req_builder.build()?;
         let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -661,7 +880,8 @@ impl ComplianceApi for ComplianceApiClient {
     }
 
     /// Updates bypass screening, inbound delay, or outbound delay
-    /// configurations for Travel Rule.
+    /// configurations for Travel Rule. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn update_travel_rule_config(
         &self,
         params: UpdateTravelRuleConfigParams,
@@ -708,14 +928,15 @@ impl ComplianceApi for ComplianceApiClient {
         }
     }
 
-    /// Update VASP Details.  Updates a VASP with the provided parameters. Use
+    /// Update VASP Details. Updates a VASP with the provided parameters. Use
     /// this endpoint to add your public jsonDIDkey generated by Notabene.
     /// **Note:** The reference content in this section documents the Travel
     /// Rule beta endpoint. The beta endpoint includes APIs that are currently
-    /// in preview and aren't yet generally available.  To enroll in the beta
-    /// and enable this endpoint, contact your Fireblocks Customer Success
-    /// Manager or send an email to
-    /// [CSM@fireblocks.com](mailto:CSM@fireblocks.com).
+    /// in preview and aren't yet generally available. To enroll in the beta and
+    /// enable this endpoint, contact your Fireblocks Customer Success Manager
+    /// or send an email to [CSM@fireblocks.com](mailto:CSM@fireblocks.com).
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn update_vasp(
         &self,
         params: UpdateVaspParams,
@@ -766,13 +987,7 @@ impl ComplianceApi for ComplianceApiClient {
         }
     }
 
-    /// Validate Full Travel Rule transactions.  Checks for all required
-    /// information on the originator and beneficiary VASPs.  **Note:** The
-    /// reference content in this section documents the Travel Rule beta
-    /// endpoint. The beta endpoint includes APIs that are currently in preview
-    /// and aren't yet generally available.  To enroll in the beta and enable
-    /// this endpoint, contact your Fireblocks Customer Success Manager or send
-    /// an email to [CSM@fireblocks.com](mailto:CSM@fireblocks.com).
+    /// Validate Full Travel Rule transactions. Checks for all required information on the originator and beneficiary VASPs. **Note:** The reference content in this section documents the Travel Rule beta endpoint. The beta endpoint includes APIs that are currently in preview and aren't yet generally available.  To enroll in the beta and enable this endpoint, contact your Fireblocks Customer Success Manager or send an email to [CSM@fireblocks.com](mailto:CSM@fireblocks.com). Learn more about Fireblocks Travel Rule management in the following [guide](https://developers.fireblocks.com/docs/define-travel-rule-policies).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn validate_full_travel_rule_transaction(
         &self,
         params: ValidateFullTravelRuleTransactionParams,
@@ -827,14 +1042,7 @@ impl ComplianceApi for ComplianceApiClient {
         }
     }
 
-    /// Validate Travel Rule transactions.  Checks what beneficiary VASP details
-    /// are required by your jurisdiction and the beneficiary's jurisdiction.
-    /// **Note:** The reference content in this section documents the Travel
-    /// Rule beta endpoint. The beta endpoint includes APIs that are currently
-    /// in preview and aren't yet generally available.  To enroll in the beta
-    /// and enable this endpoint, contact your Fireblocks Customer Success
-    /// Manager or send an email to
-    /// [CSM@fireblocks.com](mailto:CSM@fireblocks.com).
+    /// Validate Travel Rule transactions. Checks what beneficiary VASP details are required by your jurisdiction and the beneficiary's jurisdiction. **Note:** The reference content in this section documents the Travel Rule beta endpoint. The beta endpoint includes APIs that are currently in preview and aren't yet generally available. To enroll in the beta and enable this endpoint, contact your Fireblocks Customer Success Manager or send an email to [CSM@fireblocks.com](mailto:CSM@fireblocks.com). Learn more about Fireblocks Travel Rule management in the following [guide](https://developers.fireblocks.com/docs/define-travel-rule-policies).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn validate_travel_rule_transaction(
         &self,
         params: ValidateTravelRuleTransactionParams,
@@ -932,6 +1140,14 @@ pub enum GetScreeningPolicyError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`get_vasp_for_vault`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GetVaspForVaultError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`get_vaspby_did`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -945,6 +1161,23 @@ pub enum GetVaspbyDidError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetVaspsError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method
+/// [`retry_rejected_transaction_bypass_screening_checks`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum RetryRejectedTransactionBypassScreeningChecksError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`set_vasp_for_vault`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum SetVaspForVaultError {
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
 

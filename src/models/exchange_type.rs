@@ -27,6 +27,8 @@ pub enum ExchangeType {
     Bitstamp,
     #[serde(rename = "BITTREX")]
     Bittrex,
+    #[serde(rename = "BULLISHEXCHANGE")]
+    Bullishexchange,
     #[serde(rename = "CIRCLE")]
     Circle,
     #[serde(rename = "COINBASEPRO")]
@@ -76,6 +78,7 @@ impl std::fmt::Display for ExchangeType {
             Self::Bitso => write!(f, "BITSO"),
             Self::Bitstamp => write!(f, "BITSTAMP"),
             Self::Bittrex => write!(f, "BITTREX"),
+            Self::Bullishexchange => write!(f, "BULLISHEXCHANGE"),
             Self::Circle => write!(f, "CIRCLE"),
             Self::Coinbasepro => write!(f, "COINBASEPRO"),
             Self::Coinmetro => write!(f, "COINMETRO"),
