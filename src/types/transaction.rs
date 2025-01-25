@@ -357,15 +357,22 @@ pub struct TransactionArguments {
   pub asset_id: String,
   pub operation: TransactionOperation,
   pub source: TransferPeerPath,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub destination: Option<DestinationTransferPeerPath>,
+  pub destination: DestinationTransferPeerPath,
   pub amount: String,
+
+  #[serde(rename = "externalTxId", skip_serializing_if = "Option::is_none")]
+  pub external_tx_id: Option<String>,
+  #[serde(rename = "customerRefId", skip_serializing_if = "Option::is_none")]
+  pub customer_ref_id: Option<String>,
+
   // pub extra_parameters: Option<ExtraParameters>,
   // pub extra_parameters: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub gas_price: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub gas_limit: Option<String>,
+  #[serde(rename = "feeLevel", skip_serializing_if = "Option::is_none")]
+  pub fee_level: Option<String>,
   pub note: String,
 }
 

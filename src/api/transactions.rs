@@ -64,12 +64,15 @@ impl Client {
     };
     let args = &TransactionArguments {
       asset_id: format!("{asset_id}"),
+      external_tx_id: None,
+      customer_ref_id: None,
       operation: TransactionOperation::TRANSFER,
       source: TransferPeerPath { id: Some(source_vault.to_string()), ..Default::default() },
-      destination: Some(dest),
+      destination: dest,
       amount: amount.to_string(),
       gas_price: None,
       gas_limit: None,
+      fee_level: None,
       note: note.unwrap_or("created by fireblocks-sdk for rust").to_string(),
     };
     self.create_transaction(args).await
@@ -92,12 +95,15 @@ impl Client {
   {
     let args = &TransactionArguments {
       asset_id: format!("{asset_id}"),
+      external_tx_id: None,
+      customer_ref_id: None,
       operation: TransactionOperation::TRANSFER,
       source: TransferPeerPath { id: Some(source_vault.to_string()), ..Default::default() },
-      destination: Some(DestinationTransferPeerPath { id: destination_vault.to_string(), ..Default::default() }),
+      destination: DestinationTransferPeerPath { id: destination_vault.to_string(), ..Default::default() },
       amount: amount.to_string(),
       gas_price: None,
       gas_limit: None,
+      fee_level: None,
       note: note.unwrap_or("created by fireblocks-sdk for rust").to_string(),
     };
     self.create_transaction(args).await
@@ -121,20 +127,23 @@ impl Client {
   {
     let args = &TransactionArguments {
       asset_id: format!("{asset_id}"),
+      external_tx_id: None,
+      customer_ref_id: None,
       operation: TransactionOperation::TRANSFER,
       source: TransferPeerPath {
         id: Some(source_vault.to_string()),
         peer_type: PeerType::VAULT_ACCOUNT,
         ..Default::default()
       },
-      destination: Some(DestinationTransferPeerPath {
+      destination: DestinationTransferPeerPath {
         peer_type: PeerType::ONE_TIME_ADDRESS,
         one_time_address: Some(OneTimeAddress { address: destination.to_string(), tag: None }),
         ..Default::default()
-      }),
+      },
       amount: amount.to_string(),
       gas_price: None,
       gas_limit: None,
+      fee_level: None,
       note: note.unwrap_or("created by fireblocks-sdk for rust").to_string(),
     };
     self.create_transaction(args).await
