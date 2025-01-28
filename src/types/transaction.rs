@@ -183,11 +183,11 @@ pub struct TransferPeerPath {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AmountInfo {
-  amount: Option<BigDecimal>,
-  requested_amount: Option<BigDecimal>,
-  net_amount: Option<BigDecimal>,
+  pub amount: Option<BigDecimal>,
+  pub requested_amount: Option<BigDecimal>,
+  pub net_amount: Option<BigDecimal>,
   #[serde(rename = "amountUSD")]
-  amount_usd: Option<BigDecimal>,
+  pub amount_usd: Option<BigDecimal>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -210,14 +210,14 @@ pub struct FeeInfo {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct RewardInfo {
-  src_rewards: Option<String>,
-  dest_rewards: Option<String>,
+  pub src_rewards: Option<String>,
+  pub dest_rewards: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FeePayerInfo {
-  fee_payer_account_id: Option<String>,
+  pub fee_payer_account_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -229,8 +229,8 @@ pub enum Logic {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AuthorizationInfo {
-  allow_operator_as_authorizer: bool,
-  logic: Logic,
+  pub allow_operator_as_authorizer: bool,
+  pub logic: Logic,
 }
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Clone, Default)]
 #[allow(non_camel_case_types)]
