@@ -471,6 +471,7 @@ mod tests {
       source: TransferPeerPath { id: Some("0".to_string()), ..Default::default() },
       destination: DestinationTransferPeerPath { id: "4".to_string(), ..Default::default() },
       amount: "0.001".to_string(),
+      treat_as_gross_amount: None,
       gas_price: None,
       gas_limit: None,
       fee_level: None,

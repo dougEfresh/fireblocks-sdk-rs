@@ -367,6 +367,8 @@ pub struct TransactionArguments {
 
   // pub extra_parameters: Option<ExtraParameters>,
   // pub extra_parameters: Option<String>,
+  #[serde(rename = "treatAsGrossAmount", skip_serializing_if = "Option::is_none")]
+  pub treat_as_gross_amount: Option<bool>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub gas_price: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]

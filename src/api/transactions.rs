@@ -70,6 +70,7 @@ impl Client {
       source: TransferPeerPath { id: Some(source_vault.to_string()), ..Default::default() },
       destination: dest,
       amount: amount.to_string(),
+      treat_as_gross_amount: None,
       gas_price: None,
       gas_limit: None,
       fee_level: None,
@@ -101,6 +102,7 @@ impl Client {
       source: TransferPeerPath { id: Some(source_vault.to_string()), ..Default::default() },
       destination: DestinationTransferPeerPath { id: destination_vault.to_string(), ..Default::default() },
       amount: amount.to_string(),
+      treat_as_gross_amount: None,
       gas_price: None,
       gas_limit: None,
       fee_level: None,
@@ -141,6 +143,7 @@ impl Client {
         ..Default::default()
       },
       amount: amount.to_string(),
+      treat_as_gross_amount: None,
       gas_price: None,
       gas_limit: None,
       fee_level: None,
