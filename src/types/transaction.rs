@@ -292,7 +292,7 @@ pub struct TransactionDestination {
 #[serde(rename_all = "camelCase")]
 pub struct Transaction {
   pub id: String,
-  pub asset_id: Asset,
+  pub asset_id: String,
   pub status: TransactionStatus,
   pub destination: Option<TransferPeerPath>,
   pub source: Option<TransferPeerPath>,
