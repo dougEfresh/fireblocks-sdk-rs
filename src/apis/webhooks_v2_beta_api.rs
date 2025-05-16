@@ -8,39 +8,98 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait WebhooksV2BetaApi: Send + Sync {
+    /// POST /webhooks
+    ///
+    /// Creates a new webhook, which will be triggered on the specified events
+    /// **Note:**  - This endpoint is currently in beta and might be subject to
+    /// changes.  - This endpoint requires Admin privilege or above due to the
+    /// sensitivity of actions.
     async fn create_webhook(
         &self,
         params: CreateWebhookParams,
     ) -> Result<models::Webhook, Error<CreateWebhookError>>;
+
+    /// DELETE /webhooks/{webhookId}
+    ///
+    /// Delete a webhook by its id  **Note:**  - This endpoint is currently in
+    /// beta and might be subject to changes.  - This endpoint requires Admin
+    /// privilege or above due to the sensitivity of actions.
     async fn delete_webhook(
         &self,
         params: DeleteWebhookParams,
     ) -> Result<models::Webhook, Error<DeleteWebhookError>>;
+
+    /// GET /webhooks/{webhookId}/notifications/{notificationId}
+    ///
+    /// Get notification by id **Note:** These endpoints are currently in beta
+    /// and might be subject to changes.
     async fn get_notification(
         &self,
         params: GetNotificationParams,
     ) -> Result<models::NotificationWithData, Error<GetNotificationError>>;
+
+    /// GET /webhooks/{webhookId}/notifications
+    ///
+    /// Get all notifications by webhook id (paginated) **Note:** These
+    /// endpoints are currently in beta and might be subject to changes.
     async fn get_notifications(
         &self,
         params: GetNotificationsParams,
     ) -> Result<models::NotificationPaginatedResponse, Error<GetNotificationsError>>;
+
+    /// GET /webhooks/{webhookId}
+    ///
+    /// Retrieve a webhook by its id **Note:** These endpoints are currently in
+    /// beta and might be subject to changes.
     async fn get_webhook(
         &self,
         params: GetWebhookParams,
     ) -> Result<models::Webhook, Error<GetWebhookError>>;
+
+    /// GET /webhooks
+    ///
+    /// Get all webhooks (paginated) **Note:** These endpoints are currently in
+    /// beta and might be subject to changes.
     async fn get_webhooks(
         &self,
         params: GetWebhooksParams,
     ) -> Result<models::WebhookPaginatedResponse, Error<GetWebhooksError>>;
+
+    /// POST /webhooks/{webhookId}/notifications/{notificationId}/resend
+    ///
+    /// Resend notification by ID **Note:** These endpoints are currently in
+    /// beta and might be subject to changes.
+    async fn resend_notification_by_id(
+        &self,
+        params: ResendNotificationByIdParams,
+    ) -> Result<(), Error<ResendNotificationByIdError>>;
+
+    /// POST /webhooks/{webhookId}/notifications/resend_by_resource
+    ///
+    /// Resend notifications by resource Id **Note:** These endpoints are
+    /// currently in beta and might be subject to changes.
+    async fn resend_notifications_by_resource_id(
+        &self,
+        params: ResendNotificationsByResourceIdParams,
+    ) -> Result<(), Error<ResendNotificationsByResourceIdError>>;
+
+    /// PATCH /webhooks/{webhookId}
+    ///
+    /// Update a webhook by its id  **Note:**  - This endpoint is currently in
+    /// beta and might be subject to changes.  - This endpoint requires Admin
+    /// privilege or above due to the sensitivity of actions.
     async fn update_webhook(
         &self,
         params: UpdateWebhookParams,
@@ -132,6 +191,36 @@ pub struct GetWebhooksParams {
     pub page_size: Option<f64>,
 }
 
+/// struct for passing parameters to the method [`resend_notification_by_id`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct ResendNotificationByIdParams {
+    /// The ID of the webhook
+    pub webhook_id: String,
+    /// The ID of the notification
+    pub notification_id: String,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+}
+
+/// struct for passing parameters to the method
+/// [`resend_notifications_by_resource_id`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct ResendNotificationsByResourceIdParams {
+    /// The ID of the webhook
+    pub webhook_id: String,
+    pub resend_notifications_by_resource_id_request: models::ResendNotificationsByResourceIdRequest,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+}
+
 /// struct for passing parameters to the method [`update_webhook`]
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
@@ -144,8 +233,9 @@ pub struct UpdateWebhookParams {
 #[async_trait]
 impl WebhooksV2BetaApi for WebhooksV2BetaApiClient {
     /// Creates a new webhook, which will be triggered on the specified events
-    /// **Note:** These endpoints are currently in beta and might be subject to
-    /// changes.
+    /// **Note:**  - This endpoint is currently in beta and might be subject to
+    /// changes.  - This endpoint requires Admin privilege or above due to the
+    /// sensitivity of actions.
     async fn create_webhook(
         &self,
         params: CreateWebhookParams,
@@ -177,10 +267,30 @@ impl WebhooksV2BetaApi for WebhooksV2BetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::Webhook`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::Webhook`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateWebhookError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -193,8 +303,9 @@ impl WebhooksV2BetaApi for WebhooksV2BetaApiClient {
         }
     }
 
-    /// Delete a webhook by its id **Note:** These endpoints are currently in
-    /// beta and might be subject to changes.
+    /// Delete a webhook by its id  **Note:**  - This endpoint is currently in
+    /// beta and might be subject to changes.  - This endpoint requires Admin
+    /// privilege or above due to the sensitivity of actions.
     async fn delete_webhook(
         &self,
         params: DeleteWebhookParams,
@@ -222,10 +333,30 @@ impl WebhooksV2BetaApi for WebhooksV2BetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::Webhook`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::Webhook`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<DeleteWebhookError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -276,10 +407,30 @@ impl WebhooksV2BetaApi for WebhooksV2BetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::NotificationWithData`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::NotificationWithData`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetNotificationError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -393,10 +544,30 @@ impl WebhooksV2BetaApi for WebhooksV2BetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::NotificationPaginatedResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::NotificationPaginatedResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetNotificationsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -438,10 +609,30 @@ impl WebhooksV2BetaApi for WebhooksV2BetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::Webhook`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::Webhook`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetWebhookError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -495,10 +686,30 @@ impl WebhooksV2BetaApi for WebhooksV2BetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::WebhookPaginatedResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::WebhookPaginatedResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetWebhooksError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -511,8 +722,118 @@ impl WebhooksV2BetaApi for WebhooksV2BetaApiClient {
         }
     }
 
-    /// Update a webhook by its id **Note:** These endpoints are currently in
+    /// Resend notification by ID **Note:** These endpoints are currently in
     /// beta and might be subject to changes.
+    async fn resend_notification_by_id(
+        &self,
+        params: ResendNotificationByIdParams,
+    ) -> Result<(), Error<ResendNotificationByIdError>> {
+        let ResendNotificationByIdParams {
+            webhook_id,
+            notification_id,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/webhooks/{webhookId}/notifications/{notificationId}/resend",
+            local_var_configuration.base_path,
+            webhookId = crate::apis::urlencode(webhook_id),
+            notificationId = crate::apis::urlencode(notification_id)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            Ok(())
+        } else {
+            let local_var_entity: Option<ResendNotificationByIdError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Resend notifications by resource Id **Note:** These endpoints are
+    /// currently in beta and might be subject to changes.
+    async fn resend_notifications_by_resource_id(
+        &self,
+        params: ResendNotificationsByResourceIdParams,
+    ) -> Result<(), Error<ResendNotificationsByResourceIdError>> {
+        let ResendNotificationsByResourceIdParams {
+            webhook_id,
+            resend_notifications_by_resource_id_request,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/webhooks/{webhookId}/notifications/resend_by_resource",
+            local_var_configuration.base_path,
+            webhookId = crate::apis::urlencode(webhook_id)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+        local_var_req_builder =
+            local_var_req_builder.json(&resend_notifications_by_resource_id_request);
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            Ok(())
+        } else {
+            let local_var_entity: Option<ResendNotificationsByResourceIdError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Update a webhook by its id  **Note:**  - This endpoint is currently in
+    /// beta and might be subject to changes.  - This endpoint requires Admin
+    /// privilege or above due to the sensitivity of actions.
     async fn update_webhook(
         &self,
         params: UpdateWebhookParams,
@@ -544,10 +865,30 @@ impl WebhooksV2BetaApi for WebhooksV2BetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::Webhook`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::Webhook`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UpdateWebhookError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -603,6 +944,22 @@ pub enum GetWebhookError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetWebhooksError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`resend_notification_by_id`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ResendNotificationByIdError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`resend_notifications_by_resource_id`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ResendNotificationsByResourceIdError {
     DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }

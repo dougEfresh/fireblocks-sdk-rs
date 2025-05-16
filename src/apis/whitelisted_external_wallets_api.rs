@@ -8,42 +8,98 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait WhitelistedExternalWalletsApi: Send + Sync {
+    /// POST /external_wallets/{walletId}/{assetId}
+    ///
+    /// Adds an asset to an existing external wallet. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn add_asset_to_external_wallet(
         &self,
         params: AddAssetToExternalWalletParams,
     ) -> Result<models::ExternalWalletAsset, Error<AddAssetToExternalWalletError>>;
+
+    /// POST /external_wallets
+    ///
+    /// Creates a new external wallet with the requested name.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. Learn more about Whitelisted External Wallet Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#external-wallets). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_external_wallet(
         &self,
         params: CreateExternalWalletParams,
     ) -> Result<models::UnmanagedWallet, Error<CreateExternalWalletError>>;
+
+    /// DELETE /external_wallets/{walletId}
+    ///
+    /// Deletes an external wallet by ID.  External Wallet is a whitelisted
+    /// address of a wallet that belongs to your users/counterparties.  - You
+    /// cannot see the balance of the external wallet. - You cannot initiate
+    /// transactions from an external wallet as the source via Fireblocks.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn delete_external_wallet(
         &self,
         params: DeleteExternalWalletParams,
     ) -> Result<(), Error<DeleteExternalWalletError>>;
+
+    /// GET /external_wallets/{walletId}
+    ///
+    /// Returns an external wallet by ID.  External Wallet is a whitelisted
+    /// address of a wallet that belongs to your users/counterparties.  - You
+    /// cannot see the balance of the external wallet. - You cannot initiate
+    /// transactions from an external wallet as the source via Fireblocks.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_external_wallet(
         &self,
         params: GetExternalWalletParams,
     ) -> Result<models::UnmanagedWallet, Error<GetExternalWalletError>>;
+
+    /// GET /external_wallets/{walletId}/{assetId}
+    ///
+    /// Returns an external wallet by wallet ID and asset ID.  External Wallet
+    /// is a whitelisted address of a wallet that belongs to your
+    /// users/counterparties.  - You cannot see the balance of the external
+    /// wallet. - You cannot initiate transactions from an external wallet as
+    /// the source via Fireblocks. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor,   Viewer.
     async fn get_external_wallet_asset(
         &self,
         params: GetExternalWalletAssetParams,
     ) -> Result<models::ExternalWalletAsset, Error<GetExternalWalletAssetError>>;
+
+    /// GET /external_wallets
+    ///
+    /// Gets a list of external wallets under the workspace.  External Wallet is
+    /// a whitelisted address of a wallet that belongs to your
+    /// users/counterparties.  - You cannot see the balance of the external
+    /// wallet. - You cannot initiate transactions from an external wallet as
+    /// the source via Fireblocks. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor, Viewer.
     async fn get_external_wallets(
         &self,
     ) -> Result<Vec<models::UnmanagedWallet>, Error<GetExternalWalletsError>>;
+
+    /// DELETE /external_wallets/{walletId}/{assetId}
+    ///
+    /// Deletes an external wallet asset by ID. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn remove_asset_from_external_wallet(
         &self,
         params: RemoveAssetFromExternalWalletParams,
     ) -> Result<(), Error<RemoveAssetFromExternalWalletError>>;
+
+    /// POST /external_wallets/{walletId}/set_customer_ref_id
+    ///
+    /// Sets an AML/KYT customer reference ID for the specific external wallet.  External Wallet is a whitelisted address of a wallet that belongs to your users/counterparties.  - You cannot see the balance of the external wallet. - You cannot initiate transactions from an external wallet as the source via Fireblocks. Learn more about Whitelisted External Wallet Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#external-wallets). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn set_external_wallet_customer_ref_id(
         &self,
         params: SetExternalWalletCustomerRefIdParams,
@@ -182,10 +238,30 @@ impl WhitelistedExternalWalletsApi for WhitelistedExternalWalletsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ExternalWalletAsset`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ExternalWalletAsset`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<AddAssetToExternalWalletError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -230,10 +306,30 @@ impl WhitelistedExternalWalletsApi for WhitelistedExternalWalletsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::UnmanagedWallet`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::UnmanagedWallet`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateExternalWalletError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -328,10 +424,30 @@ impl WhitelistedExternalWalletsApi for WhitelistedExternalWalletsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::UnmanagedWallet`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::UnmanagedWallet`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetExternalWalletError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -381,10 +497,30 @@ impl WhitelistedExternalWalletsApi for WhitelistedExternalWalletsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ExternalWalletAsset`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ExternalWalletAsset`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetExternalWalletAssetError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -423,10 +559,30 @@ impl WhitelistedExternalWalletsApi for WhitelistedExternalWalletsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::UnmanagedWallet&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::UnmanagedWallet&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetExternalWalletsError> =
                 serde_json::from_str(&local_var_content).ok();

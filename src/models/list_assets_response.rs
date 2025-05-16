@@ -13,16 +13,16 @@ use {
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ListAssetsResponse {
-    /// The data of the current page
+    /// The data on the current page
     #[serde(rename = "data")]
-    pub data: Vec<models::AssetResponseBeta>,
+    pub data: Vec<models::Asset>,
     /// Cursor to the next page
     #[serde(rename = "next", deserialize_with = "Option::deserialize")]
     pub next: Option<String>,
 }
 
 impl ListAssetsResponse {
-    pub fn new(data: Vec<models::AssetResponseBeta>, next: Option<String>) -> ListAssetsResponse {
+    pub fn new(data: Vec<models::Asset>, next: Option<String>) -> ListAssetsResponse {
         ListAssetsResponse { data, next }
     }
 }

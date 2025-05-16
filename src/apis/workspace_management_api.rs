@@ -8,66 +8,162 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait WorkspaceManagementApi: Send + Sync {
+    /// POST /management/api_users
+    ///
+    /// Create a new API key in your workspace. Learn more about Fireblocks API Keys management in the following [guide](https://developers.fireblocks.com/docs/manage-api-keys). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn create_api_user(
         &self,
         params: CreateApiUserParams,
     ) -> Result<(), Error<CreateApiUserError>>;
+
+    /// POST /management/users
+    ///
+    /// Create console users in your workspace - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. Learn more about Fireblocks Users management in the following [guide](https://developers.fireblocks.com/docs/manage-users). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn create_console_user(
         &self,
         params: CreateConsoleUserParams,
     ) -> Result<(), Error<CreateConsoleUserError>>;
+
+    /// POST /management/user_groups
+    ///
+    /// Create a new user group.  - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. Learn more about Fireblocks Users management in the following [guide](https://developers.fireblocks.com/docs/manage-users). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn create_user_group(
         &self,
         params: CreateUserGroupParams,
     ) -> Result<models::CreateUserGroupResponse, Error<CreateUserGroupError>>;
+
+    /// DELETE /management/user_groups/{groupId}
+    ///
+    /// Delete a user group by ID.</br> - Please note that this endpoint is
+    /// available only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn delete_user_group(
         &self,
         params: DeleteUserGroupParams,
     ) -> Result<(), Error<DeleteUserGroupError>>;
+
+    /// GET /management/api_users
+    ///
+    /// List all API keys in your workspace. - Please note that this endpoint is
+    /// available only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_api_users(&self) -> Result<models::GetApiUsersResponse, Error<GetApiUsersError>>;
+
+    /// GET /management/audit_logs
+    ///
+    /// Get Audit logs for the last Day/Week.  - Please note that this endpoint
+    /// is available only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_audit_logs(
         &self,
         params: GetAuditLogsParams,
     ) -> Result<models::GetAuditLogsResponse, Error<GetAuditLogsError>>;
+
+    /// GET /audits
+    ///
+    /// Deprecated. Please use the `GET /management/audit_logs` endpoint
+    /// instead. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_audits(
         &self,
         params: GetAuditsParams,
     ) -> Result<models::GetAuditLogsResponseDto, Error<GetAuditsError>>;
+
+    /// GET /management/users
+    ///
+    /// Get console users for your workspace. - Please note that this endpoint
+    /// is available only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_console_users(
         &self,
     ) -> Result<models::GetConsoleUsersResponse, Error<GetConsoleUsersError>>;
+
+    /// GET /management/ota
+    ///
+    /// Returns current One Time Address status. Learn more about [One Time Addresses](https://support.fireblocks.io/hc/en-us/articles/4409104568338-One-Time-Address-OTA-feature) - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_ota_status(
         &self,
     ) -> Result<models::GetOtaStatusResponse, Error<GetOtaStatusError>>;
+
+    /// GET /management/user_groups/{groupId}
+    ///
+    /// Get a user group by ID  - Please note that this endpoint is available
+    /// only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_user_group(
         &self,
         params: GetUserGroupParams,
     ) -> Result<models::UserGroupResponse, Error<GetUserGroupError>>;
+
+    /// GET /management/user_groups
+    ///
+    /// Get all user groups in your workspace  - Please note that this endpoint
+    /// is available only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_user_groups(
         &self,
     ) -> Result<Vec<models::UserGroupResponse>, Error<GetUserGroupsError>>;
+
+    /// GET /users
+    ///
+    /// DEPRECATED - please use `GET /management/users` instead </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin.
     async fn get_users(&self) -> Result<Vec<models::UserResponse>, Error<GetUsersError>>;
+
+    /// GET /management/api_users/{userId}/whitelist_ip_addresses
+    ///
+    /// Get a list of the whitelisted IP addresses for a specific API Key -
+    /// Please note that this endpoint is available only for API keys with
+    /// Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn get_whitelist_ip_addresses(
         &self,
         params: GetWhitelistIpAddressesParams,
     ) -> Result<models::GetWhitelistIpAddressesResponse, Error<GetWhitelistIpAddressesError>>;
+
+    /// GET /management/workspace_status
+    ///
+    /// Returns current workspace status (Beta). **Note**: - This endpoint is
+    /// now in Beta, disabled for general availability at this time. - Please
+    /// note that this endpoint is available only for API keys with Admin/Non
+    /// Signing Admin permissions.  </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn get_workspace_status(
         &self,
     ) -> Result<models::GetWorkspaceStatusResponse, Error<GetWorkspaceStatusError>>;
+
+    /// POST /management/users/{id}/reset_device
+    ///
+    /// Resets mobile device for given console user, that user will need to do
+    /// mobile onboarding again. - Please note that this endpoint is available
+    /// only for API keys with Admin/Non Signing Admin permissions.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn reset_device(&self, params: ResetDeviceParams) -> Result<(), Error<ResetDeviceError>>;
+
+    /// PUT /management/ota
+    ///
+    /// Enable or disable transactions to One Time Addresses (Non Whitelisted addresses). Learn more about [One Time Addresses](https://support.fireblocks.io/hc/en-us/articles/4409104568338-One-Time-Address-OTA-feature) - Please note that this endpoint is available only for API keys with Admin/Non Signing Admin permissions. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn set_ota_status(
         &self,
         params: SetOtaStatusParams,
     ) -> Result<models::SetOtaStatusResponse, Error<SetOtaStatusError>>;
+
+    /// PUT /management/user_groups/{groupId}
+    ///
+    /// Update a user group by ID - Please note that this endpoint is available
+    /// only for API keys with Admin permissions. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin.
     async fn update_user_group(
         &self,
         params: UpdateUserGroupParams,
@@ -335,10 +431,30 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CreateUserGroupResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CreateUserGroupResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateUserGroupError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -419,10 +535,30 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetApiUsersResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetApiUsersResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetApiUsersError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -475,10 +611,30 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetAuditLogsResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetAuditLogsResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetAuditLogsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -520,10 +676,30 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetAuditLogsResponseDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetAuditLogsResponseDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetAuditsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -559,10 +735,30 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetConsoleUsersResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetConsoleUsersResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetConsoleUsersError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -596,10 +792,30 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetOtaStatusResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetOtaStatusResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetOtaStatusError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -642,10 +858,30 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::UserGroupResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::UserGroupResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetUserGroupError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -684,10 +920,30 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::UserGroupResponse&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::UserGroupResponse&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetUserGroupsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -720,10 +976,30 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::UserResponse&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::UserResponse&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetUsersError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -767,10 +1043,30 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetWhitelistIpAddressesResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetWhitelistIpAddressesResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetWhitelistIpAddressesError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -811,10 +1107,30 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetWorkspaceStatusResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetWorkspaceStatusResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetWorkspaceStatusError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -910,10 +1226,30 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SetOtaStatusResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SetOtaStatusResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetOtaStatusError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -965,10 +1301,30 @@ impl WorkspaceManagementApi for WorkspaceManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::UserGroupCreateResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::UserGroupCreateResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UpdateUserGroupError> =
                 serde_json::from_str(&local_var_content).ok();

@@ -13,9 +13,8 @@ use {
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct BlockchainMetadata {
-    /// Is blockchain listed on all workspaces? Global or Local
     #[serde(rename = "scope")]
-    pub scope: Scope,
+    pub scope: models::AssetScope,
     /// Is blockchain deprecated
     #[serde(rename = "deprecated")]
     pub deprecated: bool,
@@ -27,26 +26,12 @@ pub struct BlockchainMetadata {
 }
 
 impl BlockchainMetadata {
-    pub fn new(scope: Scope, deprecated: bool) -> BlockchainMetadata {
+    pub fn new(scope: models::AssetScope, deprecated: bool) -> BlockchainMetadata {
         BlockchainMetadata {
             scope,
             deprecated,
             media: None,
             explorer: None,
         }
-    }
-}
-/// Is blockchain listed on all workspaces? Global or Local
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
-pub enum Scope {
-    #[serde(rename = "Global")]
-    Global,
-    #[serde(rename = "Local")]
-    Local,
-}
-
-impl Default for Scope {
-    fn default() -> Scope {
-        Self::Global
     }
 }

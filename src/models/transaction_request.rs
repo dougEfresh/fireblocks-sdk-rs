@@ -43,11 +43,11 @@ pub struct TransactionRequest {
     /// source account.
     #[serde(rename = "treatAsGrossAmount", skip_serializing_if = "Option::is_none")]
     pub treat_as_gross_amount: Option<bool>,
-    /// For Polkadot, Kusama and Westend transactions only. When set to true,
-    /// Fireblocks will empty the asset wallet.     **Note:** If set to true
-    /// when the source account is exactly 1 DOT, the transaction will fail. Any
-    /// amount more or less than 1 DOT succeeds. This is a Polkadot blockchain
-    /// limitation.
+    /// For Polkadot, TON, Kusama and Westend transactions only. When set to
+    /// true, Fireblocks will empty the asset wallet.     **Note:** If set to
+    /// true when the source account is exactly 1 DOT, the transaction will
+    /// fail. Any amount more or less than 1 DOT succeeds. This is a Polkadot
+    /// blockchain limitation.
     #[serde(rename = "forceSweep", skip_serializing_if = "Option::is_none")]
     pub force_sweep: Option<bool>,
     /// For UTXO or EVM-based blockchains only. Defines the blockchain fee level

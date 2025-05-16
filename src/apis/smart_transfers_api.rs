@@ -8,85 +8,184 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait SmartTransfersApi: Send + Sync {
+    /// PUT /smart_transfers/{ticketId}/terms/{termId}/dvp/approve
+    ///
+    /// Set funding source for ticket term and creating approving transaction
+    /// for contract to transfer asset
     async fn approve_dv_p_ticket_term(
         &self,
         params: ApproveDvPTicketTermParams,
     ) -> Result<models::SmartTransferTicketTermResponse, Error<ApproveDvPTicketTermError>>;
+
+    /// PUT /smart-transfers/{ticketId}/cancel
+    ///
+    /// Cancel Smart Transfer ticket. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn cancel_ticket(
         &self,
         params: CancelTicketParams,
     ) -> Result<models::SmartTransferTicketResponse, Error<CancelTicketError>>;
+
+    /// POST /smart-transfers
+    ///
+    /// Creates new Smart Transfer ticket. Learn more about Fireblocks Smart Transfers in the following [guide](https://developers.fireblocks.com/docs/execute-smart-transfers). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_ticket(
         &self,
         params: CreateTicketParams,
     ) -> Result<models::SmartTransferTicketResponse, Error<CreateTicketError>>;
+
+    /// POST /smart-transfers/{ticketId}/terms
+    ///
+    /// Creates new smart transfer ticket term (when the ticket status is DRAFT). Learn more about Fireblocks Smart Transfers in the following [guide](https://developers.fireblocks.com/docs/execute-smart-transfers). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_ticket_term(
         &self,
         params: CreateTicketTermParams,
     ) -> Result<models::SmartTransferTicketTermResponse, Error<CreateTicketTermError>>;
+
+    /// GET /smart-transfers/{ticketId}
+    ///
+    /// Find Smart Transfer ticket by id. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn find_ticket_by_id(
         &self,
         params: FindTicketByIdParams,
     ) -> Result<models::SmartTransferTicketResponse, Error<FindTicketByIdError>>;
+
+    /// GET /smart-transfers/{ticketId}/terms/{termId}
+    ///
+    /// Find a specific term of a specific Smart Transfer ticket. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn find_ticket_term_by_id(
         &self,
         params: FindTicketTermByIdParams,
     ) -> Result<models::SmartTransferTicketTermResponse, Error<FindTicketTermByIdError>>;
+
+    /// PUT /smart-transfers/{ticketId}/fulfill
+    ///
+    /// Manually fulfill ticket, in case when all terms (legs) are funded
+    /// manually. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor.
     async fn fulfill_ticket(
         &self,
         params: FulfillTicketParams,
     ) -> Result<models::SmartTransferTicketResponse, Error<FulfillTicketError>>;
+
+    /// PUT /smart_transfers/{ticketId}/dvp/fund
+    ///
+    /// Create or fulfill dvp ticket order
     async fn fund_dvp_ticket(
         &self,
         params: FundDvpTicketParams,
     ) -> Result<models::SmartTransferTicketResponse, Error<FundDvpTicketError>>;
+
+    /// PUT /smart-transfers/{ticketId}/terms/{termId}/fund
+    ///
+    /// Set funding source for ticket term (in case of ASYNC tickets, this will
+    /// execute transfer immediately). </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn fund_ticket_term(
         &self,
         params: FundTicketTermParams,
     ) -> Result<models::SmartTransferTicketTermResponse, Error<FundTicketTermError>>;
+
+    /// GET /smart_transfers/statistic
+    ///
+    /// Get smart transfer statistic
     async fn get_smart_transfer_statistic(
         &self,
     ) -> Result<models::SmartTransferStatistic, Error<GetSmartTransferStatisticError>>;
+
+    /// GET /smart-transfers/settings/user-groups
+    ///
+    /// Get Smart Transfer user groups. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_smart_transfer_user_groups(
         &self,
     ) -> Result<models::SmartTransferUserGroupsResponse, Error<GetSmartTransferUserGroupsError>>;
+
+    /// PUT /smart-transfers/{ticketId}/terms/{termId}/manually-fund
+    ///
+    /// Manually set ticket term transaction. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn manually_fund_ticket_term(
         &self,
         params: ManuallyFundTicketTermParams,
     ) -> Result<models::SmartTransferTicketTermResponse, Error<ManuallyFundTicketTermError>>;
+
+    /// DELETE /smart-transfers/{ticketId}/terms/{termId}
+    ///
+    /// Delete ticket term when ticket is in DRAFT status. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn remove_ticket_term(
         &self,
         params: RemoveTicketTermParams,
     ) -> Result<(), Error<RemoveTicketTermError>>;
+
+    /// GET /smart-transfers
+    ///
+    /// Finds Smart Transfer tickets that match the submitted criteria.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor,   Viewer.
     async fn search_tickets(
         &self,
         params: SearchTicketsParams,
     ) -> Result<models::SmartTransferTicketFilteredResponse, Error<SearchTicketsError>>;
+
+    /// PUT /smart-transfers/{ticketId}/external-id
+    ///
+    /// Set external id Smart Transfer ticket. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn set_external_ref_id(
         &self,
         params: SetExternalRefIdParams,
     ) -> Result<models::SmartTransferTicketResponse, Error<SetExternalRefIdError>>;
+
+    /// PUT /smart-transfers/{ticketId}/expires-in
+    ///
+    /// Set expiration date on Smart Transfer ticket. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn set_ticket_expiration(
         &self,
         params: SetTicketExpirationParams,
     ) -> Result<models::SmartTransferTicketResponse, Error<SetTicketExpirationError>>;
+
+    /// POST /smart-transfers/settings/user-groups
+    ///
+    /// Set Smart Transfers user group to receive email notifications for Smart
+    /// Transfers. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor.
     async fn set_user_groups(
         &self,
         params: SetUserGroupsParams,
     ) -> Result<models::SmartTransferUserGroupsResponse, Error<SetUserGroupsError>>;
+
+    /// PUT /smart-transfers/{ticketId}/submit
+    ///
+    /// Submit Smart Transfer ticket - change status into ready for approval if
+    /// auto approval is not turned on, or OPEN if auto approval is on.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn submit_ticket(
         &self,
         params: SubmitTicketParams,
     ) -> Result<models::SmartTransferTicketResponse, Error<SubmitTicketError>>;
+
+    /// PUT /smart-transfers/{ticketId}/terms/{termId}
+    ///
+    /// Update ticket term (when ticket status is DRAFT). </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn update_ticket_term(
         &self,
         params: UpdateTicketTermParams,
@@ -365,10 +464,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketTermResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketTermResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<ApproveDvPTicketTermError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -417,10 +536,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CancelTicketError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -465,10 +604,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateTicketError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -518,10 +677,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketTermResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketTermResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateTicketTermError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -563,10 +742,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<FindTicketByIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -609,10 +808,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketTermResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketTermResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<FindTicketTermByIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -662,10 +881,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<FulfillTicketError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -715,10 +954,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<FundDvpTicketError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -772,10 +1031,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketTermResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketTermResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<FundTicketTermError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -812,10 +1091,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferStatistic`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferStatistic`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetSmartTransferStatisticError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -854,10 +1153,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferUserGroupsResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferUserGroupsResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetSmartTransferUserGroupsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -910,10 +1229,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketTermResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketTermResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<ManuallyFundTicketTermError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1064,10 +1403,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketFilteredResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketFilteredResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SearchTicketsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1118,10 +1477,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetExternalRefIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1172,10 +1551,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetTicketExpirationError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1225,10 +1624,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferUserGroupsResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferUserGroupsResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetUserGroupsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1281,10 +1700,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SubmitTicketError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1337,10 +1776,30 @@ impl SmartTransfersApi for SmartTransfersApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SmartTransferTicketTermResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SmartTransferTicketTermResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UpdateTicketTermError> =
                 serde_json::from_str(&local_var_content).ok();

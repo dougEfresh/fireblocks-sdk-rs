@@ -8,31 +8,61 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait DeployedContractsApi: Send + Sync {
+    /// POST /tokenization/contracts/abi
+    ///
+    /// Save contract ABI for the tenant. </br>Endpoint Permission: Owner,
+    /// Admin, Non-Signing Admin, Signer, and Editor.
     async fn add_contract_abi(
         &self,
         params: AddContractAbiParams,
     ) -> Result<models::ContractWithAbiDto, Error<AddContractAbiError>>;
+
+    /// POST /tokenization/contracts/fetch_abi
+    ///
+    /// Fetch the ABI. If not found fetch the ABI from the block explorer.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn fetch_contract_abi(
         &self,
         params: FetchContractAbiParams,
     ) -> Result<models::ContractWithAbiDto, Error<FetchContractAbiError>>;
+
+    /// GET /tokenization/contracts/{assetId}/{contractAddress}
+    ///
+    /// Return deployed contract data by blockchain native asset id and contract
+    /// address. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor, Viewer.
     async fn get_deployed_contract_by_address(
         &self,
         params: GetDeployedContractByAddressParams,
     ) -> Result<models::DeployedContractResponseDto, Error<GetDeployedContractByAddressError>>;
+
+    /// GET /tokenization/contracts/{id}
+    ///
+    /// Return deployed contract data by id. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_deployed_contract_by_id(
         &self,
         params: GetDeployedContractByIdParams,
     ) -> Result<models::DeployedContractResponseDto, Error<GetDeployedContractByIdError>>;
+
+    /// GET /tokenization/contracts
+    ///
+    /// Return a filtered lean representation of the deployed contracts data on
+    /// all blockchains (paginated). </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_deployed_contracts(
         &self,
         params: GetDeployedContractsParams,
@@ -110,8 +140,8 @@ pub struct GetDeployedContractsParams {
 
 #[async_trait]
 impl DeployedContractsApi for DeployedContractsApiClient {
-    /// Save contract ABI for the tenant. </br>Endpoint Permission: Admin,
-    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
+    /// Save contract ABI for the tenant. </br>Endpoint Permission: Owner,
+    /// Admin, Non-Signing Admin, Signer, and Editor.
     async fn add_contract_abi(
         &self,
         params: AddContractAbiParams,
@@ -146,10 +176,30 @@ impl DeployedContractsApi for DeployedContractsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ContractWithAbiDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ContractWithAbiDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<AddContractAbiError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -199,10 +249,30 @@ impl DeployedContractsApi for DeployedContractsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ContractWithAbiDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ContractWithAbiDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<FetchContractAbiError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -249,10 +319,30 @@ impl DeployedContractsApi for DeployedContractsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::DeployedContractResponseDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::DeployedContractResponseDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetDeployedContractByAddressError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -294,10 +384,30 @@ impl DeployedContractsApi for DeployedContractsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::DeployedContractResponseDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::DeployedContractResponseDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetDeployedContractByIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -365,10 +475,30 @@ impl DeployedContractsApi for DeployedContractsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::DeployedContractsPaginatedResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::DeployedContractsPaginatedResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetDeployedContractsError> =
                 serde_json::from_str(&local_var_content).ok();

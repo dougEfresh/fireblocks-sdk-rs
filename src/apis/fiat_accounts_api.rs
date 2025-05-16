@@ -8,26 +8,46 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait FiatAccountsApi: Send + Sync {
+    /// POST /fiat_accounts/{accountId}/deposit_from_linked_dda
+    ///
+    /// Deposits funds from the linked DDA. Learn more about Fireblocks FIAT Connectivity in the following [guide](https://developers.fireblocks.com/docs/connect-to-exchanges-and-fiat-providers). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn deposit_funds_from_linked_dda(
         &self,
         params: DepositFundsFromLinkedDdaParams,
     ) -> Result<models::DepositFundsFromLinkedDdaResponse, Error<DepositFundsFromLinkedDdaError>>;
+
+    /// GET /fiat_accounts/{accountId}
+    ///
+    /// Returns a fiat account by ID. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn get_fiat_account(
         &self,
         params: GetFiatAccountParams,
     ) -> Result<models::FiatAccount, Error<GetFiatAccountError>>;
+
+    /// GET /fiat_accounts
+    ///
+    /// Returns all fiat accounts. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn get_fiat_accounts(
         &self,
     ) -> Result<Vec<models::FiatAccount>, Error<GetFiatAccountsError>>;
+
+    /// POST /fiat_accounts/{accountId}/redeem_to_linked_dda
+    ///
+    /// Redeems funds to the linked DDA. Learn more about Fireblocks FIAT Connectivity in the following [guide](https://developers.fireblocks.com/docs/connect-to-exchanges-and-fiat-providers). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn redeem_funds_to_linked_dda(
         &self,
         params: RedeemFundsToLinkedDdaParams,
@@ -121,10 +141,30 @@ impl FiatAccountsApi for FiatAccountsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::DepositFundsFromLinkedDdaResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::DepositFundsFromLinkedDdaResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<DepositFundsFromLinkedDdaError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -166,10 +206,30 @@ impl FiatAccountsApi for FiatAccountsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::FiatAccount`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::FiatAccount`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetFiatAccountError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -204,10 +264,30 @@ impl FiatAccountsApi for FiatAccountsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::FiatAccount&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::FiatAccount&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetFiatAccountsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -257,10 +337,30 @@ impl FiatAccountsApi for FiatAccountsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::RedeemFundsToLinkedDdaResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::RedeemFundsToLinkedDdaResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<RedeemFundsToLinkedDdaError> =
                 serde_json::from_str(&local_var_content).ok();

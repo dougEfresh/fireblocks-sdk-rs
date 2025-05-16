@@ -9,6 +9,7 @@ Method | HTTP request | Description
 [**get_aml_screening_policy**](ComplianceApi.md#get_aml_screening_policy) | **GET** /screening/aml/screening_policy | AML - View Screening Policy
 [**get_post_screening_policy**](ComplianceApi.md#get_post_screening_policy) | **GET** /screening/travel_rule/post_screening_policy | Travel Rule - View Post-Screening Policy
 [**get_screening_configuration**](ComplianceApi.md#get_screening_configuration) | **GET** /screening/travel_rule/policy_configuration | Get Travel Rule Screening Policy Configuration
+[**get_screening_full_details**](ComplianceApi.md#get_screening_full_details) | **GET** /screening/transaction/{txId} | Get Screening Full Details
 [**get_screening_policy**](ComplianceApi.md#get_screening_policy) | **GET** /screening/travel_rule/screening_policy | Travel Rule - View Screening Policy
 [**get_vasp_for_vault**](ComplianceApi.md#get_vasp_for_vault) | **GET** /screening/travel_rule/vault/{vaultAccountId}/vasp | Get assigned VASP to vault
 [**get_vaspby_did**](ComplianceApi.md#get_vaspby_did) | **GET** /screening/travel_rule/vasp/{did} | Get VASP details
@@ -18,7 +19,7 @@ Method | HTTP request | Description
 [**update_aml_screening_configuration**](ComplianceApi.md#update_aml_screening_configuration) | **PUT** /screening/aml/policy_configuration | Update AML Configuration
 [**update_screening_configuration**](ComplianceApi.md#update_screening_configuration) | **PUT** /screening/configurations | Screening Configuration Update
 [**update_travel_rule_config**](ComplianceApi.md#update_travel_rule_config) | **PUT** /screening/travel_rule/policy_configuration | Update Travel Rule Configuration
-[**update_vasp**](ComplianceApi.md#update_vasp) | **PUT** /screening/travel_rule/vasp/update | Add jsonDidKey to VASP details
+[**update_vasp**](ComplianceApi.md#update_vasp) | **PUT** /screening/travel_rule/vasp/update | Update VASP Details
 [**validate_full_travel_rule_transaction**](ComplianceApi.md#validate_full_travel_rule_transaction) | **POST** /screening/travel_rule/transaction/validate/full | Validate Full Travel Rule Transaction
 [**validate_travel_rule_transaction**](ComplianceApi.md#validate_travel_rule_transaction) | **POST** /screening/travel_rule/transaction/validate | Validate Travel Rule Transaction
 
@@ -159,6 +160,36 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 
+## get_screening_full_details
+
+> models::ComplianceResultFullPayload get_screening_full_details(tx_id)
+Get Screening Full Details
+
+Provides all the compliance details for the given screened transaction. </br>Endpoint Permission: All users.
+
+### Parameters
+
+
+Name | Type | Description  | Required | Notes
+------------- | ------------- | ------------- | ------------- | -------------
+**tx_id** | **String** | Fireblocks transaction ID of the screened transaction | [required] |
+
+### Return type
+
+[**models::ComplianceResultFullPayload**](ComplianceResultFullPayload.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+
 ## get_screening_policy
 
 > models::ScreeningProviderRulesConfigurationResponse get_screening_policy()
@@ -221,7 +252,7 @@ No authorization required
 > models::TravelRuleVasp get_vaspby_did(did, fields)
 Get VASP details
 
-Get VASP Details. Returns information about a VASP that has the specified DID. **Note:** The reference content in this section documents the Travel Rule beta endpoint. The beta endpoint includes APIs that are currently in preview and aren't yet generally available. To enroll in the beta and enable this endpoint, contact your Fireblocks Customer Success Manager or send an email to [CSM@fireblocks.com](mailto:CSM@fireblocks.com).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+Get VASP Details. Returns information about a VASP that has the specified DID. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -249,10 +280,10 @@ No authorization required
 
 ## get_vasps
 
-> models::TravelRuleGetAllVaspsResponse get_vasps(order, per_page, page, fields)
+> models::TravelRuleGetAllVaspsResponse get_vasps(order, per_page, page, fields, q, review_value)
 Get All VASPs
 
-Get All VASPs. Returns a list of VASPs. VASPs can be searched and sorted and results are paginated. **Note:** The reference content in this section documents the Travel Rule beta endpoint. The beta endpoint includes APIs that are currently in preview and aren't yet generally available. To enroll in the beta and enable this endpoint, contact your Fireblocks Customer Success Manager or send an email to [CSM@fireblocks.com](mailto:CSM@fireblocks.com).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+Get All VASPs. Returns a list of VASPs. VASPs can be searched and sorted and results are paginated. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -263,6 +294,8 @@ Name | Type | Description  | Required | Notes
 **per_page** | Option<**f64**> | Records per page |  |
 **page** | Option<**f64**> | Page number |  |
 **fields** | Option<**String**> | CSV of fields to return (all, \"blank\" or see list of all field names below) |  |
+**q** | Option<**String**> | Search query |  |
+**review_value** | Option<**String**> | Filter by the VASP's review status. Possible values include: \"TRUSTED\", \"BLOCKED\", \"MANUAL\", or \"NULL\". When provided, only VASPs that match the specified reviewValue will be returned (i.e., VASPs that have already been reviewed to this status). |  |
 
 ### Return type
 
@@ -437,9 +470,9 @@ No authorization required
 ## update_vasp
 
 > models::TravelRuleUpdateVaspDetails update_vasp(travel_rule_update_vasp_details, idempotency_key)
-Add jsonDidKey to VASP details
+Update VASP Details
 
-Update VASP Details. Updates a VASP with the provided parameters. Use this endpoint to add your public jsonDIDkey generated by Notabene. **Note:** The reference content in this section documents the Travel Rule beta endpoint. The beta endpoint includes APIs that are currently in preview and aren't yet generally available. To enroll in the beta and enable this endpoint, contact your Fireblocks Customer Success Manager or send an email to [CSM@fireblocks.com](mailto:CSM@fireblocks.com).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+Updates a VASP with the provided parameters. Use this endpoint to add your public jsonDIDkey generated by Notabene. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -467,10 +500,10 @@ No authorization required
 
 ## validate_full_travel_rule_transaction
 
-> models::TravelRuleValidateTransactionResponse validate_full_travel_rule_transaction(travel_rule_validate_full_transaction_request, idempotency_key)
+> models::TravelRuleValidateTransactionResponse validate_full_travel_rule_transaction(travel_rule_validate_full_transaction_request, notation, idempotency_key)
 Validate Full Travel Rule Transaction
 
-Validate Full Travel Rule transactions. Checks for all required information on the originator and beneficiary VASPs. **Note:** The reference content in this section documents the Travel Rule beta endpoint. The beta endpoint includes APIs that are currently in preview and aren't yet generally available.  To enroll in the beta and enable this endpoint, contact your Fireblocks Customer Success Manager or send an email to [CSM@fireblocks.com](mailto:CSM@fireblocks.com). Learn more about Fireblocks Travel Rule management in the following [guide](https://developers.fireblocks.com/docs/define-travel-rule-policies).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+Validate Full Travel Rule transaction. Checks for all required information on the originator and beneficiary VASPs. Learn more about Fireblocks Travel Rule management in the following [guide](https://developers.fireblocks.com/docs/define-travel-rule-policies).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -478,6 +511,7 @@ Validate Full Travel Rule transactions. Checks for all required information on t
 Name | Type | Description  | Required | Notes
 ------------- | ------------- | ------------- | ------------- | -------------
 **travel_rule_validate_full_transaction_request** | [**TravelRuleValidateFullTransactionRequest**](TravelRuleValidateFullTransactionRequest.md) |  | [required] |
+**notation** | Option<**String**> | Specifies the notation of the transaction. Possible values are - `notabene`: Uses Notabene notation (default behavior). - `fireblocks`: Uses Fireblocks notation, with automatic translation of asset tickers and amounts. - `<none>`: Defaults to `notabene` for backward compatibility.  **Note:** The default value for the `notation` parameter will change from `notabene` to `fireblocks` Update your integrations accordingly.  |  |
 **idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
 
 ### Return type
@@ -498,10 +532,10 @@ No authorization required
 
 ## validate_travel_rule_transaction
 
-> models::TravelRuleValidateTransactionResponse validate_travel_rule_transaction(travel_rule_validate_transaction_request, idempotency_key)
+> models::TravelRuleValidateTransactionResponse validate_travel_rule_transaction(travel_rule_validate_transaction_request, notation, idempotency_key)
 Validate Travel Rule Transaction
 
-Validate Travel Rule transactions. Checks what beneficiary VASP details are required by your jurisdiction and the beneficiary's jurisdiction. **Note:** The reference content in this section documents the Travel Rule beta endpoint. The beta endpoint includes APIs that are currently in preview and aren't yet generally available. To enroll in the beta and enable this endpoint, contact your Fireblocks Customer Success Manager or send an email to [CSM@fireblocks.com](mailto:CSM@fireblocks.com). Learn more about Fireblocks Travel Rule management in the following [guide](https://developers.fireblocks.com/docs/define-travel-rule-policies).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+Validate Travel Rule transactions. Checks what beneficiary VASP details are required by your jurisdiction and the beneficiary's jurisdiction. **Deprecation Notice** This endpoint will be deprecated soon in favor of the [validate full](https://developers.fireblocks.com/reference/validatefulltravelruletransaction) endpoint. Please update your integrations to use the  [validate full](https://developers.fireblocks.com/reference/validatefulltravelruletransaction) endpoint to ensure compatibility with future releases. Checks what beneficiary VASP details are required by your jurisdiction and the beneficiary's jurisdiction. Learn more about Fireblocks Travel Rule management in the following [guide](https://developers.fireblocks.com/docs/define-travel-rule-policies).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
@@ -509,6 +543,7 @@ Validate Travel Rule transactions. Checks what beneficiary VASP details are requ
 Name | Type | Description  | Required | Notes
 ------------- | ------------- | ------------- | ------------- | -------------
 **travel_rule_validate_transaction_request** | [**TravelRuleValidateTransactionRequest**](TravelRuleValidateTransactionRequest.md) |  | [required] |
+**notation** | Option<**String**> | Specifies the notation of the transaction. Possible values are: - `notabene`: Uses Notabene notation (default behavior). - `fireblocks`: Uses Fireblocks notation, with automatic translation of asset tickers and amounts. - `<none>`: Defaults to `notabene` for backward compatibility. **Note:** The default value for the `notation` parameter will change from `notabene` to `fireblocks` Update your integrations accordingly. |  |
 **idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
 
 ### Return type

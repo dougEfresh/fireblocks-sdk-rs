@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**scope** | **String** | Is blockchain listed on all workspaces? Global or Local | 
+**scope** | [**models::AssetScope**](AssetScope.md) |  | 
 **deprecated** | **bool** | Is blockchain deprecated | 
 **media** | Option<[**Vec<models::BlockchainMedia>**](BlockchainMedia.md)> | Blockchain’s media | [optional]
 **explorer** | Option<[**models::BlockchainExplorer**](BlockchainExplorer.md)> |  | [optional]

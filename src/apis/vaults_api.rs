@@ -8,119 +8,292 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait VaultsApi: Send + Sync {
+    /// POST /vault/accounts/{vaultAccountId}/{assetId}/activate
+    ///
+    /// Initiates activation for a wallet in a vault account.  Activation is
+    /// required for tokens that need an on-chain transaction for creation (XLM
+    /// tokens, SOL tokens etc). </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor.
     async fn activate_asset_for_vault_account(
         &self,
         params: ActivateAssetForVaultAccountParams,
     ) -> Result<models::CreateVaultAssetResponse, Error<ActivateAssetForVaultAccountError>>;
-    async fn create_assets_bulk(
-        &self,
-        params: CreateAssetsBulkParams,
-    ) -> Result<models::JobCreated, Error<CreateAssetsBulkError>>;
+
+    /// POST /vault/accounts/{vaultAccountId}/{assetId}/addresses/{addressId}/
+    /// create_legacy
+    ///
+    /// Converts an existing segwit address to the legacy format. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_legacy_address(
         &self,
         params: CreateLegacyAddressParams,
     ) -> Result<models::CreateAddressResponse, Error<CreateLegacyAddressError>>;
-    async fn create_multiple_accounts(
+
+    /// POST /vault/accounts/addresses/bulk
+    ///
+    /// Create multiple deposit address by running an async job. </br> **Note**:
+    /// - We limit accounts to 10k per operation. - The target Vault Account
+    /// should already have the asset wallet created, or the deposit addresses
+    /// will fail. - This endpoint should be used for UTXO blockchains. - This
+    /// endpoint is currently in Early Availability. Please contact CSM to get
+    /// access to this endpoint.   Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor.
+    async fn create_multiple_deposit_addresses(
         &self,
-        params: CreateMultipleAccountsParams,
-    ) -> Result<models::JobCreated, Error<CreateMultipleAccountsError>>;
+        params: CreateMultipleDepositAddressesParams,
+    ) -> Result<models::JobCreated, Error<CreateMultipleDepositAddressesError>>;
+
+    /// POST /vault/accounts
+    ///
+    /// Creates a new vault account with the requested name. **Note: ** Vault account names should consist of ASCII characters only. Learn more about Fireblocks Vault Accounts in the following [guide](https://developers.fireblocks.com/reference/create-vault-account). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_vault_account(
         &self,
         params: CreateVaultAccountParams,
     ) -> Result<models::VaultAccount, Error<CreateVaultAccountError>>;
+
+    /// POST /vault/accounts/{vaultAccountId}/{assetId}
+    ///
+    /// Creates a wallet for a specific asset in a vault account. Learn more about Fireblocks Vault Wallets in the following [guide](https://developers.fireblocks.com/reference/create-vault-wallet). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_vault_account_asset(
         &self,
         params: CreateVaultAccountAssetParams,
     ) -> Result<models::CreateVaultAssetResponse, Error<CreateVaultAccountAssetError>>;
+
+    /// POST /vault/accounts/{vaultAccountId}/{assetId}/addresses
+    ///
+    /// Creates a new deposit address for an asset of a vault account. Should be
+    /// used for UTXO or Tag/Memo based assets ONLY.  Requests with account
+    /// based assets will fail.  </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn create_vault_account_asset_address(
         &self,
         params: CreateVaultAccountAssetAddressParams,
     ) -> Result<models::CreateAddressResponse, Error<CreateVaultAccountAssetAddressError>>;
+
+    /// GET /vault/asset_wallets
+    ///
+    /// Get all vault wallets of the vault accounts in your workspace.  A vault
+    /// wallet is an asset in a vault account.   This method allows fast
+    /// traversal of all account balances. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_asset_wallets(
         &self,
         params: GetAssetWalletsParams,
     ) -> Result<models::PaginatedAssetWalletResponse, Error<GetAssetWalletsError>>;
+
+    /// GET /vault/accounts/addresses/bulk/{jobId}
+    ///
+    /// Returns the status of the bulk creation of new deposit addresses job,
+    /// and the result or error. **Note**: - The target Vault Account should
+    /// already have the asset wallet created, or the deposit addresses will
+    /// fail. - This endpoint is currently in Early Availability. Please contact
+    /// CSM to get access to this endpoint. Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
+    async fn get_create_multiple_deposit_addresses_job_status(
+        &self,
+        params: GetCreateMultipleDepositAddressesJobStatusParams,
+    ) -> Result<
+        models::CreateMultipleDepositAddressesJobStatus,
+        Error<GetCreateMultipleDepositAddressesJobStatusError>,
+    >;
+
+    /// GET /vault/accounts/{vaultAccountId}/{assetId}/max_spendable_amount
+    ///
+    /// Get the maximum amount of a particular asset that can be spent in a
+    /// single transaction from a specified vault account (UTXO assets only).
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_max_spendable_amount(
         &self,
         params: GetMaxSpendableAmountParams,
     ) -> Result<models::GetMaxSpendableAmountResponse, Error<GetMaxSpendableAmountError>>;
+
+    /// GET /vault/accounts_paged
+    ///
+    /// Gets all vault accounts in your workspace. This endpoint returns a
+    /// limited amount of results with a quick response time. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_paged_vault_accounts(
         &self,
         params: GetPagedVaultAccountsParams,
     ) -> Result<models::VaultAccountsPagedResponse, Error<GetPagedVaultAccountsError>>;
+
+    /// GET /vault/public_key_info
+    ///
+    /// Gets the public key information based on derivation path and signing
+    /// algorithm. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_public_key_info(
         &self,
         params: GetPublicKeyInfoParams,
     ) -> Result<models::PublicKeyInformation, Error<GetPublicKeyInfoError>>;
+
+    /// GET /vault/accounts/{vaultAccountId}/{assetId}/{change}/{addressIndex}/
+    /// public_key_info
+    ///
+    /// Get the public key information for a specific asset in a vault account.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_public_key_info_for_address(
         &self,
         params: GetPublicKeyInfoForAddressParams,
     ) -> Result<models::PublicKeyInformation, Error<GetPublicKeyInfoForAddressError>>;
+
+    /// GET /vault/accounts/{vaultAccountId}/{assetId}/unspent_inputs
+    ///
+    /// Returns unspent inputs information of an UTXO asset in a vault account.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_unspent_inputs(
         &self,
         params: GetUnspentInputsParams,
     ) -> Result<Vec<models::UnspentInputsResponse>, Error<GetUnspentInputsError>>;
+
+    /// GET /vault/accounts/{vaultAccountId}
+    ///
+    /// Get a vault account by its unique ID. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_vault_account(
         &self,
         params: GetVaultAccountParams,
     ) -> Result<models::VaultAccount, Error<GetVaultAccountError>>;
+
+    /// GET /vault/accounts/{vaultAccountId}/{assetId}
+    ///
+    /// Returns a specific vault wallet balance information for a specific
+    /// asset.  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor,   Viewer.
     async fn get_vault_account_asset(
         &self,
         params: GetVaultAccountAssetParams,
     ) -> Result<models::VaultAsset, Error<GetVaultAccountAssetError>>;
+
+    /// GET /vault/accounts/{vaultAccountId}/{assetId}/addresses
+    ///
+    /// DEPRECATED!  - If your application logic or scripts rely on the
+    /// deprecated endpoint, you should update to account for
+    /// GET/V1/vault/accounts/{vaultAccountId}/{assetId}/addresses_paginated
+    /// before Mar 31,2024. - All workspaces created after Mar 31,2024. will
+    /// have it disabled. If it is disabled for your workspace and you attempt
+    /// to use it, you will receive the following error message: \"This endpoint
+    /// is unavailable. - Please use the GET
+    /// /v1/vault/accounts/{vaultAccountId}/{assetId}/addresses_paginated
+    /// endpoint to return all the wallet addresses associated with the
+    /// specified vault account and asset in a paginated list.  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_vault_account_asset_addresses(
         &self,
         params: GetVaultAccountAssetAddressesParams,
     ) -> Result<Vec<models::VaultWalletAddress>, Error<GetVaultAccountAssetAddressesError>>;
+
+    /// GET /vault/accounts/{vaultAccountId}/{assetId}/addresses_paginated
+    ///
+    /// Returns a paginated response of the addresses for a given vault account
+    /// and asset. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor, Viewer.
     async fn get_vault_account_asset_addresses_paginated(
         &self,
         params: GetVaultAccountAssetAddressesPaginatedParams,
     ) -> Result<models::PaginatedAddressResponse, Error<GetVaultAccountAssetAddressesPaginatedError>>;
+
+    /// GET /vault/assets
+    ///
+    /// Gets the assets amount summary for all accounts or filtered accounts.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_vault_assets(
         &self,
         params: GetVaultAssetsParams,
     ) -> Result<Vec<models::VaultAsset>, Error<GetVaultAssetsError>>;
+
+    /// GET /vault/assets/{assetId}
+    ///
+    /// Get the total balance of an asset across all the vault accounts.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_vault_balance_by_asset(
         &self,
         params: GetVaultBalanceByAssetParams,
     ) -> Result<models::VaultAsset, Error<GetVaultBalanceByAssetError>>;
+
+    /// POST /vault/accounts/{vaultAccountId}/hide
+    ///
+    /// Hides the requested vault account from the web console view. This operation is required when creating thousands of vault accounts to serve your end-users. Used for preventing the web console to be swamped with too much vault accounts. Learn more in the following [guide](https://developers.fireblocks.com/docs/create-direct-custody-wallets#hiding-vault-accounts). NOTE: Hiding the vault account from the web console will also hide all the related transactions to/from this vault. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn hide_vault_account(
         &self,
         params: HideVaultAccountParams,
     ) -> Result<models::VaultActionStatus, Error<HideVaultAccountError>>;
+
+    /// POST /vault/accounts/{vaultAccountId}/{assetId}/addresses/{addressId}/
+    /// set_customer_ref_id
+    ///
+    /// Sets an AML/KYT customer reference ID for a specific address.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn set_customer_ref_id_for_address(
         &self,
         params: SetCustomerRefIdForAddressParams,
     ) -> Result<models::VaultActionStatus, Error<SetCustomerRefIdForAddressError>>;
+
+    /// POST /vault/accounts/{vaultAccountId}/set_auto_fuel
+    ///
+    /// Toggles the auto fueling property of the vault account to enabled or disabled. Vault Accounts with 'autoFuel=true' are monitored and auto fueled by the Fireblocks Gas Station. Learn more about the Fireblocks Gas Station in the following [guide](https://developers.fireblocks.com/docs/work-with-gas-station). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn set_vault_account_auto_fuel(
         &self,
         params: SetVaultAccountAutoFuelParams,
     ) -> Result<models::VaultActionStatus, Error<SetVaultAccountAutoFuelError>>;
+
+    /// POST /vault/accounts/{vaultAccountId}/set_customer_ref_id
+    ///
+    /// Assigns an AML/KYT customer reference ID for the vault account. Learn more about Fireblocks AML management in the following [guide](https://developers.fireblocks.com/docs/define-aml-policies). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn set_vault_account_customer_ref_id(
         &self,
         params: SetVaultAccountCustomerRefIdParams,
     ) -> Result<models::VaultActionStatus, Error<SetVaultAccountCustomerRefIdError>>;
+
+    /// POST /vault/accounts/{vaultAccountId}/unhide
+    ///
+    /// Makes a hidden vault account visible in web console view. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn unhide_vault_account(
         &self,
         params: UnhideVaultAccountParams,
     ) -> Result<models::VaultActionStatus, Error<UnhideVaultAccountError>>;
+
+    /// PUT /vault/accounts/{vaultAccountId}
+    ///
+    /// Renames the requested vault account. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver.
     async fn update_vault_account(
         &self,
         params: UpdateVaultAccountParams,
     ) -> Result<models::RenameVaultAccountResponse, Error<UpdateVaultAccountError>>;
+
+    /// PUT /vault/accounts/{vaultAccountId}/{assetId}/addresses/{addressId}
+    ///
+    /// Updates the description of an existing address of an asset in a vault
+    /// account. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor.
     async fn update_vault_account_asset_address(
         &self,
         params: UpdateVaultAccountAssetAddressParams,
     ) -> Result<models::VaultActionStatus, Error<UpdateVaultAccountAssetAddressError>>;
+
+    /// POST /vault/accounts/{vaultAccountId}/{assetId}/balance
+    ///
+    /// Updates the balance of a specific asset in a vault account.  This API
+    /// endpoint is subject to a strict rate limit. Should be used by clients in
+    /// very specific scenarios.  </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor.
     async fn update_vault_account_asset_balance(
         &self,
         params: UpdateVaultAccountAssetBalanceParams,
@@ -153,18 +326,6 @@ pub struct ActivateAssetForVaultAccountParams {
     pub idempotency_key: Option<String>,
 }
 
-/// struct for passing parameters to the method [`create_assets_bulk`]
-#[derive(Clone, Debug)]
-#[cfg_attr(feature = "bon", derive(::bon::Builder))]
-pub struct CreateAssetsBulkParams {
-    pub create_assets_bulk_request: models::CreateAssetsBulkRequest,
-    /// A unique identifier for the request. If the request is sent multiple
-    /// times with the same idempotency key, the server will return the same
-    /// response as the first request. The idempotency key is valid for 24
-    /// hours.
-    pub idempotency_key: Option<String>,
-}
-
 /// struct for passing parameters to the method [`create_legacy_address`]
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
@@ -182,11 +343,12 @@ pub struct CreateLegacyAddressParams {
     pub idempotency_key: Option<String>,
 }
 
-/// struct for passing parameters to the method [`create_multiple_accounts`]
+/// struct for passing parameters to the method
+/// [`create_multiple_deposit_addresses`]
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
-pub struct CreateMultipleAccountsParams {
-    pub create_multiple_accounts_request: models::CreateMultipleAccountsRequest,
+pub struct CreateMultipleDepositAddressesParams {
+    pub create_multiple_deposit_addresses_request: models::CreateMultipleDepositAddressesRequest,
     /// A unique identifier for the request. If the request is sent multiple
     /// times with the same idempotency key, the server will return the same
     /// response as the first request. The idempotency key is valid for 24
@@ -259,6 +421,15 @@ pub struct GetAssetWalletsParams {
     /// The maximum number of vault wallets in a single response.   The default
     /// is 200 and the maximum is 1000.
     pub limit: Option<f64>,
+}
+
+/// struct for passing parameters to the method
+/// [`get_create_multiple_deposit_addresses_job_status`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct GetCreateMultipleDepositAddressesJobStatusParams {
+    /// The ID of the job to create addresses
+    pub job_id: String,
 }
 
 /// struct for passing parameters to the method [`get_max_spendable_amount`]
@@ -557,64 +728,32 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CreateVaultAssetResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CreateVaultAssetResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<ActivateAssetForVaultAccountError> =
-                serde_json::from_str(&local_var_content).ok();
-            let local_var_error = ResponseContent {
-                status: local_var_status,
-                content: local_var_content,
-                entity: local_var_entity,
-            };
-            Err(Error::ResponseError(local_var_error))
-        }
-    }
-
-    /// Create multiple wallets for a given vault account by running an async
-    /// job. </br> **Note**: - These endpoints are currently in beta and might
-    /// be subject to changes. - We limit accounts to 10k per operation and 200k
-    /// per customer during beta testing. - Currently, we are only supporting
-    /// EVM wallets.
-    async fn create_assets_bulk(
-        &self,
-        params: CreateAssetsBulkParams,
-    ) -> Result<models::JobCreated, Error<CreateAssetsBulkError>> {
-        let CreateAssetsBulkParams {
-            create_assets_bulk_request,
-            idempotency_key,
-        } = params;
-
-        let local_var_configuration = &self.configuration;
-
-        let local_var_client = &local_var_configuration.client;
-
-        let local_var_uri_str = format!("{}/vault/assets/bulk", local_var_configuration.base_path);
-        let mut local_var_req_builder =
-            local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
-
-        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
-            local_var_req_builder = local_var_req_builder
-                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
-        }
-        if let Some(local_var_param_value) = idempotency_key {
-            local_var_req_builder =
-                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
-        }
-        local_var_req_builder = local_var_req_builder.json(&create_assets_bulk_request);
-
-        let local_var_req = local_var_req_builder.build()?;
-        let local_var_resp = local_var_client.execute(local_var_req).await?;
-
-        let local_var_status = local_var_resp.status();
-        let local_var_content = local_var_resp.text().await?;
-
-        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
-        } else {
-            let local_var_entity: Option<CreateAssetsBulkError> =
                 serde_json::from_str(&local_var_content).ok();
             let local_var_error = ResponseContent {
                 status: local_var_status,
@@ -665,10 +804,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CreateAddressResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CreateAddressResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateLegacyAddressError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -681,17 +840,19 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Create multiple vault accounts by running an async job. </br> **Note**:
-    /// - These endpoints are currently in beta and might be subject to changes.
-    /// - We limit accounts to 10k per operation and 200k per customer during
-    /// beta testing. </br>Endpoint Permission: Admin, Non-Signing Admin,
-    /// Signer, Approver, Editor, Viewer.
-    async fn create_multiple_accounts(
+    /// Create multiple deposit address by running an async job. </br> **Note**:
+    /// - We limit accounts to 10k per operation. - The target Vault Account
+    /// should already have the asset wallet created, or the deposit addresses
+    /// will fail. - This endpoint should be used for UTXO blockchains. - This
+    /// endpoint is currently in Early Availability. Please contact CSM to get
+    /// access to this endpoint.   Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor.
+    async fn create_multiple_deposit_addresses(
         &self,
-        params: CreateMultipleAccountsParams,
-    ) -> Result<models::JobCreated, Error<CreateMultipleAccountsError>> {
-        let CreateMultipleAccountsParams {
-            create_multiple_accounts_request,
+        params: CreateMultipleDepositAddressesParams,
+    ) -> Result<models::JobCreated, Error<CreateMultipleDepositAddressesError>> {
+        let CreateMultipleDepositAddressesParams {
+            create_multiple_deposit_addresses_request,
             idempotency_key,
         } = params;
 
@@ -699,8 +860,10 @@ impl VaultsApi for VaultsApiClient {
 
         let local_var_client = &local_var_configuration.client;
 
-        let local_var_uri_str =
-            format!("{}/vault/accounts/bulk", local_var_configuration.base_path);
+        let local_var_uri_str = format!(
+            "{}/vault/accounts/addresses/bulk",
+            local_var_configuration.base_path
+        );
         let mut local_var_req_builder =
             local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
@@ -712,18 +875,39 @@ impl VaultsApi for VaultsApiClient {
             local_var_req_builder =
                 local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
         }
-        local_var_req_builder = local_var_req_builder.json(&create_multiple_accounts_request);
+        local_var_req_builder =
+            local_var_req_builder.json(&create_multiple_deposit_addresses_request);
 
         let local_var_req = local_var_req_builder.build()?;
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::JobCreated`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::JobCreated`"
+                    ))))
+                }
+            }
         } else {
-            let local_var_entity: Option<CreateMultipleAccountsError> =
+            let local_var_entity: Option<CreateMultipleDepositAddressesError> =
                 serde_json::from_str(&local_var_content).ok();
             let local_var_error = ResponseContent {
                 status: local_var_status,
@@ -734,7 +918,7 @@ impl VaultsApi for VaultsApiClient {
         }
     }
 
-    /// Creates a new vault account with the requested name. Learn more about Fireblocks Vault Accounts in the following [guide](https://developers.fireblocks.com/reference/create-vault-account). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+    /// Creates a new vault account with the requested name. **Note: ** Vault account names should consist of ASCII characters only. Learn more about Fireblocks Vault Accounts in the following [guide](https://developers.fireblocks.com/reference/create-vault-account). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_vault_account(
         &self,
         params: CreateVaultAccountParams,
@@ -766,10 +950,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::VaultAccount`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::VaultAccount`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateVaultAccountError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -821,10 +1025,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CreateVaultAssetResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CreateVaultAssetResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateVaultAccountAssetError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -879,10 +1103,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CreateAddressResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CreateAddressResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateVaultAccountAssetAddressError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -954,12 +1198,104 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::PaginatedAssetWalletResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::PaginatedAssetWalletResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetAssetWalletsError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Returns the status of the bulk creation of new deposit addresses job,
+    /// and the result or error. **Note**: - The target Vault Account should
+    /// already have the asset wallet created, or the deposit addresses will
+    /// fail. - This endpoint is currently in Early Availability. Please contact
+    /// CSM to get access to this endpoint. Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
+    async fn get_create_multiple_deposit_addresses_job_status(
+        &self,
+        params: GetCreateMultipleDepositAddressesJobStatusParams,
+    ) -> Result<
+        models::CreateMultipleDepositAddressesJobStatus,
+        Error<GetCreateMultipleDepositAddressesJobStatusError>,
+    > {
+        let GetCreateMultipleDepositAddressesJobStatusParams { job_id } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/vault/accounts/addresses/bulk/{jobId}",
+            local_var_configuration.base_path,
+            jobId = crate::apis::urlencode(job_id)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CreateMultipleDepositAddressesJobStatus`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CreateMultipleDepositAddressesJobStatus`"
+                    ))))
+                }
+            }
+        } else {
+            let local_var_entity: Option<GetCreateMultipleDepositAddressesJobStatusError> =
                 serde_json::from_str(&local_var_content).ok();
             let local_var_error = ResponseContent {
                 status: local_var_status,
@@ -1010,10 +1346,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetMaxSpendableAmountResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetMaxSpendableAmountResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetMaxSpendableAmountError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1094,10 +1450,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::VaultAccountsPagedResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::VaultAccountsPagedResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetPagedVaultAccountsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1165,10 +1541,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::PublicKeyInformation`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::PublicKeyInformation`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetPublicKeyInfoError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1223,10 +1619,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::PublicKeyInformation`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::PublicKeyInformation`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetPublicKeyInfoForAddressError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1273,10 +1689,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::UnspentInputsResponse&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::UnspentInputsResponse&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetUnspentInputsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1318,10 +1754,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::VaultAccount`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::VaultAccount`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetVaultAccountError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1368,10 +1824,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::VaultAsset`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::VaultAsset`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetVaultAccountAssetError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1426,10 +1902,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::VaultWalletAddress&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::VaultWalletAddress&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetVaultAccountAssetAddressesError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1492,10 +1988,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::PaginatedAddressResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::PaginatedAddressResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetVaultAccountAssetAddressesPaginatedError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1545,10 +2061,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::VaultAsset&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::VaultAsset&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetVaultAssetsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1591,10 +2127,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::VaultAsset`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::VaultAsset`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetVaultBalanceByAssetError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1642,10 +2198,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::VaultActionStatus`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::VaultActionStatus`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<HideVaultAccountError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1702,10 +2278,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::VaultActionStatus`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::VaultActionStatus`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetCustomerRefIdForAddressError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1755,10 +2351,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::VaultActionStatus`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::VaultActionStatus`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetVaultAccountAutoFuelError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1808,10 +2424,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::VaultActionStatus`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::VaultActionStatus`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetVaultAccountCustomerRefIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1860,10 +2496,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::VaultActionStatus`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::VaultActionStatus`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UnhideVaultAccountError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1914,10 +2570,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::RenameVaultAccountResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::RenameVaultAccountResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UpdateVaultAccountError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1974,10 +2650,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::VaultActionStatus`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::VaultActionStatus`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UpdateVaultAccountAssetAddressError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -2030,10 +2726,30 @@ impl VaultsApi for VaultsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::VaultAsset`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::VaultAsset`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UpdateVaultAccountAssetBalanceError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -2055,14 +2771,6 @@ pub enum ActivateAssetForVaultAccountError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method [`create_assets_bulk`]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum CreateAssetsBulkError {
-    DefaultResponse(models::ErrorSchema),
-    UnknownValue(serde_json::Value),
-}
-
 /// struct for typed errors of method [`create_legacy_address`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -2071,10 +2779,10 @@ pub enum CreateLegacyAddressError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method [`create_multiple_accounts`]
+/// struct for typed errors of method [`create_multiple_deposit_addresses`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum CreateMultipleAccountsError {
+pub enum CreateMultipleDepositAddressesError {
     DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
@@ -2107,6 +2815,15 @@ pub enum CreateVaultAccountAssetAddressError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetAssetWalletsError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method
+/// [`get_create_multiple_deposit_addresses_job_status`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GetCreateMultipleDepositAddressesJobStatusError {
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
 

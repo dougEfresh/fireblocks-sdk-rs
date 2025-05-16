@@ -16,7 +16,7 @@ Method | HTTP request | Description
 > models::ContractAbiResponseDto get_deployed_contract_abi(contract_address, base_asset_id, idempotency_key)
 Return deployed contract's ABI
 
-Return deployed contract's ABI by blockchain native asset id and contract address. </br>Endpoint Permission: Admin, Non-Signing Admin.
+Return deployed contract's ABI by blockchain native asset id and contract address. </br>Endpoint Permission: Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, and Viewer.
 
 ### Parameters
 
@@ -48,7 +48,7 @@ No authorization required
 > models::TransactionReceiptResponse get_transaction_receipt(base_asset_id, tx_hash)
 Get transaction receipt
 
-Retrieve the transaction receipt by blockchain native asset ID and transaction hash  </br>Endpoint Permission: Admin, Non-Signing Admin.
+Retrieve the transaction receipt by blockchain native asset ID and transaction hash  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, and Viewer.
 
 ### Parameters
 
@@ -79,7 +79,7 @@ No authorization required
 > Vec<models::ParameterWithValue> read_call_function(contract_address, base_asset_id, read_call_function_dto, idempotency_key)
 Call a read function
 
-Call a read function on a deployed contract by blockchain native asset id and contract address. </br>Endpoint Permission: Admin, Non-Signing Admin.
+Call a read function on a deployed contract by blockchain native asset id and contract address. </br>Endpoint Permission: Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor.
 
 ### Parameters
 
@@ -112,7 +112,7 @@ No authorization required
 > models::WriteCallFunctionResponseDto write_call_function(contract_address, base_asset_id, write_call_function_dto, idempotency_key)
 Call a write function
 
-Call a write function on a deployed contract by blockchain native asset id and contract address. This creates an onchain transaction, thus it is an async operation. It returns a transaction id that can be polled for status check.  </br>Endpoint Permission: Admin, Non-Signing Admin.
+Call a write function on a deployed contract by blockchain native asset id and contract address. This creates an onchain transaction, thus it is an async operation. It returns a transaction id that can be polled for status check.  </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor.
 
 ### Parameters
 

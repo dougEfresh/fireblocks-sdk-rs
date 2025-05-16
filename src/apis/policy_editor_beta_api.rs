@@ -8,29 +8,69 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait PolicyEditorBetaApi: Send + Sync {
+    /// GET /tap/active_policy
+    ///
+    /// Returns the active policy and its validation. </br> **Note:** These
+    /// endpoints are currently in beta and might be subject to changes. If you
+    /// want to participate and learn more about the Fireblocks TAP, please
+    /// contact your Fireblocks Customer Success Manager or send an email to
+    /// CSM@fireblocks.com. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_active_policy(
         &self,
     ) -> Result<models::PolicyAndValidationResponse, Error<GetActivePolicyError>>;
+
+    /// GET /tap/draft
+    ///
+    /// Returns the active draft and its validation. </br> **Note:** These
+    /// endpoints are currently in beta and might be subject to changes. If you
+    /// want to participate and learn more about the Fireblocks TAP, please
+    /// contact your Fireblocks Customer Success Manager or send an email to
+    /// CSM@fireblocks.com. </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_draft(
         &self,
     ) -> Result<models::DraftReviewAndValidationResponse, Error<GetDraftError>>;
+
+    /// POST /tap/draft
+    ///
+    /// Send publish request of certain draft id and returns the response. </br>
+    /// **Note:** These endpoints are currently in beta and might be subject to
+    /// changes. If you want to participate and learn more about the Fireblocks
+    /// TAP, please contact your Fireblocks Customer Success Manager or send an
+    /// email to CSM@fireblocks.com. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn publish_draft(
         &self,
         params: PublishDraftParams,
     ) -> Result<models::PublishResult, Error<PublishDraftError>>;
+
+    /// POST /tap/publish
+    ///
+    /// Send publish request of set of policy rules and returns the response.
+    /// </br> **Note:** These endpoints are currently in beta and might be
+    /// subject to changes. If you want to participate and learn more about the
+    /// Fireblocks TAP, please contact your Fireblocks Customer Success Manager
+    /// or send an email to CSM@fireblocks.com. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn publish_policy_rules(
         &self,
         params: PublishPolicyRulesParams,
     ) -> Result<models::PublishResult, Error<PublishPolicyRulesError>>;
+
+    /// PUT /tap/draft
+    ///
+    /// Update the draft and return its validation. </br> **Note:** These endpoints are currently in beta and might be subject to changes. If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com. Learn more about Fireblocks Transaction Authorization Policy in the following [guide](https://developers.fireblocks.com/docs/set-transaction-authorization-policy). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn update_draft(
         &self,
         params: UpdateDraftParams,
@@ -110,10 +150,30 @@ impl PolicyEditorBetaApi for PolicyEditorBetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::PolicyAndValidationResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::PolicyAndValidationResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetActivePolicyError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -151,10 +211,30 @@ impl PolicyEditorBetaApi for PolicyEditorBetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::DraftReviewAndValidationResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::DraftReviewAndValidationResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetDraftError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -204,10 +284,30 @@ impl PolicyEditorBetaApi for PolicyEditorBetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::PublishResult`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::PublishResult`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<PublishDraftError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -257,10 +357,30 @@ impl PolicyEditorBetaApi for PolicyEditorBetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::PublishResult`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::PublishResult`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<PublishPolicyRulesError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -305,10 +425,30 @@ impl PolicyEditorBetaApi for PolicyEditorBetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::DraftReviewAndValidationResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::DraftReviewAndValidationResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UpdateDraftError> =
                 serde_json::from_str(&local_var_content).ok();

@@ -8,47 +8,118 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait StakingApi: Send + Sync {
+    /// POST /staking/providers/{providerId}/approveTermsOfService
+    ///
+    /// Approve the terms of service of the staking provider. This must be
+    /// called before performing a staking action for the first time with this
+    /// provider. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor.
     async fn approve_terms_of_service_by_provider_id(
         &self,
         params: ApproveTermsOfServiceByProviderIdParams,
     ) -> Result<(), Error<ApproveTermsOfServiceByProviderIdError>>;
+
+    /// POST /staking/chains/{chainDescriptor}/claim_rewards
+    ///
+    /// Perform a chain-specific Claim Rewards.
     async fn claim_rewards(
         &self,
         params: ClaimRewardsParams,
     ) -> Result<(), Error<ClaimRewardsError>>;
+
+    /// GET /staking/positions
+    ///
+    /// Return detailed information on all staking positions, including the
+    /// staked amount, rewards, status and more. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_all_delegations(
         &self,
         params: GetAllDelegationsParams,
     ) -> Result<Vec<models::Delegation>, Error<GetAllDelegationsError>>;
+
+    /// GET /staking/chains/{chainDescriptor}/chainInfo
+    ///
+    /// Return chain-specific, staking-related information summary (e.g. epoch
+    /// details, lockup durations, estimated rewards, etc.). </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_chain_info(
         &self,
         params: GetChainInfoParams,
     ) -> Result<models::ChainInfoResponse, Error<GetChainInfoError>>;
+
+    /// GET /staking/chains
+    ///
+    /// Return an alphabetical list of supported chains. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_chains(&self) -> Result<Vec<models::ChainDescriptor>, Error<GetChainsError>>;
+
+    /// GET /staking/positions/{id}
+    ///
+    /// Return detailed information on a staking position, including the staked
+    /// amount, rewards, status and more. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn get_delegation_by_id(
         &self,
         params: GetDelegationByIdParams,
     ) -> Result<models::Delegation, Error<GetDelegationByIdError>>;
+
+    /// GET /staking/providers
+    ///
+    /// Return information on all the available staking providers. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_providers(&self) -> Result<Vec<models::Provider>, Error<GetProvidersError>>;
+
+    /// GET /staking/positions/summary
+    ///
+    /// Return a summary of all vaults, categorized by their status (active,
+    /// inactive), the total amounts staked and total rewards per-chain.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn get_summary(&self) -> Result<models::DelegationSummary, Error<GetSummaryError>>;
+
+    /// GET /staking/positions/summary/vaults
+    ///
+    /// Return a summary for each vault, categorized by their status (active,
+    /// inactive), the total amounts staked and total rewards per-chain.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn get_summary_by_vault(
         &self,
     ) -> Result<
         std::collections::HashMap<String, models::DelegationSummary>,
         Error<GetSummaryByVaultError>,
     >;
+
+    /// POST /staking/chains/{chainDescriptor}/split
+    ///
+    /// Perform a SOL/SOL_TEST Split on a stake account.
     async fn split(&self, params: SplitParams) -> Result<models::SplitResponse, Error<SplitError>>;
+
+    /// POST /staking/chains/{chainDescriptor}/stake
+    ///
+    /// Perform a chain-specific Stake.
     async fn stake(&self, params: StakeParams) -> Result<models::StakeResponse, Error<StakeError>>;
+
+    /// POST /staking/chains/{chainDescriptor}/unstake
+    ///
+    /// Execute an Unstake operation
     async fn unstake(&self, params: UnstakeParams) -> Result<(), Error<UnstakeError>>;
+
+    /// POST /staking/chains/{chainDescriptor}/withdraw
+    ///
+    /// Perform a chain-specific Withdraw.
     async fn withdraw(&self, params: WithdrawParams) -> Result<(), Error<WithdrawError>>;
 }
 
@@ -313,10 +384,30 @@ impl StakingApi for StakingApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::Delegation&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::Delegation&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetAllDelegationsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -359,10 +450,30 @@ impl StakingApi for StakingApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ChainInfoResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ChainInfoResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetChainInfoError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -395,10 +506,30 @@ impl StakingApi for StakingApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::ChainDescriptor&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::ChainDescriptor&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetChainsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -441,10 +572,30 @@ impl StakingApi for StakingApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::Delegation`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::Delegation`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetDelegationByIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -477,10 +628,30 @@ impl StakingApi for StakingApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::Provider&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::Provider&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetProvidersError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -518,10 +689,30 @@ impl StakingApi for StakingApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::DelegationSummary`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::DelegationSummary`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetSummaryError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -564,10 +755,31 @@ impl StakingApi for StakingApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `std::collections::HashMap&lt;String, models::DelegationSummary&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `std::collections::HashMap&lt;String, \
+                         models::DelegationSummary&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetSummaryByVaultError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -614,10 +826,30 @@ impl StakingApi for StakingApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SplitResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SplitResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SplitError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -664,10 +896,30 @@ impl StakingApi for StakingApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::StakeResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::StakeResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<StakeError> =
                 serde_json::from_str(&local_var_content).ok();

@@ -8,26 +8,56 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait JobManagementApi: Send + Sync {
+    /// POST /batch/{jobId}/cancel
+    ///
+    /// Stop the given job immediately. If the job is in the ‘Active’ state, the
+    /// job will be canceled after completing the current task. Vault accounts
+    /// and Wallets that are already created will not be affected.
     async fn cancel_job(&self, params: CancelJobParams) -> Result<(), Error<CancelJobError>>;
+
+    /// POST /batch/{jobId}/continue
+    ///
+    /// Continue the given paused job.
     async fn continue_job(&self, params: ContinueJobParams) -> Result<(), Error<ContinueJobError>>;
+
+    /// GET /batch/{jobId}
+    ///
+    /// Get an object describing the given job
     async fn get_job(&self, params: GetJobParams) -> Result<models::Job, Error<GetJobError>>;
+
+    /// GET /batch/{jobId}/tasks
+    ///
+    /// Return a list of tasks for given job
     async fn get_job_tasks(
         &self,
         params: GetJobTasksParams,
     ) -> Result<Vec<models::Task>, Error<GetJobTasksError>>;
+
+    /// GET /batch/jobs
+    ///
+    /// Get an array of objects including all active, paused, canceled, and
+    /// complete jobs in a workspace.
     async fn get_jobs(
         &self,
         params: GetJobsParams,
     ) -> Result<Vec<models::Job>, Error<GetJobsError>>;
+
+    /// POST /batch/{jobId}/pause
+    ///
+    /// Pause the given job, after the current task is done. A paused job can
+    /// later be resumed by calling ‘continue’, or canceled.
     async fn pause_job(&self, params: PauseJobParams) -> Result<(), Error<PauseJobError>>;
 }
 
@@ -231,10 +261,30 @@ impl JobManagementApi for JobManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::Job`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::Job`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetJobError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -275,10 +325,30 @@ impl JobManagementApi for JobManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::Task&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::Task&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetJobTasksError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -324,10 +394,30 @@ impl JobManagementApi for JobManagementApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::Job&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::Job&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetJobsError> =
                 serde_json::from_str(&local_var_content).ok();

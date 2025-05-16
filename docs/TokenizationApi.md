@@ -24,7 +24,7 @@ Method | HTTP request | Description
 > models::CollectionBurnResponseDto burn_collection_token(id, collection_burn_request_dto, idempotency_key)
 Burn tokens
 
-Burn tokens in a collection. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+Burn tokens in a collection. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor.
 
 ### Parameters
 
@@ -56,7 +56,7 @@ No authorization required
 > models::CollectionLinkDto create_new_collection(collection_deploy_request_dto, idempotency_key)
 Create a new collection
 
-Create a new collection and link it as a token. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+Create a new collection and link it as a token. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor.
 
 ### Parameters
 
@@ -242,7 +242,7 @@ No authorization required
 > models::TokenLinkDto issue_new_token(create_token_request_dto, idempotency_key)
 Issue a new token
 
-Facilitates the creation of a new token, supporting both EVM-based and Stellar/Ripple platforms. For EVM, it deploys the corresponding contract template to the blockchain and links the token to the workspace. For Stellar/Ripple, it links a newly created token directly to the workspace without deploying a contract. Returns the token link with status \"PENDING\" until the token is deployed or \"SUCCESS\" if no deployment is needed. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+Facilitates the creation of a new token, supporting both EVM-based and Stellar/Ripple platforms. For EVM, it deploys the corresponding contract template to the blockchain and links the token to the workspace. For Stellar/Ripple, it links a newly created token directly to the workspace without deploying a contract. Returns the token link with status \"PENDING\" until the token is deployed or \"SUCCESS\" if no deployment is needed. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor.
 
 ### Parameters
 
@@ -273,7 +273,7 @@ No authorization required
 > models::TokenLinkDto link(token_link_request_dto, idempotency_key)
 Link a contract
 
-Link a contract. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+Link a contract. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor.
 
 ### Parameters
 
@@ -304,7 +304,7 @@ No authorization required
 > models::CollectionMintResponseDto mint_collection_token(id, collection_mint_request_dto, idempotency_key)
 Mint tokens
 
-Mint tokens and upload metadata. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+Mint tokens and upload metadata. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, Editor.
 
 ### Parameters
 
@@ -336,7 +336,7 @@ No authorization required
 > unlink(id)
 Unlink a token
 
-Unlink a token. The token will be unlinked from the workspace. The token will not be deleted on chain nor the refId, only the link to the workspace will be removed. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+Unlink a token. The token will be unlinked from the workspace. The token will not be deleted on chain nor the refId, only the link to the workspace will be removed. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor.
 
 ### Parameters
 
@@ -366,7 +366,7 @@ No authorization required
 > unlink_collection(id)
 Delete a collection link
 
-Delete a collection link. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+Delete a collection link. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor.
 
 ### Parameters
 

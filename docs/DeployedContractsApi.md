@@ -17,7 +17,7 @@ Method | HTTP request | Description
 > models::ContractWithAbiDto add_contract_abi(add_abi_request_dto, idempotency_key)
 Save contract ABI
 
-Save contract ABI for the tenant. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+Save contract ABI for the tenant. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor.
 
 ### Parameters
 

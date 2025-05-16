@@ -8,42 +8,106 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait WhitelistedInternalWalletsApi: Send + Sync {
+    /// POST /internal_wallets
+    ///
+    /// Creates a new internal wallet with the requested name. Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets) </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_internal_wallet(
         &self,
         params: CreateInternalWalletParams,
     ) -> Result<models::UnmanagedWallet, Error<CreateInternalWalletError>>;
+
+    /// POST /internal_wallets/{walletId}/{assetId}
+    ///
+    /// Adds an asset to an existing internal wallet.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks    Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets) </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_internal_wallet_asset(
         &self,
         params: CreateInternalWalletAssetParams,
     ) -> Result<models::WalletAsset, Error<CreateInternalWalletAssetError>>;
+
+    /// DELETE /internal_wallets/{walletId}
+    ///
+    /// Deletes an internal wallet by ID.  Internal Wallets are whitelisted
+    /// wallets that belong to you outside of Fireblocks.    - You can see the
+    /// balance of the Internal Wallet via Fireblocks   - You cannot initiate
+    /// transactions from Internal Wallets through Fireblocks  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn delete_internal_wallet(
         &self,
         params: DeleteInternalWalletParams,
     ) -> Result<(), Error<DeleteInternalWalletError>>;
+
+    /// DELETE /internal_wallets/{walletId}/{assetId}
+    ///
+    /// Deletes a whitelisted address (for an asset) from an internal wallet.
+    /// Internal Wallets are whitelisted wallets that belong to you outside of
+    /// Fireblocks.    - You can see the balance of the Internal Wallet via
+    /// Fireblocks   - You cannot initiate transactions from Internal Wallets
+    /// through Fireblocks  </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor.
     async fn delete_internal_wallet_asset(
         &self,
         params: DeleteInternalWalletAssetParams,
     ) -> Result<(), Error<DeleteInternalWalletAssetError>>;
+
+    /// GET /internal_wallets/{walletId}
+    ///
+    /// Returns information for an asset in an internal wallet. This endpoint
+    /// will be deprecated after 6 months. As part of the depreciation process
+    /// this endpoint will no longer return balances, only addresses. Until it
+    /// is deprecated, this endpoint will behave the same way. Internal Wallets
+    /// are whitelisted wallets that belong to you outside of Fireblocks.    -
+    /// You can see the balance of the Internal Wallet via Fireblocks   - You
+    /// cannot initiate transactions from Internal Wallets through Fireblocks
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_internal_wallet(
         &self,
         params: GetInternalWalletParams,
     ) -> Result<models::UnmanagedWallet, Error<GetInternalWalletError>>;
+
+    /// GET /internal_wallets/{walletId}/{assetId}
+    ///
+    /// Returns information for an asset in an internal wallet.  Internal
+    /// Wallets are whitelisted wallets that belong to you outside of
+    /// Fireblocks.    - You can see the balance of the Internal Wallet via
+    /// Fireblocks   - You cannot initiate transactions from Internal Wallets
+    /// through Fireblocks  </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor, Viewer.
     async fn get_internal_wallet_asset(
         &self,
         params: GetInternalWalletAssetParams,
     ) -> Result<models::WalletAsset, Error<GetInternalWalletAssetError>>;
+
+    /// GET /internal_wallets/{walletId}/assets
+    ///
+    /// Returns a paginated response of assets in an internal wallet.  This is a new paginated endpoint that gets all the assets from the wallet container with balances. </br>This endpoint returns a limited amount of results with a quick response time.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks  Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets)  Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+    async fn get_internal_wallet_assets_paginated(
+        &self,
+        params: GetInternalWalletAssetsPaginatedParams,
+    ) -> Result<models::PaginatedAssetsResponse, Error<GetInternalWalletAssetsPaginatedError>>;
+
+    /// GET /internal_wallets
+    ///
+    /// Gets a list of internal wallets. **Note**:  - BTC-based assets belonging to whitelisted addresses cannot be retrieved between 00:00 UTC and 00:01 UTC daily due to third-party provider, Blockchain, being unavailable for this 60 second period.  Please wait until the next minute to retrieve BTC-based assets. - The list of assets returned will NOT include the balances anymore. Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks. - You can see the balance of the Internal Wallet via Fireblocks - You cannot initiate transactions from Internal Wallets through Fireblocks Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets) </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_internal_wallets(
         &self,
     ) -> Result<Vec<models::UnmanagedWallet>, Error<GetInternalWalletsError>>;
+
+    /// POST /internal_wallets/{walletId}/set_customer_ref_id
+    ///
+    /// Sets an AML/KYT customer reference ID for the specific internal wallet.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks    Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets) </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn set_customer_ref_id_for_internal_wallet(
         &self,
         params: SetCustomerRefIdForInternalWalletParams,
@@ -125,6 +189,17 @@ pub struct GetInternalWalletAssetParams {
 }
 
 /// struct for passing parameters to the method
+/// [`get_internal_wallet_assets_paginated`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct GetInternalWalletAssetsPaginatedParams {
+    /// The ID of the internal wallet to return assets for
+    pub wallet_id: String,
+    pub page_size: Option<f64>,
+    pub page_cursor: Option<String>,
+}
+
+/// struct for passing parameters to the method
 /// [`set_customer_ref_id_for_internal_wallet`]
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
@@ -141,7 +216,7 @@ pub struct SetCustomerRefIdForInternalWalletParams {
 
 #[async_trait]
 impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
-    /// Creates a new internal wallet with the requested name. Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets)  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+    /// Creates a new internal wallet with the requested name. Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets) </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_internal_wallet(
         &self,
         params: CreateInternalWalletParams,
@@ -173,10 +248,30 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::UnmanagedWallet`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::UnmanagedWallet`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateInternalWalletError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -228,10 +323,30 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::WalletAsset`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::WalletAsset`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateInternalWalletAssetError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -345,10 +460,13 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
         }
     }
 
-    /// Returns all assets in an internal wallet by ID.  Internal Wallets are
-    /// whitelisted wallets that belong to you outside of Fireblocks.    - You
-    /// can see the balance of the Internal Wallet via Fireblocks   - You cannot
-    /// initiate transactions from Internal Wallets through Fireblocks
+    /// Returns information for an asset in an internal wallet. This endpoint
+    /// will be deprecated after 6 months. As part of the depreciation process
+    /// this endpoint will no longer return balances, only addresses. Until it
+    /// is deprecated, this endpoint will behave the same way. Internal Wallets
+    /// are whitelisted wallets that belong to you outside of Fireblocks.    -
+    /// You can see the balance of the Internal Wallet via Fireblocks   - You
+    /// cannot initiate transactions from Internal Wallets through Fireblocks
     /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
     /// Editor, Viewer.
     async fn get_internal_wallet(
@@ -378,10 +496,30 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::UnmanagedWallet`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::UnmanagedWallet`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetInternalWalletError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -431,10 +569,30 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::WalletAsset`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::WalletAsset`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetInternalWalletAssetError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -447,15 +605,83 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
         }
     }
 
-    /// Gets a list of internal wallets.   **Note**: BTC-based assets belonging
-    /// to whitelisted addresses cannot be retrieved between 00:00 UTC and 00:01
-    /// UTC daily due to third-party provider, Blockchair, being unavailable for
-    /// this 60 second period.  Please wait until the next minute to retrieve
-    /// BTC-based assets.  Internal Wallets are whitelisted wallets that belong
-    /// to you outside of Fireblocks.  - You can see the balance of the Internal
-    /// Wallet via Fireblocks - You cannot initiate transactions from Internal
-    /// Wallets through Fireblocks </br>Endpoint Permission: Admin, Non-Signing
-    /// Admin, Signer, Approver, Editor, Viewer.
+    /// Returns a paginated response of assets in an internal wallet.  This is a new paginated endpoint that gets all the assets from the wallet container with balances. </br>This endpoint returns a limited amount of results with a quick response time.  Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks.    - You can see the balance of the Internal Wallet via Fireblocks   - You cannot initiate transactions from Internal Wallets through Fireblocks  Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets)  Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+    async fn get_internal_wallet_assets_paginated(
+        &self,
+        params: GetInternalWalletAssetsPaginatedParams,
+    ) -> Result<models::PaginatedAssetsResponse, Error<GetInternalWalletAssetsPaginatedError>> {
+        let GetInternalWalletAssetsPaginatedParams {
+            wallet_id,
+            page_size,
+            page_cursor,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/internal_wallets/{walletId}/assets",
+            local_var_configuration.base_path,
+            walletId = crate::apis::urlencode(wallet_id)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_str) = page_size {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = page_cursor {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("pageCursor", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::PaginatedAssetsResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::PaginatedAssetsResponse`"
+                    ))))
+                }
+            }
+        } else {
+            let local_var_entity: Option<GetInternalWalletAssetsPaginatedError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Gets a list of internal wallets. **Note**:  - BTC-based assets belonging to whitelisted addresses cannot be retrieved between 00:00 UTC and 00:01 UTC daily due to third-party provider, Blockchain, being unavailable for this 60 second period.  Please wait until the next minute to retrieve BTC-based assets. - The list of assets returned will NOT include the balances anymore. Internal Wallets are whitelisted wallets that belong to you outside of Fireblocks. - You can see the balance of the Internal Wallet via Fireblocks - You cannot initiate transactions from Internal Wallets through Fireblocks Learn more about Whitelisted Internal Addresses [here](https://developers.fireblocks.com/docs/whitelist-addresses#internal-wallets) </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_internal_wallets(
         &self,
     ) -> Result<Vec<models::UnmanagedWallet>, Error<GetInternalWalletsError>> {
@@ -476,10 +702,30 @@ impl WhitelistedInternalWalletsApi for WhitelistedInternalWalletsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::UnmanagedWallet&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::UnmanagedWallet&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetInternalWalletsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -590,6 +836,14 @@ pub enum GetInternalWalletError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetInternalWalletAssetError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`get_internal_wallet_assets_paginated`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GetInternalWalletAssetsPaginatedError {
     DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }

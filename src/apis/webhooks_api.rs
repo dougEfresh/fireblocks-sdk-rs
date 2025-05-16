@@ -8,19 +8,29 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait WebhooksApi: Send + Sync {
+    /// POST /webhooks/resend/{txId}
+    ///
+    /// Resends webhook notifications for a transaction by its unique identifier. Learn more about Fireblocks Webhooks in the following [guide](https://developers.fireblocks.com/docs/configure-webhooks). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn resend_transaction_webhooks(
         &self,
         params: ResendTransactionWebhooksParams,
     ) -> Result<models::ResendWebhooksByTransactionIdResponse, Error<ResendTransactionWebhooksError>>;
+
+    /// POST /webhooks/resend
+    ///
+    /// Resends all failed webhook notifications. Learn more about Fireblocks Webhooks in the following [guide](https://developers.fireblocks.com/docs/configure-webhooks). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn resend_webhooks(
         &self,
         params: ResendWebhooksParams,
@@ -102,10 +112,30 @@ impl WebhooksApi for WebhooksApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ResendWebhooksByTransactionIdResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ResendWebhooksByTransactionIdResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<ResendTransactionWebhooksError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -146,10 +176,30 @@ impl WebhooksApi for WebhooksApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ResendWebhooksResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ResendWebhooksResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<ResendWebhooksError> =
                 serde_json::from_str(&local_var_content).ok();

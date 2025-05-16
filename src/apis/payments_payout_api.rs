@@ -8,23 +8,57 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait PaymentsPayoutApi: Send + Sync {
+    /// POST /payments/payout
+    ///
+    /// **Note:** The reference content in this section documents the Payments Engine endpoint. The Payments Engine endpoints include APIs available only for customers with Payments Engine enabled on their accounts. </br> </br>These endpoints are currently in beta and might be subject to changes.</br> </br>If you want to learn more about Fireblocks Payments Engine, please contact your Fireblocks Customer Success Manager or email CSM@fireblocks.com. </br> </br> <b u>Create a payout instruction set.</b> </u></br> A payout instruction set is a set of instructions for distributing payments from a single payment account to a list of payee accounts. </br> The instruction set defines: </br> <ul> <li>the payment account and its account type (vault, exchange, or fiat). </li> <li>the account type (vault account, exchange account, whitelisted address, network connection, fiat account, or merchant account), the amount, and the asset of payment for each payee account.</li> </ul> Learn more about Fireblocks Payments - Payouts in the following [guide](https://developers.fireblocks.com/docs/create-payouts). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn create_payout(
         &self,
         params: CreatePayoutParams,
     ) -> Result<models::PayoutResponse, Error<CreatePayoutError>>;
+
+    /// POST /payments/payout/{payoutId}/actions/execute
+    ///
+    /// **Note:** The reference content in this section documents the Payments
+    /// Engine endpoint. The Payments Engine endpoints include APIs available
+    /// only for customers with Payments Engine enabled on their accounts. </br>
+    /// </br>These endpoints are currently in beta and might be subject to
+    /// changes.</br> </br>If you want to learn more about Fireblocks Payments
+    /// Engine, please contact your Fireblocks Customer Success Manager or email
+    /// CSM@fireblocks.com. </br> </br><b u>Execute a payout instruction
+    /// set.</b> </u> </br> </br>The instruction set will be verified and
+    /// executed.</br> <b><u>Source locking</br></b> </u> If you are executing a
+    /// payout instruction set from a payment account with an already active
+    /// payout the active payout will complete before the new payout instruction
+    /// set can be executed. </br> You cannot execute the same payout
+    /// instruction set more than once. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn execute_payout_action(
         &self,
         params: ExecutePayoutActionParams,
     ) -> Result<models::DispatchPayoutResponse, Error<ExecutePayoutActionError>>;
+
+    /// GET /payments/payout/{payoutId}
+    ///
+    /// **Note:** The reference content in this section documents the Payments
+    /// Engine endpoint. The Payments Engine endpoints include APIs available
+    /// only for customers with Payments Engine enabled on their accounts. </br>
+    /// </br>These endpoints are currently in beta and might be subject to
+    /// changes.</br> </br>If you want to learn more about Fireblocks Payments
+    /// Engine, please contact your Fireblocks Customer Success Manager or email
+    /// CSM@fireblocks.com. </br> </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn get_payout(
         &self,
         params: GetPayoutParams,
@@ -108,10 +142,30 @@ impl PaymentsPayoutApi for PaymentsPayoutApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::PayoutResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::PayoutResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreatePayoutError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -172,10 +226,30 @@ impl PaymentsPayoutApi for PaymentsPayoutApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::DispatchPayoutResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::DispatchPayoutResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<ExecutePayoutActionError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -223,10 +297,30 @@ impl PaymentsPayoutApi for PaymentsPayoutApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::PayoutResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::PayoutResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetPayoutError> =
                 serde_json::from_str(&local_var_content).ok();
