@@ -8,23 +8,39 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait OffExchangeApi: Send + Sync {
+    /// POST /off_exchange/add
+    ///
+    /// Add collateral and create deposit request. Learn more about Fireblocks Off Exchange in the following [guide](https://developers.fireblocks.com/docs/off-exchange). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn add_off_exchange(
         &self,
         params: AddOffExchangeParams,
     ) -> Result<models::CreateTransactionResponse, Error<AddOffExchangeError>>;
+
+    /// GET /off_exchange/collateral_accounts/{mainExchangeAccountId}
+    ///
+    /// Returns a collateral account by mainExchangeAccountId. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_off_exchange_collateral_accounts(
         &self,
         params: GetOffExchangeCollateralAccountsParams,
     ) -> Result<models::ExchangeAccount, Error<GetOffExchangeCollateralAccountsError>>;
+
+    /// GET /off_exchange/settlements/transactions
+    ///
+    /// Get settlements transactions from exchange. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_off_exchange_settlement_transactions(
         &self,
         params: GetOffExchangeSettlementTransactionsParams,
@@ -32,10 +48,19 @@ pub trait OffExchangeApi: Send + Sync {
         models::ExchangeSettlementTransactionsResponse,
         Error<GetOffExchangeSettlementTransactionsError>,
     >;
+
+    /// POST /off_exchange/remove
+    ///
+    /// Remove collateral and create withdraw request. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn remove_off_exchange(
         &self,
         params: RemoveOffExchangeParams,
     ) -> Result<models::CreateTransactionResponse, Error<RemoveOffExchangeError>>;
+
+    /// POST /off_exchange/settlements/trader
+    ///
+    /// Create settlement for a trader. Learn more about Fireblocks Off Exchange in the following [guide](https://developers.fireblocks.com/docs/off-exchange). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn settle_off_exchange_trades(
         &self,
         params: SettleOffExchangeTradesParams,
@@ -140,10 +165,30 @@ impl OffExchangeApi for OffExchangeApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CreateTransactionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CreateTransactionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<AddOffExchangeError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -187,10 +232,30 @@ impl OffExchangeApi for OffExchangeApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ExchangeAccount`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ExchangeAccount`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetOffExchangeCollateralAccountsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -240,10 +305,30 @@ impl OffExchangeApi for OffExchangeApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ExchangeSettlementTransactionsResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ExchangeSettlementTransactionsResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetOffExchangeSettlementTransactionsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -290,10 +375,30 @@ impl OffExchangeApi for OffExchangeApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CreateTransactionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CreateTransactionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<RemoveOffExchangeError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -341,10 +446,30 @@ impl OffExchangeApi for OffExchangeApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SettlementResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SettlementResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SettleOffExchangeTradesError> =
                 serde_json::from_str(&local_var_content).ok();

@@ -8,39 +8,76 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait WhitelistedContractsApi: Send + Sync {
+    /// POST /contracts/{contractId}/{assetId}
+    ///
+    /// Adds an asset to an existing whitelisted contract. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn add_contract_asset(
         &self,
         params: AddContractAssetParams,
     ) -> Result<models::ExternalWalletAsset, Error<AddContractAssetError>>;
+
+    /// POST /contracts
+    ///
+    /// Creates a new whitelisted contract.  Learn more about Whitelisted Smart Contracts [here](https://developers.fireblocks.com/docs/whitelist-addresses#contracts).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn create_contract(
         &self,
         params: CreateContractParams,
     ) -> Result<models::UnmanagedWallet, Error<CreateContractError>>;
+
+    /// DELETE /contracts/{contractId}
+    ///
+    /// Deletes a whitelisted contract by Fireblocks Contract ID. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn delete_contract(
         &self,
         params: DeleteContractParams,
     ) -> Result<(), Error<DeleteContractError>>;
+
+    /// DELETE /contracts/{contractId}/{assetId}
+    ///
+    /// Deletes a whitelisted contract's asset by Fireblocks Contract ID and
+    /// Asset ID. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
+    /// Approver, Editor.
     async fn delete_contract_asset(
         &self,
         params: DeleteContractAssetParams,
     ) -> Result<(), Error<DeleteContractAssetError>>;
+
+    /// GET /contracts/{contractId}
+    ///
+    /// Returns a whitelisted contract by Fireblocks Contract ID.  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_contract(
         &self,
         params: GetContractParams,
     ) -> Result<models::UnmanagedWallet, Error<GetContractError>>;
+
+    /// GET /contracts/{contractId}/{assetId}
+    ///
+    /// Returns a whitelisted contract's asset by ID.  </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_contract_asset(
         &self,
         params: GetContractAssetParams,
     ) -> Result<models::ExternalWalletAsset, Error<GetContractAssetError>>;
+
+    /// GET /contracts
+    ///
+    /// Gets a list of whitelisted contracts. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn get_contracts(&self)
         -> Result<Vec<models::UnmanagedWallet>, Error<GetContractsError>>;
 }
@@ -161,10 +198,30 @@ impl WhitelistedContractsApi for WhitelistedContractsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ExternalWalletAsset`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ExternalWalletAsset`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<AddContractAssetError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -209,10 +266,30 @@ impl WhitelistedContractsApi for WhitelistedContractsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::UnmanagedWallet`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::UnmanagedWallet`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateContractError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -349,10 +426,30 @@ impl WhitelistedContractsApi for WhitelistedContractsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::UnmanagedWallet`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::UnmanagedWallet`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetContractError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -398,10 +495,30 @@ impl WhitelistedContractsApi for WhitelistedContractsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ExternalWalletAsset`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ExternalWalletAsset`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetContractAssetError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -436,10 +553,30 @@ impl WhitelistedContractsApi for WhitelistedContractsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::UnmanagedWallet&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::UnmanagedWallet&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetContractsError> =
                 serde_json::from_str(&local_var_content).ok();

@@ -8,68 +8,316 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait FireblocksNetworkApi: Send + Sync {
+    /// GET /network_connections/{connectionId}/is_third_party_routing/
+    /// {assetType}
+    ///
+    /// The Fireblocks Network allows for flexibility around incoming deposits.
+    /// A receiver can receive network deposits to locations other than
+    /// Fireblocks. This endpoint validates whether future transactions are
+    /// routed to the displayed recipient or to a 3rd party.  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin.
     async fn check_third_party_routing(
         &self,
         params: CheckThirdPartyRoutingParams,
     ) -> Result<models::ThirdPartyRouting, Error<CheckThirdPartyRoutingError>>;
+
+    /// POST /network_connections
+    ///
+    /// Initiates a new network connection.  **Note:** This API call is subject to Flexible Routing Schemes.  Your routing policy defines how your transactions are routed. You can choose 1 of the 3 different schemes mentioned below for each asset type:   - **None**; Defines the profile routing to no destination for that asset type. Incoming transactions to asset types routed to `None` will fail.   - **Custom**; Route to an account that you choose. If you remove the account, incoming transactions will fail until you choose another one.   - **Default**; Use the routing specified by the network profile the connection is connected to. This scheme is also referred to as \"Profile Routing\"  Default Workspace Presets:   - Network Profile Crypto → **Custom**   - Network Profile FIAT → **None**   - Network Connection Crypto → **Default**   - Network Connection FIAT → **Default**  Supported asset groups for routing policy can be found at `/network_ids/routing_policy_asset_groups` **Note**: By default, Custom routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`). Learn more about Fireblocks Network in the following [guide](https://developers.fireblocks.com/docs/connect-to-the-fireblocks-network). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn create_network_connection(
         &self,
         params: CreateNetworkConnectionParams,
     ) -> Result<models::NetworkConnectionResponse, Error<CreateNetworkConnectionError>>;
+
+    /// POST /network_ids
+    ///
+    /// Creates a new Network ID.  **Note:** This API call is subject to
+    /// Flexible Routing Schemes.  Your routing policy defines how your
+    /// transactions are routed. You can choose 1 of the 3 different schemes
+    /// mentioned below for each asset type:   - **None**; Defines the profile
+    /// routing to no destination for that asset type. Incoming transactions to
+    /// asset types routed to `None` will fail.   - **Custom**; Route to an
+    /// account that you choose. If you remove the account, incoming
+    /// transactions will fail until you choose another one.   - **Default**;
+    /// Use the routing specified by the network profile the connection is
+    /// connected to. This scheme is also referred to as \"Profile Routing\"
+    /// Default Workspace Presets:   - Network Profile Crypto → **Custom**   -
+    /// Network Profile FIAT → **None**   - Network Connection Crypto →
+    /// **Default**   - Network Connection FIAT → **Default**  Supported asset
+    /// groups for routing policy can be found at
+    /// `/network_ids/routing_policy_asset_groups` **Note**: By default, Custom
+    /// routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`). </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin.
     async fn create_network_id(
         &self,
         params: CreateNetworkIdParams,
     ) -> Result<models::NetworkIdResponse, Error<CreateNetworkIdError>>;
+
+    /// DELETE /network_connections/{connectionId}
+    ///
+    /// Deletes an existing network connection specified by its connection ID.
+    /// **Note:** This API call is subject to Flexible Routing Schemes.  Your
+    /// routing policy defines how your transactions are routed. You can choose
+    /// 1 of the 3 different schemes mentioned below for each asset type:   -
+    /// **None**; Defines the profile routing to no destination for that asset
+    /// type. Incoming transactions to asset types routed to `None` will fail.
+    /// - **Custom**; Route to an account that you choose. If you remove the
+    /// account, incoming transactions will fail until you choose another one.
+    /// - **Default**; Use the routing specified by the network profile the
+    /// connection is connected to. This scheme is also referred to as \"Profile
+    /// Routing\"  Default Workspace Presets:   - Network Profile Crypto →
+    /// **Custom**   - Network Profile FIAT → **None**   - Network Connection
+    /// Crypto → **Default**   - Network Connection FIAT → **Default**
+    /// **Note**: By default, Custom routing scheme uses (`dstId` = `0`,
+    /// `dstType` = `VAULT`). </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn delete_network_connection(
         &self,
         params: DeleteNetworkConnectionParams,
     ) -> Result<models::DeleteNetworkConnectionResponse, Error<DeleteNetworkConnectionError>>;
+
+    /// DELETE /network_ids/{networkId}
+    ///
+    /// Deletes a network by its ID.  **Note:** This API call is subject to
+    /// Flexible Routing Schemes.  Your routing policy defines how your
+    /// transactions are routed. You can choose 1 of the 3 different schemes
+    /// mentioned below for each asset type:   - **None**; Defines the profile
+    /// routing to no destination for that asset type. Incoming transactions to
+    /// asset types routed to `None` will fail.   - **Custom**; Route to an
+    /// account that you choose. If you remove the account, incoming
+    /// transactions will fail until you choose another one.   - **Default**;
+    /// Use the routing specified by the network profile the connection is
+    /// connected to. This scheme is also referred to as \"Profile Routing\"
+    /// Default Workspace Presets:   - Network Profile Crypto → **Custom**   -
+    /// Network Profile FIAT → **None**   - Network Connection Crypto →
+    /// **Default**   - Network Connection FIAT → **Default**  **Note**: By
+    /// default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
+    /// `VAULT`). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn delete_network_id(
         &self,
         params: DeleteNetworkIdParams,
     ) -> Result<models::DeleteNetworkIdResponse, Error<DeleteNetworkIdError>>;
+
+    /// GET /network_connections/{connectionId}
+    ///
+    /// Gets a network connection by ID.  **Note:** This API call is subject to
+    /// Flexible Routing Schemes.  Your routing policy defines how your
+    /// transactions are routed. You can choose 1 of the 3 different schemes
+    /// mentioned below for each asset type:   - **None**; Defines the profile
+    /// routing to no destination for that asset type. Incoming transactions to
+    /// asset types routed to `None` will fail.   - **Custom**; Route to an
+    /// account that you choose. If you remove the account, incoming
+    /// transactions will fail until you choose another one.   - **Default**;
+    /// Use the routing specified by the network profile the connection is
+    /// connected to. This scheme is also referred to as \"Profile Routing\"
+    /// Default Workspace Presets:   - Network Profile Crypto → **Custom**   -
+    /// Network Profile FIAT → **None**   - Network Connection Crypto →
+    /// **Default**   - Network Connection FIAT → **Default**  **Note**: By
+    /// default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
+    /// `VAULT`). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_network(
         &self,
         params: GetNetworkParams,
     ) -> Result<models::NetworkConnectionResponse, Error<GetNetworkError>>;
+
+    /// GET /network_connections
+    ///
+    /// Returns all network connections.  **Note:** This API call is subject to
+    /// Flexible Routing Schemes.  Your routing policy defines how your
+    /// transactions are routed. You can choose 1 of the 3 different schemes
+    /// mentioned below for each asset type:   - **None**; Defines the profile
+    /// routing to no destination for that asset type. Incoming transactions to
+    /// asset types routed to `None` will fail.   - **Custom**; Route to an
+    /// account that you choose. If you remove the account, incoming
+    /// transactions will fail until you choose another one.   - **Default**;
+    /// Use the routing specified by the network profile the connection is
+    /// connected to. This scheme is also referred to as \"Profile Routing\"
+    /// Default Workspace Presets:   - Network Profile Crypto → **Custom**   -
+    /// Network Profile FIAT → **None**   - Network Connection Crypto →
+    /// **Default**   - Network Connection FIAT → **Default**      - **Note**:
+    /// By default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
+    /// `VAULT`).  </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_network_connections(
         &self,
     ) -> Result<Vec<models::NetworkConnectionResponse>, Error<GetNetworkConnectionsError>>;
+
+    /// GET /network_ids/{networkId}
+    ///
+    /// Retrieves a network by its ID.  **Note:** This API call is subject to
+    /// Flexible Routing Schemes.  Your routing policy defines how your
+    /// transactions are routed. You can choose 1 of the 3 different schemes
+    /// mentioned below for each asset type:   - **None**; Defines the profile
+    /// routing to no destination for that asset type. Incoming transactions to
+    /// asset types routed to `None` will fail.   - **Custom**; Route to an
+    /// account that you choose. If you remove the account, incoming
+    /// transactions will fail until you choose another one.   - **Default**;
+    /// Use the routing specified by the network profile the connection is
+    /// connected to. This scheme is also referred to as \"Profile Routing\"
+    /// Default Workspace Presets:   - Network Profile Crypto → **Custom**   -
+    /// Network Profile FIAT → **None**   - Network Connection Crypto →
+    /// **Default**   - Network Connection FIAT → **Default**  **Note**: By
+    /// default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
+    /// `VAULT`). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn get_network_id(
         &self,
         params: GetNetworkIdParams,
     ) -> Result<models::NetworkIdResponse, Error<GetNetworkIdError>>;
+
+    /// GET /network_ids
+    ///
+    /// Retrieves a list of all local and discoverable remote network IDs.
+    /// **Note:** This API call is subject to Flexible Routing Schemes.  Your
+    /// routing policy defines how your transactions are routed. You can choose
+    /// 1 of the 3 different schemes mentioned below for each asset type:   -
+    /// **None**; Defines the profile routing to no destination for that asset
+    /// type. Incoming transactions to asset types routed to `None` will fail.
+    /// - **Custom**; Route to an account that you choose. If you remove the
+    /// account, incoming transactions will fail until you choose another one.
+    /// - **Default**; Use the routing specified by the network profile the
+    /// connection is connected to. This scheme is also referred to as \"Profile
+    /// Routing\"  Default Workspace Presets:   - Network Profile Crypto →
+    /// **Custom**   - Network Profile FIAT → **None**   - Network Connection
+    /// Crypto → **Default**   - Network Connection FIAT → **Default**
+    /// **Note**: By default, Custom routing scheme uses (`dstId` = `0`,
+    /// `dstType` = `VAULT`). </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn get_network_ids(
         &self,
     ) -> Result<Vec<models::NetworkIdResponse>, Error<GetNetworkIdsError>>;
+
+    /// GET /network_ids/routing_policy_asset_groups
+    ///
+    /// Retrieves a list of all enabled routing policy asset groups. Your
+    /// routing policy defines how your transactions are routed. You can use one
+    /// or more enabled routing policy asset groups to describe connection or
+    /// network id routing policy. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn get_routing_policy_asset_groups(
         &self,
     ) -> Result<Vec<String>, Error<GetRoutingPolicyAssetGroupsError>>;
+
+    /// GET /network_ids/search
+    ///
+    /// Retrieves a list of all local and discoverable remote network IDs. Can
+    /// be filtered.  **Note:** This API call is subject to Flexible Routing
+    /// Schemes.  Your routing policy defines how your transactions are routed.
+    /// You can choose 1 of the 3 different schemes mentioned below for each
+    /// asset type:   - **None**; Defines the profile routing to no destination
+    /// for that asset type. Incoming transactions to asset types routed to
+    /// `None` will fail.   - **Custom**; Route to an account that you choose.
+    /// If you remove the account, incoming transactions will fail until you
+    /// choose another one.   - **Default**; Use the routing specified by the
+    /// network profile the connection is connected to. This scheme is also
+    /// referred to as \"Profile Routing\"  Default Workspace Presets:   -
+    /// Network Profile Crypto → **Custom**   - Network Profile FIAT → **None**
+    /// - Network Connection Crypto → **Default**   - Network Connection FIAT →
+    /// **Default**      - **Note**: By default, Custom routing scheme uses
+    /// (`dstId` = `0`, `dstType` = `VAULT`).
     async fn search_network_ids(
         &self,
         params: SearchNetworkIdsParams,
     ) -> Result<models::SearchNetworkIdsResponse, Error<SearchNetworkIdsError>>;
+
+    /// PATCH /network_ids/{networkId}/set_discoverability
+    ///
+    /// Update whether or not the network ID is discoverable by others.
+    /// **Note:** This API call is subject to Flexible Routing Schemes.  Your
+    /// routing policy defines how your transactions are routed. You can choose
+    /// 1 of the 3 different schemes mentioned below for each asset type:   -
+    /// **None**; Defines the profile routing to no destination for that asset
+    /// type. Incoming transactions to asset types routed to `None` will fail.
+    /// - **Custom**; Route to an account that you choose. If you remove the
+    /// account, incoming transactions will fail until you choose another one.
+    /// - **Default**; Use the routing specified by the network profile the
+    /// connection is connected to. This scheme is also referred to as \"Profile
+    /// Routing\"  Default Workspace Presets:   - Network Profile Crypto →
+    /// **Custom**   - Network Profile FIAT → **None**   - Network Connection
+    /// Crypto → **Default**   - Network Connection FIAT → **Default**
+    /// **Note**: By default, Custom routing scheme uses (`dstId` = `0`,
+    /// `dstType` = `VAULT`). </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin.
     async fn set_network_id_discoverability(
         &self,
         params: SetNetworkIdDiscoverabilityParams,
     ) -> Result<models::SetNetworkIdResponse, Error<SetNetworkIdDiscoverabilityError>>;
+
+    /// PATCH /network_ids/{networkId}/set_name
+    ///
+    /// Updates name of a specified network ID.  **Note:** This API call is
+    /// subject to Flexible Routing Schemes.  Your routing policy defines how
+    /// your transactions are routed. You can choose 1 of the 3 different
+    /// schemes mentioned below for each asset type:   - **None**; Defines the
+    /// profile routing to no destination for that asset type. Incoming
+    /// transactions to asset types routed to `None` will fail.   - **Custom**;
+    /// Route to an account that you choose. If you remove the account, incoming
+    /// transactions will fail until you choose another one.   - **Default**;
+    /// Use the routing specified by the network profile the connection is
+    /// connected to. This scheme is also referred to as \"Profile Routing\"
+    /// Default Workspace Presets:   - Network Profile Crypto → **Custom**   -
+    /// Network Profile FIAT → **None**   - Network Connection Crypto →
+    /// **Default**   - Network Connection FIAT → **Default**  **Note**: By
+    /// default, Custom routing scheme uses (`dstId` = `0`, `dstType` =
+    /// `VAULT`). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn set_network_id_name(
         &self,
         params: SetNetworkIdNameParams,
     ) -> Result<models::SetNetworkIdResponse, Error<SetNetworkIdNameError>>;
+
+    /// PATCH /network_ids/{networkId}/set_routing_policy
+    ///
+    /// Updates the routing policy of a specified network ID.  **Note:** This
+    /// API call is subject to Flexible Routing Schemes.  Your routing policy
+    /// defines how your transactions are routed. You can choose 1 of the 3
+    /// different schemes mentioned below for each asset type:   - **None**;
+    /// Defines the profile routing to no destination for that asset type.
+    /// Incoming transactions to asset types routed to `None` will fail.   -
+    /// **Custom**; Route to an account that you choose. If you remove the
+    /// account, incoming transactions will fail until you choose another one.
+    /// - **Default**; Use the routing specified by the network profile the
+    /// connection is connected to. This scheme is also referred to as \"Profile
+    /// Routing\"  Default Workspace Presets:   - Network Profile Crypto →
+    /// **Custom**   - Network Profile FIAT → **None**   - Network Connection
+    /// Crypto → **Default**   - Network Connection FIAT → **Default**
+    /// Supported asset groups for routing policy can be found at
+    /// `/network_ids/routing_policy_asset_groups` **Note**: By default, Custom
+    /// routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`). </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin.
     async fn set_network_id_routing_policy(
         &self,
         params: SetNetworkIdRoutingPolicyParams,
     ) -> Result<models::SetNetworkIdResponse, Error<SetNetworkIdRoutingPolicyError>>;
+
+    /// PATCH /network_connections/{connectionId}/set_routing_policy
+    ///
+    /// Updates an existing network connection's routing policy.  **Note:** This
+    /// API call is subject to Flexible Routing Schemes.  Your routing policy
+    /// defines how your transactions are routed. You can choose 1 of the 3
+    /// different schemes mentioned below for each asset type:   - **None**;
+    /// Defines the profile routing to no destination for that asset type.
+    /// Incoming transactions to asset types routed to `None` will fail.   -
+    /// **Custom**; Route to an account that you choose. If you remove the
+    /// account, incoming transactions will fail until you choose another one.
+    /// - **Default**; Use the routing specified by the network profile the
+    /// connection is connected to. This scheme is also referred to as \"Profile
+    /// Routing\"  Default Workspace Presets:   - Network Profile Crypto →
+    /// **Custom**   - Network Profile FIAT → **None**   - Network Connection
+    /// Crypto → **Default**   - Network Connection FIAT → **Default**
+    /// Supported asset groups for routing policy can be found at
+    /// `/network_ids/routing_policy_asset_groups` **Note**: By default, Custom
+    /// routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`).  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin.
     async fn set_routing_policy(
         &self,
         params: SetRoutingPolicyParams,
@@ -244,10 +492,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ThirdPartyRouting`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ThirdPartyRouting`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CheckThirdPartyRoutingError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -260,7 +528,7 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         }
     }
 
-    /// Initiates a new network connection.  **Note:** This API call is subject to Flexible Routing Schemes.  Your routing policy defines how your transactions are routed. You can choose 1 of the 3 different schemes mentioned below for each asset type:   - **None**; Defines the profile routing to no destination for that asset type. Incoming transactions to asset types routed to `None` will fail.   - **Custom**; Route to an account that you choose. If you remove the account, incoming transactions will fail until you choose another one.   - **Default**; Use the routing specified by the network profile the connection is connected to. This scheme is also referred to as \"Profile Routing\"  Default Workspace Presets:   - Network Profile Crypto → **Custom**   - Network Profile FIAT → **None**   - Network Connection Crypto → **Default**   - Network Connection FIAT → **Default**  Supported asset groups for routing police can be found at `/network_ids/routing_policy_asset_groups` **Note**: By default, Custom routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`). Learn more about Fireblocks Network in the following [guide](https://developers.fireblocks.com/docs/connect-to-the-fireblocks-network). </br>Endpoint Permission: Admin, Non-Signing Admin.
+    /// Initiates a new network connection.  **Note:** This API call is subject to Flexible Routing Schemes.  Your routing policy defines how your transactions are routed. You can choose 1 of the 3 different schemes mentioned below for each asset type:   - **None**; Defines the profile routing to no destination for that asset type. Incoming transactions to asset types routed to `None` will fail.   - **Custom**; Route to an account that you choose. If you remove the account, incoming transactions will fail until you choose another one.   - **Default**; Use the routing specified by the network profile the connection is connected to. This scheme is also referred to as \"Profile Routing\"  Default Workspace Presets:   - Network Profile Crypto → **Custom**   - Network Profile FIAT → **None**   - Network Connection Crypto → **Default**   - Network Connection FIAT → **Default**  Supported asset groups for routing policy can be found at `/network_ids/routing_policy_asset_groups` **Note**: By default, Custom routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`). Learn more about Fireblocks Network in the following [guide](https://developers.fireblocks.com/docs/connect-to-the-fireblocks-network). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn create_network_connection(
         &self,
         params: CreateNetworkConnectionParams,
@@ -293,10 +561,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::NetworkConnectionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::NetworkConnectionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateNetworkConnectionError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -322,7 +610,7 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// Default Workspace Presets:   - Network Profile Crypto → **Custom**   -
     /// Network Profile FIAT → **None**   - Network Connection Crypto →
     /// **Default**   - Network Connection FIAT → **Default**  Supported asset
-    /// groups for routing police can be found at
+    /// groups for routing policy can be found at
     /// `/network_ids/routing_policy_asset_groups` **Note**: By default, Custom
     /// routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`). </br>Endpoint
     /// Permission: Admin, Non-Signing Admin.
@@ -357,10 +645,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::NetworkIdResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::NetworkIdResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateNetworkIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -416,10 +724,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::DeleteNetworkConnectionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::DeleteNetworkConnectionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<DeleteNetworkConnectionError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -474,10 +802,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::DeleteNetworkIdResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::DeleteNetworkIdResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<DeleteNetworkIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -532,10 +880,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::NetworkConnectionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::NetworkConnectionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetNetworkError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -584,10 +952,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::NetworkConnectionResponse&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::NetworkConnectionResponse&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetNetworkConnectionsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -642,10 +1030,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::NetworkIdResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::NetworkIdResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetNetworkIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -694,10 +1102,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::NetworkIdResponse&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::NetworkIdResponse&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetNetworkIdsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -738,10 +1166,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;String&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;String&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetRoutingPolicyAssetGroupsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -818,10 +1266,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SearchNetworkIdsResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SearchNetworkIdsResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SearchNetworkIdsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -881,10 +1349,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SetNetworkIdResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SetNetworkIdResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetNetworkIdDiscoverabilityError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -943,10 +1431,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SetNetworkIdResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SetNetworkIdResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetNetworkIdNameError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -972,7 +1480,7 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// Routing\"  Default Workspace Presets:   - Network Profile Crypto →
     /// **Custom**   - Network Profile FIAT → **None**   - Network Connection
     /// Crypto → **Default**   - Network Connection FIAT → **Default**
-    /// Supported asset groups for routing police can be found at
+    /// Supported asset groups for routing policy can be found at
     /// `/network_ids/routing_policy_asset_groups` **Note**: By default, Custom
     /// routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`). </br>Endpoint
     /// Permission: Admin, Non-Signing Admin.
@@ -1007,10 +1515,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SetNetworkIdResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SetNetworkIdResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetNetworkIdRoutingPolicyError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1036,7 +1564,7 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
     /// Routing\"  Default Workspace Presets:   - Network Profile Crypto →
     /// **Custom**   - Network Profile FIAT → **None**   - Network Connection
     /// Crypto → **Default**   - Network Connection FIAT → **Default**
-    /// Supported asset groups for routing police can be found at
+    /// Supported asset groups for routing policy can be found at
     /// `/network_ids/routing_policy_asset_groups` **Note**: By default, Custom
     /// routing scheme uses (`dstId` = `0`, `dstType` = `VAULT`).  </br>Endpoint
     /// Permission: Admin, Non-Signing Admin.
@@ -1071,10 +1599,30 @@ impl FireblocksNetworkApi for FireblocksNetworkApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SetRoutingPolicyResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SetRoutingPolicyResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetRoutingPolicyError> =
                 serde_json::from_str(&local_var_content).ok();

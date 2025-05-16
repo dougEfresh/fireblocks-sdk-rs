@@ -8,51 +8,113 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait TransactionsApi: Send + Sync {
+    /// POST /transactions/{txId}/cancel
+    ///
+    /// Cancels a transaction by Fireblocks Transaction ID.  Can be used only
+    /// for transactions that did not get to the BROADCASTING state.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn cancel_transaction(
         &self,
         params: CancelTransactionParams,
     ) -> Result<models::CancelTransactionResponse, Error<CancelTransactionError>>;
+
+    /// POST /transactions
+    ///
+    /// Creates a new transaction. This endpoint can be used for regular Transfers, Contract Calls, Raw & Typed message signing. - For Transfers, the required parameters are: `assetId`, `source`, `destination` and `amount`.  - For Contract Calls, the required parameters are: `operation.CONTRACT_CALL`, `assetId` (Base Asset), `source`, `destination`, `amount` (usually 0) and `extraParameters` object with `contractCallData` string. - For Solana Program Calls, the required parameters are: `operation.PROGRAM_CALL`, `assetId` (SOL/SOL_TEST), `source`,  and `extraParameters` object with `programCallData` key while the value is a Base64 encoded unsigned serialized Solana transaction object.  This feature is currently in beta and might be subject to changes - Please contact your CSM for any additional information.   - Typed Message Signing is supported for the following asset IDs: 'ETH', 'BTC' and 'TRX'. [Typed Message Signing Guide](https://developers.fireblocks.com/docs/typed-message-signing-overview). - To create ZEC transaction, please call [Get unspent UTXO Input endpoint](https://developers.fireblocks.com/reference/getunspentinputs) to get the amount and use it as an input under `networkfee` on this endpoint. Please use this formula `(0.0001 + 0.00005*N) where N is the number of inputs` to calculate the fee needed and use it as an input under networkFee field - When using `maxFee` and a boost is needed, the user should set a custom `gasPrice` to force the override. Learn more about Fireblocks Transactions management in the following [guide](https://developers.fireblocks.com/reference/create-transactions). </br>Endpoint Permission: Admin, Signer, Editor.
     async fn create_transaction(
         &self,
         params: CreateTransactionParams,
     ) -> Result<models::CreateTransactionResponse, Error<CreateTransactionError>>;
+
+    /// POST /transactions/{txId}/drop
+    ///
+    /// Drops a stuck ETH (EVM) transaction and creates a replacement
+    /// transaction with 0 amount. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor.
     async fn drop_transaction(
         &self,
         params: DropTransactionParams,
     ) -> Result<models::DropTransactionResponse, Error<DropTransactionError>>;
+
+    /// POST /transactions/estimate_fee
+    ///
+    /// Estimates the transaction fee for a specific transaction request. This endpoint simulates a transaction which means that the system will expect to have the requested asset and balance in the specified wallet.   **Note**: Supports all Fireblocks assets except ZCash (ZEC). Learn more about Fireblocks Fee Management in the following [guide](https://developers.fireblocks.com/reference/estimate-transaction-fee). </br>Endpoint Permission: Admin, Signer, Approver, Editor.
     async fn estimate_transaction_fee(
         &self,
         params: EstimateTransactionFeeParams,
     ) -> Result<models::EstimatedTransactionFeeResponse, Error<EstimateTransactionFeeError>>;
+
+    /// POST /transactions/{txId}/freeze
+    ///
+    /// Freezes a transaction by ID.  Usually used for AML integrations when the
+    /// incoming funds should be quarantined. For account based assets - the
+    /// entire amount of the transaction is frozen  For UTXO based assets - all
+    /// UTXOs of the specified transaction are frozen </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin.
     async fn freeze_transaction(
         &self,
         params: FreezeTransactionParams,
     ) -> Result<models::FreezeTransactionResponse, Error<FreezeTransactionError>>;
+
+    /// GET /transactions/{txId}
+    ///
+    /// Get a specific transaction data by Fireblocks Transaction ID
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_transaction(
         &self,
         params: GetTransactionParams,
     ) -> Result<models::TransactionResponse, Error<GetTransactionError>>;
+
+    /// GET /transactions/external_tx_id/{externalTxId}
+    ///
+    /// Returns transaction by external transaction ID. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_transaction_by_external_id(
         &self,
         params: GetTransactionByExternalIdParams,
     ) -> Result<models::TransactionResponse, Error<GetTransactionByExternalIdError>>;
+
+    /// GET /transactions
+    ///
+    /// Get the transaction history for your workspace. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_transactions(
         &self,
         params: GetTransactionsParams,
     ) -> Result<Vec<models::TransactionResponse>, Error<GetTransactionsError>>;
+
+    /// POST /transactions/rescan
+    ///
+    /// Rescan transaction by running an async job. </br>  **Note**: - These
+    /// endpoints are currently in beta and might be subject to changes. - We
+    /// limit the amount of the transaction to 16 per request. - Please contact
+    /// to CSM to get access to this endpoint. - This operation can only be
+    /// enabled under `BROADCASTING` or `CONFIRMING`  </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn rescan_transactions_beta(
         &self,
         params: RescanTransactionsBetaParams,
     ) -> Result<Vec<models::ValidatedTransactionsForRescan>, Error<RescanTransactionsBetaError>>;
+
+    /// POST /txHash/{txHash}/set_confirmation_threshold
+    ///
+    /// Overrides the required number of confirmations for transaction
+    /// completion by transaction hash. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn set_confirmation_threshold_by_transaction_hash(
         &self,
         params: SetConfirmationThresholdByTransactionHashParams,
@@ -60,6 +122,12 @@ pub trait TransactionsApi: Send + Sync {
         models::SetConfirmationsThresholdResponse,
         Error<SetConfirmationThresholdByTransactionHashError>,
     >;
+
+    /// POST /transactions/{txId}/set_confirmation_threshold
+    ///
+    /// Overrides the required number of confirmations for transaction
+    /// completion Fireblocks Transaction ID. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn set_transaction_confirmation_threshold(
         &self,
         params: SetTransactionConfirmationThresholdParams,
@@ -67,6 +135,12 @@ pub trait TransactionsApi: Send + Sync {
         models::SetConfirmationsThresholdResponse,
         Error<SetTransactionConfirmationThresholdError>,
     >;
+
+    /// POST /transactions/{txId}/unfreeze
+    ///
+    /// Unfreezes a transaction by Fireblocks Transaction ID and makes the
+    /// transaction available again. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn unfreeze_transaction(
         &self,
         params: UnfreezeTransactionParams,
@@ -323,10 +397,30 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CancelTransactionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CancelTransactionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CancelTransactionError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -339,7 +433,7 @@ impl TransactionsApi for TransactionsApiClient {
         }
     }
 
-    /// Creates a new transaction. This endpoint can be used for regular Transfers, Contract Calls, Raw & Typed message signing. - For Transfers, the required parameters are: `assetId`, `source`, `destination` and `amount`.  - For Contract Calls, the required parameters are: `operation.CONTRACT_CALL`, `assetId` (Base Asset), `source`, `destination`, `amount` (usually 0) and `extraParameters` object with `contractCallData` string.  - For RAW and Typed messages signing, the required parameters are: `operation.RAW/TYPED_MESSAGE`, `assetId` or `derivationPath`, `source` or `derivationPath`, `extraParameters` with [rawMessageData object](https://developers.fireblocks.com/reference/raw-signing-objects).  - Typed Message Signing is supported for the following asset IDs: 'ETH', 'BTC' and 'TRX'. [Typed Message Signing Guide](https://developers.fireblocks.com/docs/typed-message-signing-overview).  - For MEV Protection configuration the required parameters are:   `extraParameters` with the [`nodeControls` object](https://developers.fireblocks.com/reference/transaction-objects#nodecontrols)   Note: MEV Protection is a premium feature. Please contact your Customer Success Manager or the Fireblocks Support team for more information.  - To create ZEC transaction, please call [Get unspent UTXO Input endpoint](https://developers.fireblocks.com/reference/getunspentinputs) to get the amount and use it as an input under `networkfee` on this endpoint. Please use this formula `(0.0001 + 0.00005*N) where N is the number of inputs` to calculate the fee needed and use it as an input under networkFee field Learn more about Fireblocks Transactions management in the following [guide](https://developers.fireblocks.com/reference/create-transactions). </br>Endpoint Permission: Admin, Signer, Editor.
+    /// Creates a new transaction. This endpoint can be used for regular Transfers, Contract Calls, Raw & Typed message signing. - For Transfers, the required parameters are: `assetId`, `source`, `destination` and `amount`.  - For Contract Calls, the required parameters are: `operation.CONTRACT_CALL`, `assetId` (Base Asset), `source`, `destination`, `amount` (usually 0) and `extraParameters` object with `contractCallData` string. - For Solana Program Calls, the required parameters are: `operation.PROGRAM_CALL`, `assetId` (SOL/SOL_TEST), `source`,  and `extraParameters` object with `programCallData` key while the value is a Base64 encoded unsigned serialized Solana transaction object.  This feature is currently in beta and might be subject to changes - Please contact your CSM for any additional information.   - Typed Message Signing is supported for the following asset IDs: 'ETH', 'BTC' and 'TRX'. [Typed Message Signing Guide](https://developers.fireblocks.com/docs/typed-message-signing-overview). - To create ZEC transaction, please call [Get unspent UTXO Input endpoint](https://developers.fireblocks.com/reference/getunspentinputs) to get the amount and use it as an input under `networkfee` on this endpoint. Please use this formula `(0.0001 + 0.00005*N) where N is the number of inputs` to calculate the fee needed and use it as an input under networkFee field - When using `maxFee` and a boost is needed, the user should set a custom `gasPrice` to force the override. Learn more about Fireblocks Transactions management in the following [guide](https://developers.fireblocks.com/reference/create-transactions). </br>Endpoint Permission: Admin, Signer, Editor.
     async fn create_transaction(
         &self,
         params: CreateTransactionParams,
@@ -376,10 +470,30 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CreateTransactionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CreateTransactionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateTransactionError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -436,10 +550,30 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::DropTransactionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::DropTransactionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<DropTransactionError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -487,10 +621,30 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::EstimatedTransactionFeeResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::EstimatedTransactionFeeResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<EstimateTransactionFeeError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -547,10 +701,30 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::FreezeTransactionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::FreezeTransactionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<FreezeTransactionError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -593,10 +767,30 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TransactionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TransactionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetTransactionError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -638,10 +832,30 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TransactionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TransactionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetTransactionByExternalIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -750,10 +964,30 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::TransactionResponse&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::TransactionResponse&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetTransactionsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -768,8 +1002,10 @@ impl TransactionsApi for TransactionsApiClient {
 
     /// Rescan transaction by running an async job. </br>  **Note**: - These
     /// endpoints are currently in beta and might be subject to changes. - We
-    /// limit the amount of the transaction to 16 per request.  </br>Endpoint
-    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+    /// limit the amount of the transaction to 16 per request. - Please contact
+    /// to CSM to get access to this endpoint. - This operation can only be
+    /// enabled under `BROADCASTING` or `CONFIRMING`  </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn rescan_transactions_beta(
         &self,
         params: RescanTransactionsBetaParams,
@@ -803,10 +1039,30 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::ValidatedTransactionsForRescan&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::ValidatedTransactionsForRescan&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<RescanTransactionsBetaError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -861,10 +1117,30 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SetConfirmationsThresholdResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SetConfirmationsThresholdResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetConfirmationThresholdByTransactionHashError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -919,10 +1195,30 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::SetConfirmationsThresholdResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::SetConfirmationsThresholdResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetTransactionConfirmationThresholdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -977,10 +1273,30 @@ impl TransactionsApi for TransactionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::UnfreezeTransactionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::UnfreezeTransactionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UnfreezeTransactionError> =
                 serde_json::from_str(&local_var_content).ok();

@@ -13,97 +13,149 @@ use {
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct TravelRuleValidateFullTransactionRequest {
-    /// The asset involved in the transaction
-    #[serde(rename = "transactionAsset", skip_serializing_if = "Option::is_none")]
-    pub transaction_asset: Option<String>,
-    /// The amount of the transaction
-    #[serde(rename = "transactionAmount", skip_serializing_if = "Option::is_none")]
-    pub transaction_amount: Option<String>,
-    /// The DID of the transaction originator
-    #[serde(rename = "originatorDid", skip_serializing_if = "Option::is_none")]
-    pub originator_did: Option<String>,
-    /// The DID of the transaction beneficiary
-    #[serde(rename = "beneficiaryDid", skip_serializing_if = "Option::is_none")]
-    pub beneficiary_did: Option<String>,
-    /// The VASP ID of the transaction originator
+    /// The Decentralized Identifier (DID) of the exchange (VASP) that is
+    /// sending the virtual assets. This identifier is unique to the exchange
+    /// and is generated when the exchange's account is  created in the Notabene
+    /// network.
     #[serde(rename = "originatorVASPdid", skip_serializing_if = "Option::is_none")]
     pub originator_vas_pdid: Option<String>,
-    /// The VASP ID of the transaction beneficiary
+    /// The Decentralized Identifier (DID) of the exchange (VASP) that is
+    /// receiving the virtual assets. This identifier is unique to the exchange
+    /// and is generated when the exchange's account is  created in the Notabene
+    /// network.
     #[serde(rename = "beneficiaryVASPdid", skip_serializing_if = "Option::is_none")]
     pub beneficiary_vas_pdid: Option<String>,
-    /// The name of the VASP acting as the beneficiary
+    /// Transaction asset symbol (e.g., BTC, ETH, USDC).  By using the
+    /// `notation` query string, users can select the type of asset notation  -
+    /// `fireblocks`: Converts asset symbols to Fireblocks notation.  -
+    /// `notabene`: Retains the original Notabene asset symbol format.
+    #[serde(rename = "transactionAsset", skip_serializing_if = "Option::is_none")]
+    pub transaction_asset: Option<String>,
+    /// Transaction amount in the transaction asset. For example, if the asset
+    /// is BTC, the amount  is the value in BTC units.  By using the `notation`
+    /// query string, users can select the type of amount notation -
+    /// `fireblocks`: Converts the amount to Fireblocks notation (e.g., adjusted
+    /// for decimals). - `notabene`: Retains the original Notabene amount
+    /// format.
+    #[serde(rename = "transactionAmount", skip_serializing_if = "Option::is_none")]
+    pub transaction_amount: Option<String>,
+    /// The name of the VASP acting as the transaction originator.
+    #[serde(rename = "originatorVASPname", skip_serializing_if = "Option::is_none")]
+    pub originator_vas_pname: Option<String>,
+    /// The name of the VASP acting as the transaction beneficiary.
     #[serde(
         rename = "beneficiaryVASPname",
         skip_serializing_if = "Option::is_none"
     )]
     pub beneficiary_vas_pname: Option<String>,
-    /// Information about the blockchain transaction
+    /// Information about the blockchain transaction.
     #[serde(
         rename = "transactionBlockchainInfo",
         skip_serializing_if = "Option::is_none"
     )]
     pub transaction_blockchain_info: Option<models::TravelRuleTransactionBlockchainInfo>,
-    /// Information about the originator of the transaction
+    /// Information about the originator of the transaction.
     #[serde(rename = "originator")]
-    pub originator: models::TravelRulePiiIvms,
-    /// Information about the beneficiary of the transaction
+    pub originator: models::TravelRuleValidatePiiIvms,
+    /// Information about the beneficiary of the transaction.
     #[serde(rename = "beneficiary")]
-    pub beneficiary: models::TravelRulePiiIvms,
-    /// Encrypted data related to the transaction
+    pub beneficiary: models::TravelRuleValidatePiiIvms,
+    /// Encrypted data related to the transaction.
     #[serde(rename = "encrypted", skip_serializing_if = "Option::is_none")]
     pub encrypted: Option<String>,
-    /// The protocol used to perform the travel rule
+    /// The protocol used to perform the travel rule.
     #[serde(rename = "protocol", skip_serializing_if = "Option::is_none")]
     pub protocol: Option<String>,
-    /// The email address where a notification should be sent upon completion of
-    /// the travel rule
-    #[serde(rename = "notificationEmail", skip_serializing_if = "Option::is_none")]
-    pub notification_email: Option<String>,
-    /// Whether to skip validation of beneficiary data
+    /// Whether to skip validation of beneficiary data.
     #[serde(
         rename = "skipBeneficiaryDataValidation",
         skip_serializing_if = "Option::is_none"
     )]
     pub skip_beneficiary_data_validation: Option<bool>,
-    /// Whether to check if the transaction is a TRAVEL_RULE in the beneficiary
-    /// VASP's jurisdiction
+    /// Whether to check if the transaction complies with the travel rule in the
+    /// beneficiary VASP's jurisdiction.
     #[serde(rename = "travelRuleBehavior", skip_serializing_if = "Option::is_none")]
     pub travel_rule_behavior: Option<bool>,
-    /// Ownership proof related to the originator of the transaction
+    /// A reference ID related to the originator of the transaction.
+    #[serde(rename = "originatorRef", skip_serializing_if = "Option::is_none")]
+    pub originator_ref: Option<String>,
+    /// A reference ID related to the beneficiary of the transaction.
+    #[serde(rename = "beneficiaryRef", skip_serializing_if = "Option::is_none")]
+    pub beneficiary_ref: Option<String>,
+    /// A reference ID related to the travel rule behavior.
+    #[serde(
+        rename = "travelRuleBehaviorRef",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub travel_rule_behavior_ref: Option<String>,
+    /// Ownership proof related to the originator of the transaction.
     #[serde(rename = "originatorProof", skip_serializing_if = "Option::is_none")]
     pub originator_proof: Option<models::TravelRuleOwnershipProof>,
-    /// Ownership proof related to the beneficiary of the transaction
+    /// Ownership proof related to the beneficiary of the transaction.
     #[serde(rename = "beneficiaryProof", skip_serializing_if = "Option::is_none")]
     pub beneficiary_proof: Option<models::TravelRuleOwnershipProof>,
+    /// The Decentralized Identifier (DID) of the person at the receiving
+    /// exchange (VASP).  This identifier is generated when the customer is
+    /// registered in the Notabene network,  or automatically created based on
+    /// the `beneficiaryRef`.  - If neither `beneficiaryRef` nor
+    /// `beneficiaryDid` is provided in the `txCreate` payload,    a new random
+    /// DID is generated for every transaction.
+    #[serde(rename = "beneficiaryDid", skip_serializing_if = "Option::is_none")]
+    pub beneficiary_did: Option<String>,
+    /// The Decentralized Identifier (DID) of the person at the exchange (VASP)
+    /// who is requesting the withdrawal. This identifier is generated when the
+    /// customer is registered in the Notabene network or automatically created
+    /// based on the `originatorRef`.  - If neither `originatorRef` nor
+    /// `originatorDid` is provided in the `txCreate` payload,    a new random
+    /// DID is generated for every transaction.
+    #[serde(rename = "originatorDid", skip_serializing_if = "Option::is_none")]
+    pub originator_did: Option<String>,
+    /// Indicates if the transaction involves a non-custodial wallet.
+    #[serde(rename = "isNonCustodial", skip_serializing_if = "Option::is_none")]
+    pub is_non_custodial: Option<bool>,
+    /// The email address where a notification should be sent upon completion of
+    /// the travel rule
+    #[serde(rename = "notificationEmail", skip_serializing_if = "Option::is_none")]
+    pub notification_email: Option<String>,
     /// Personal identifiable information related to the transaction
     #[serde(rename = "pii", skip_serializing_if = "Option::is_none")]
     pub pii: Option<models::TravelRulePiiIvms>,
+    /// The URL of the personal identifiable information related to the
+    /// transaction
+    #[serde(rename = "pii_url", skip_serializing_if = "Option::is_none")]
+    pub pii_url: Option<String>,
 }
 
 impl TravelRuleValidateFullTransactionRequest {
     pub fn new(
-        originator: models::TravelRulePiiIvms,
-        beneficiary: models::TravelRulePiiIvms,
+        originator: models::TravelRuleValidatePiiIvms,
+        beneficiary: models::TravelRuleValidatePiiIvms,
     ) -> TravelRuleValidateFullTransactionRequest {
         TravelRuleValidateFullTransactionRequest {
-            transaction_asset: None,
-            transaction_amount: None,
-            originator_did: None,
-            beneficiary_did: None,
             originator_vas_pdid: None,
             beneficiary_vas_pdid: None,
+            transaction_asset: None,
+            transaction_amount: None,
+            originator_vas_pname: None,
             beneficiary_vas_pname: None,
             transaction_blockchain_info: None,
             originator,
             beneficiary,
             encrypted: None,
             protocol: None,
-            notification_email: None,
             skip_beneficiary_data_validation: None,
             travel_rule_behavior: None,
+            originator_ref: None,
+            beneficiary_ref: None,
+            travel_rule_behavior_ref: None,
             originator_proof: None,
             beneficiary_proof: None,
+            beneficiary_did: None,
+            originator_did: None,
+            is_non_custodial: None,
+            notification_email: None,
             pii: None,
+            pii_url: None,
         }
     }
 }

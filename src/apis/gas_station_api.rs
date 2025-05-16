@@ -8,22 +8,39 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait GasStationApi: Send + Sync {
+    /// GET /gas_station/{assetId}
+    ///
+    /// Returns gas station settings and balances for a requested asset.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn get_gas_station_by_asset_id(
         &self,
         params: GetGasStationByAssetIdParams,
     ) -> Result<models::GasStationPropertiesResponse, Error<GetGasStationByAssetIdError>>;
+
+    /// GET /gas_station
+    ///
+    /// Returns gas station settings and ETH balance. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_gas_station_info(
         &self,
     ) -> Result<models::GasStationPropertiesResponse, Error<GetGasStationInfoError>>;
+
+    /// PUT /gas_station/configuration
+    ///
+    /// Configures gas station settings for ETH. Learn more about the Fireblocks Gas Station in the following [guide](https://developers.fireblocks.com/docs/work-with-gas-station). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn update_gas_station_configuration(
         &self,
         params: UpdateGasStationConfigurationParams,
@@ -31,6 +48,10 @@ pub trait GasStationApi: Send + Sync {
         models::EditGasStationConfigurationResponse,
         Error<UpdateGasStationConfigurationError>,
     >;
+
+    /// PUT /gas_station/configuration/{assetId}
+    ///
+    /// Configures gas station settings for a requested asset. Learn more about the Fireblocks Gas Station in the following [guide](https://developers.fireblocks.com/docs/work-with-gas-station). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn update_gas_station_configuration_by_asset_id(
         &self,
         params: UpdateGasStationConfigurationByAssetIdParams,
@@ -118,10 +139,30 @@ impl GasStationApi for GasStationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GasStationPropertiesResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GasStationPropertiesResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetGasStationByAssetIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -156,10 +197,30 @@ impl GasStationApi for GasStationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GasStationPropertiesResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GasStationPropertiesResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetGasStationInfoError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -210,10 +271,30 @@ impl GasStationApi for GasStationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::EditGasStationConfigurationResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::EditGasStationConfigurationResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UpdateGasStationConfigurationError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -266,10 +347,30 @@ impl GasStationApi for GasStationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::EditGasStationConfigurationResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::EditGasStationConfigurationResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UpdateGasStationConfigurationByAssetIdError> =
                 serde_json::from_str(&local_var_content).ok();

@@ -4,12 +4,44 @@ All URIs are relative to *https://api.fireblocks.io/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**add_exchange_account**](ExchangeAccountsApi.md#add_exchange_account) | **POST** /exchange_accounts | Add an Exchange Account
 [**convert_assets**](ExchangeAccountsApi.md#convert_assets) | **POST** /exchange_accounts/{exchangeAccountId}/convert | Convert exchange account funds
 [**get_exchange_account**](ExchangeAccountsApi.md#get_exchange_account) | **GET** /exchange_accounts/{exchangeAccountId} | Get a specific exchange account
 [**get_exchange_account_asset**](ExchangeAccountsApi.md#get_exchange_account_asset) | **GET** /exchange_accounts/{exchangeAccountId}/{assetId} | Get an asset for an exchange account
 [**get_paged_exchange_accounts**](ExchangeAccountsApi.md#get_paged_exchange_accounts) | **GET** /exchange_accounts/paged | List connected exchange accounts
 [**internal_transfer**](ExchangeAccountsApi.md#internal_transfer) | **POST** /exchange_accounts/{exchangeAccountId}/internal_transfer | Internal transfer for exchange accounts
 
+
+
+## add_exchange_account
+
+> models::AddExchangeAccountResponse add_exchange_account(add_exchange_account_request, idempotency_key)
+Add an Exchange Account
+
+Add an exchange account to exchanges.   Note: This endpoint currently only supports the following exchanges `INDEPENDENT_RESERVE`,`BIT`, `BITHUMB`, `BITSO`, `CRYPTOCOM`, `BYBIT_V2`, `WHITEBIT`, `HITBTC`, `GEMINI`, `HUOBI`, `GATEIO`, `COINHAKO`, `BULLISH`, `BITGET`, and `LUNO`  To add an exchange account, please use the following [guide](https://developers.fireblocks.com/docs/add-an-exchange-account). 
+
+### Parameters
+
+
+Name | Type | Description  | Required | Notes
+------------- | ------------- | ------------- | ------------- | -------------
+**add_exchange_account_request** | [**AddExchangeAccountRequest**](AddExchangeAccountRequest.md) |  | [required] |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
+
+### Return type
+
+[**models::AddExchangeAccountResponse**](AddExchangeAccountResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 
 ## convert_assets

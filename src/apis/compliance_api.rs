@@ -8,48 +8,116 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait ComplianceApi: Send + Sync {
+    /// GET /screening/aml/post_screening_policy
+    ///
+    /// Get the post-screening policy for AML. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_aml_post_screening_policy(
         &self,
     ) -> Result<models::ScreeningPolicyResponse, Error<GetAmlPostScreeningPolicyError>>;
+
+    /// GET /screening/aml/policy_configuration
+    ///
+    /// Retrieves the configuration for Travel Rule screening policy.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_aml_screening_configuration(
         &self,
     ) -> Result<models::ScreeningConfigurationsRequest, Error<GetAmlScreeningConfigurationError>>;
+
+    /// GET /screening/aml/screening_policy
+    ///
+    /// Get the screening policy for AML. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_aml_screening_policy(
         &self,
     ) -> Result<
         models::ScreeningProviderRulesConfigurationResponse,
         Error<GetAmlScreeningPolicyError>,
     >;
+
+    /// GET /screening/travel_rule/post_screening_policy
+    ///
+    /// Get the post-screening policy for Travel Rule. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_post_screening_policy(
         &self,
     ) -> Result<models::ScreeningPolicyResponse, Error<GetPostScreeningPolicyError>>;
+
+    /// GET /screening/travel_rule/policy_configuration
+    ///
+    /// Retrieves the configuration for Travel Rule screening policy.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor, Viewer.
     async fn get_screening_configuration(
         &self,
     ) -> Result<models::ScreeningConfigurationsRequest, Error<GetScreeningConfigurationError>>;
+
+    /// GET /screening/transaction/{txId}
+    ///
+    /// Provides all the compliance details for the given screened transaction.
+    /// </br>Endpoint Permission: All users.
+    async fn get_screening_full_details(
+        &self,
+        params: GetScreeningFullDetailsParams,
+    ) -> Result<models::ComplianceResultFullPayload, Error<GetScreeningFullDetailsError>>;
+
+    /// GET /screening/travel_rule/screening_policy
+    ///
+    /// Get the screening policy for Travel Rule. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_screening_policy(
         &self,
     ) -> Result<models::ScreeningProviderRulesConfigurationResponse, Error<GetScreeningPolicyError>>;
+
+    /// GET /screening/travel_rule/vault/{vaultAccountId}/vasp
+    ///
+    /// Get assigned VASP DID for a specific vault.  Returns empty `vaspDid`
+    /// string value in response if none assigned.
     async fn get_vasp_for_vault(
         &self,
         params: GetVaspForVaultParams,
     ) -> Result<models::TravelRuleVaspForVault, Error<GetVaspForVaultError>>;
+
+    /// GET /screening/travel_rule/vasp/{did}
+    ///
+    /// Get VASP Details. Returns information about a VASP that has the
+    /// specified DID. </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor, Viewer.
     async fn get_vaspby_did(
         &self,
         params: GetVaspbyDidParams,
     ) -> Result<models::TravelRuleVasp, Error<GetVaspbyDidError>>;
+
+    /// GET /screening/travel_rule/vasp
+    ///
+    /// Get All VASPs. Returns a list of VASPs. VASPs can be searched and sorted
+    /// and results are paginated. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor, Viewer.
     async fn get_vasps(
         &self,
         params: GetVaspsParams,
     ) -> Result<models::TravelRuleGetAllVaspsResponse, Error<GetVaspsError>>;
+
+    /// POST /screening/transaction/{txId}/bypass_screening_policy
+    ///
+    /// This endpoint is restricted to Admin API users and is only applicable to
+    /// outgoing transactions. Calling the \"Bypass Screening Policy\" API
+    /// endpoint triggers a new transaction, with the API user as the initiator,
+    /// bypassing the screening policy check </br>Endpoint Permission: Admin and
+    /// Non-Signing Admin.
     async fn retry_rejected_transaction_bypass_screening_checks(
         &self,
         params: RetryRejectedTransactionBypassScreeningChecksParams,
@@ -57,26 +125,57 @@ pub trait ComplianceApi: Send + Sync {
         models::CreateTransactionResponse,
         Error<RetryRejectedTransactionBypassScreeningChecksError>,
     >;
+
+    /// POST /screening/travel_rule/vault/{vaultAccountId}/vasp
+    ///
+    /// Sets the VASP DID for a specific vault.  Pass empty string to remove an
+    /// existing one.
     async fn set_vasp_for_vault(
         &self,
         params: SetVaspForVaultParams,
     ) -> Result<models::TravelRuleVaspForVault, Error<SetVaspForVaultError>>;
+
+    /// PUT /screening/aml/policy_configuration
+    ///
+    /// Updates bypass screening, inbound delay, or outbound delay
+    /// configurations for AML. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor, Viewer.
     async fn update_aml_screening_configuration(
         &self,
         params: UpdateAmlScreeningConfigurationParams,
     ) -> Result<models::ScreeningConfigurationsRequest, Error<UpdateAmlScreeningConfigurationError>>;
+
+    /// PUT /screening/configurations
+    ///
+    /// Update Tenant screening configuration. Learn more about Fireblocks AML management in the following [guide](https://developers.fireblocks.com/docs/define-aml-policies). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn update_screening_configuration(
         &self,
         params: UpdateScreeningConfigurationParams,
     ) -> Result<models::ScreeningUpdateConfigurations, Error<UpdateScreeningConfigurationError>>;
+
+    /// PUT /screening/travel_rule/policy_configuration
+    ///
+    /// Updates bypass screening, inbound delay, or outbound delay
+    /// configurations for Travel Rule. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn update_travel_rule_config(
         &self,
         params: UpdateTravelRuleConfigParams,
     ) -> Result<models::ScreeningConfigurationsRequest, Error<UpdateTravelRuleConfigError>>;
+
+    /// PUT /screening/travel_rule/vasp/update
+    ///
+    /// Updates a VASP with the provided parameters. Use this endpoint to add
+    /// your public jsonDIDkey generated by Notabene. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn update_vasp(
         &self,
         params: UpdateVaspParams,
     ) -> Result<models::TravelRuleUpdateVaspDetails, Error<UpdateVaspError>>;
+
+    /// POST /screening/travel_rule/transaction/validate/full
+    ///
+    /// Validate Full Travel Rule transaction. Checks for all required information on the originator and beneficiary VASPs. Learn more about Fireblocks Travel Rule management in the following [guide](https://developers.fireblocks.com/docs/define-travel-rule-policies).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn validate_full_travel_rule_transaction(
         &self,
         params: ValidateFullTravelRuleTransactionParams,
@@ -84,6 +183,10 @@ pub trait ComplianceApi: Send + Sync {
         models::TravelRuleValidateTransactionResponse,
         Error<ValidateFullTravelRuleTransactionError>,
     >;
+
+    /// POST /screening/travel_rule/transaction/validate
+    ///
+    /// Validate Travel Rule transactions. Checks what beneficiary VASP details are required by your jurisdiction and the beneficiary's jurisdiction. **Deprecation Notice** This endpoint will be deprecated soon in favor of the [validate full](https://developers.fireblocks.com/reference/validatefulltravelruletransaction) endpoint. Please update your integrations to use the  [validate full](https://developers.fireblocks.com/reference/validatefulltravelruletransaction) endpoint to ensure compatibility with future releases. Checks what beneficiary VASP details are required by your jurisdiction and the beneficiary's jurisdiction. Learn more about Fireblocks Travel Rule management in the following [guide](https://developers.fireblocks.com/docs/define-travel-rule-policies).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn validate_travel_rule_transaction(
         &self,
         params: ValidateTravelRuleTransactionParams,
@@ -101,6 +204,14 @@ impl ComplianceApiClient {
     pub fn new(configuration: Arc<configuration::Configuration>) -> Self {
         Self { configuration }
     }
+}
+
+/// struct for passing parameters to the method [`get_screening_full_details`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct GetScreeningFullDetailsParams {
+    /// Fireblocks transaction ID of the screened transaction
+    pub tx_id: String,
 }
 
 /// struct for passing parameters to the method [`get_vasp_for_vault`]
@@ -134,6 +245,13 @@ pub struct GetVaspsParams {
     /// CSV of fields to return (all, \"blank\" or see list of all field names
     /// below)
     pub fields: Option<String>,
+    /// Search query
+    pub q: Option<String>,
+    /// Filter by the VASP's review status. Possible values include:
+    /// \"TRUSTED\", \"BLOCKED\", \"MANUAL\", or \"NULL\". When provided, only
+    /// VASPs that match the specified reviewValue will be returned (i.e., VASPs
+    /// that have already been reviewed to this status).
+    pub review_value: Option<String>,
 }
 
 /// struct for passing parameters to the method
@@ -219,6 +337,14 @@ pub struct UpdateVaspParams {
 pub struct ValidateFullTravelRuleTransactionParams {
     pub travel_rule_validate_full_transaction_request:
         models::TravelRuleValidateFullTransactionRequest,
+    /// Specifies the notation of the transaction. Possible values are -
+    /// `notabene`: Uses Notabene notation (default behavior). - `fireblocks`:
+    /// Uses Fireblocks notation, with automatic translation of asset tickers
+    /// and amounts. - `<none>`: Defaults to `notabene` for backward
+    /// compatibility.  **Note:** The default value for the `notation` parameter
+    /// will change from `notabene` to `fireblocks` Update your integrations
+    /// accordingly.
+    pub notation: Option<String>,
     /// A unique identifier for the request. If the request is sent multiple
     /// times with the same idempotency key, the server will return the same
     /// response as the first request. The idempotency key is valid for 24
@@ -232,6 +358,14 @@ pub struct ValidateFullTravelRuleTransactionParams {
 #[cfg_attr(feature = "bon", derive(::bon::Builder))]
 pub struct ValidateTravelRuleTransactionParams {
     pub travel_rule_validate_transaction_request: models::TravelRuleValidateTransactionRequest,
+    /// Specifies the notation of the transaction. Possible values are: -
+    /// `notabene`: Uses Notabene notation (default behavior). - `fireblocks`:
+    /// Uses Fireblocks notation, with automatic translation of asset tickers
+    /// and amounts. - `<none>`: Defaults to `notabene` for backward
+    /// compatibility. **Note:** The default value for the `notation` parameter
+    /// will change from `notabene` to `fireblocks` Update your integrations
+    /// accordingly.
+    pub notation: Option<String>,
     /// A unique identifier for the request. If the request is sent multiple
     /// times with the same idempotency key, the server will return the same
     /// response as the first request. The idempotency key is valid for 24
@@ -266,10 +400,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ScreeningPolicyResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ScreeningPolicyResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetAmlPostScreeningPolicyError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -309,10 +463,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ScreeningConfigurationsRequest`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ScreeningConfigurationsRequest`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetAmlScreeningConfigurationError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -353,10 +527,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ScreeningProviderRulesConfigurationResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ScreeningProviderRulesConfigurationResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetAmlScreeningPolicyError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -394,10 +588,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ScreeningPolicyResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ScreeningPolicyResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetPostScreeningPolicyError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -436,12 +650,97 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ScreeningConfigurationsRequest`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ScreeningConfigurationsRequest`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetScreeningConfigurationError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Provides all the compliance details for the given screened transaction.
+    /// </br>Endpoint Permission: All users.
+    async fn get_screening_full_details(
+        &self,
+        params: GetScreeningFullDetailsParams,
+    ) -> Result<models::ComplianceResultFullPayload, Error<GetScreeningFullDetailsError>> {
+        let GetScreeningFullDetailsParams { tx_id } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/screening/transaction/{txId}",
+            local_var_configuration.base_path,
+            txId = crate::apis::urlencode(tx_id)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ComplianceResultFullPayload`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ComplianceResultFullPayload`"
+                    ))))
+                }
+            }
+        } else {
+            let local_var_entity: Option<GetScreeningFullDetailsError> =
                 serde_json::from_str(&local_var_content).ok();
             let local_var_error = ResponseContent {
                 status: local_var_status,
@@ -478,10 +777,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ScreeningProviderRulesConfigurationResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ScreeningProviderRulesConfigurationResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetScreeningPolicyError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -523,10 +842,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TravelRuleVaspForVault`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TravelRuleVaspForVault`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetVaspForVaultError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -540,13 +879,8 @@ impl ComplianceApi for ComplianceApiClient {
     }
 
     /// Get VASP Details. Returns information about a VASP that has the
-    /// specified DID. **Note:** The reference content in this section documents
-    /// the Travel Rule beta endpoint. The beta endpoint includes APIs that are
-    /// currently in preview and aren't yet generally available. To enroll in
-    /// the beta and enable this endpoint, contact your Fireblocks Customer
-    /// Success Manager or send an email to
-    /// [CSM@fireblocks.com](mailto:CSM@fireblocks.com).  </br>Endpoint
-    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+    /// specified DID. </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor, Viewer.
     async fn get_vaspby_did(
         &self,
         params: GetVaspbyDidParams,
@@ -578,10 +912,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TravelRuleVasp`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TravelRuleVasp`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetVaspbyDidError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -595,13 +949,8 @@ impl ComplianceApi for ComplianceApiClient {
     }
 
     /// Get All VASPs. Returns a list of VASPs. VASPs can be searched and sorted
-    /// and results are paginated. **Note:** The reference content in this
-    /// section documents the Travel Rule beta endpoint. The beta endpoint
-    /// includes APIs that are currently in preview and aren't yet generally
-    /// available. To enroll in the beta and enable this endpoint, contact your
-    /// Fireblocks Customer Success Manager or send an email to
-    /// [CSM@fireblocks.com](mailto:CSM@fireblocks.com).  </br>Endpoint
-    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+    /// and results are paginated. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor, Viewer.
     async fn get_vasps(
         &self,
         params: GetVaspsParams,
@@ -611,6 +960,8 @@ impl ComplianceApi for ComplianceApiClient {
             per_page,
             page,
             fields,
+            q,
+            review_value,
         } = params;
 
         let local_var_configuration = &self.configuration;
@@ -640,6 +991,14 @@ impl ComplianceApi for ComplianceApiClient {
             local_var_req_builder =
                 local_var_req_builder.query(&[("fields", &local_var_str.to_string())]);
         }
+        if let Some(ref local_var_str) = q {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("q", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = review_value {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("reviewValue", &local_var_str.to_string())]);
+        }
         if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
             local_var_req_builder = local_var_req_builder
                 .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -649,10 +1008,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TravelRuleGetAllVaspsResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TravelRuleGetAllVaspsResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetVaspsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -707,10 +1086,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CreateTransactionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CreateTransactionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<RetryRejectedTransactionBypassScreeningChecksError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -761,10 +1160,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TravelRuleVaspForVault`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TravelRuleVaspForVault`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetVaspForVaultError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -811,10 +1230,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ScreeningConfigurationsRequest`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ScreeningConfigurationsRequest`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UpdateAmlScreeningConfigurationError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -863,10 +1302,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ScreeningUpdateConfigurations`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ScreeningUpdateConfigurations`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UpdateScreeningConfigurationError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -912,10 +1371,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ScreeningConfigurationsRequest`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ScreeningConfigurationsRequest`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UpdateTravelRuleConfigError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -928,15 +1407,9 @@ impl ComplianceApi for ComplianceApiClient {
         }
     }
 
-    /// Update VASP Details. Updates a VASP with the provided parameters. Use
-    /// this endpoint to add your public jsonDIDkey generated by Notabene.
-    /// **Note:** The reference content in this section documents the Travel
-    /// Rule beta endpoint. The beta endpoint includes APIs that are currently
-    /// in preview and aren't yet generally available. To enroll in the beta and
-    /// enable this endpoint, contact your Fireblocks Customer Success Manager
-    /// or send an email to [CSM@fireblocks.com](mailto:CSM@fireblocks.com).
-    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
-    /// Editor, Viewer.
+    /// Updates a VASP with the provided parameters. Use this endpoint to add
+    /// your public jsonDIDkey generated by Notabene. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn update_vasp(
         &self,
         params: UpdateVaspParams,
@@ -971,10 +1444,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TravelRuleUpdateVaspDetails`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TravelRuleUpdateVaspDetails`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UpdateVaspError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -987,7 +1480,7 @@ impl ComplianceApi for ComplianceApiClient {
         }
     }
 
-    /// Validate Full Travel Rule transactions. Checks for all required information on the originator and beneficiary VASPs. **Note:** The reference content in this section documents the Travel Rule beta endpoint. The beta endpoint includes APIs that are currently in preview and aren't yet generally available.  To enroll in the beta and enable this endpoint, contact your Fireblocks Customer Success Manager or send an email to [CSM@fireblocks.com](mailto:CSM@fireblocks.com). Learn more about Fireblocks Travel Rule management in the following [guide](https://developers.fireblocks.com/docs/define-travel-rule-policies).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+    /// Validate Full Travel Rule transaction. Checks for all required information on the originator and beneficiary VASPs. Learn more about Fireblocks Travel Rule management in the following [guide](https://developers.fireblocks.com/docs/define-travel-rule-policies).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn validate_full_travel_rule_transaction(
         &self,
         params: ValidateFullTravelRuleTransactionParams,
@@ -997,6 +1490,7 @@ impl ComplianceApi for ComplianceApiClient {
     > {
         let ValidateFullTravelRuleTransactionParams {
             travel_rule_validate_full_transaction_request,
+            notation,
             idempotency_key,
         } = params;
 
@@ -1011,6 +1505,10 @@ impl ComplianceApi for ComplianceApiClient {
         let mut local_var_req_builder =
             local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
+        if let Some(ref local_var_str) = notation {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("notation", &local_var_str.to_string())]);
+        }
         if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
             local_var_req_builder = local_var_req_builder
                 .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -1026,10 +1524,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TravelRuleValidateTransactionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TravelRuleValidateTransactionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<ValidateFullTravelRuleTransactionError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1042,7 +1560,7 @@ impl ComplianceApi for ComplianceApiClient {
         }
     }
 
-    /// Validate Travel Rule transactions. Checks what beneficiary VASP details are required by your jurisdiction and the beneficiary's jurisdiction. **Note:** The reference content in this section documents the Travel Rule beta endpoint. The beta endpoint includes APIs that are currently in preview and aren't yet generally available. To enroll in the beta and enable this endpoint, contact your Fireblocks Customer Success Manager or send an email to [CSM@fireblocks.com](mailto:CSM@fireblocks.com). Learn more about Fireblocks Travel Rule management in the following [guide](https://developers.fireblocks.com/docs/define-travel-rule-policies).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+    /// Validate Travel Rule transactions. Checks what beneficiary VASP details are required by your jurisdiction and the beneficiary's jurisdiction. **Deprecation Notice** This endpoint will be deprecated soon in favor of the [validate full](https://developers.fireblocks.com/reference/validatefulltravelruletransaction) endpoint. Please update your integrations to use the  [validate full](https://developers.fireblocks.com/reference/validatefulltravelruletransaction) endpoint to ensure compatibility with future releases. Checks what beneficiary VASP details are required by your jurisdiction and the beneficiary's jurisdiction. Learn more about Fireblocks Travel Rule management in the following [guide](https://developers.fireblocks.com/docs/define-travel-rule-policies).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn validate_travel_rule_transaction(
         &self,
         params: ValidateTravelRuleTransactionParams,
@@ -1052,6 +1570,7 @@ impl ComplianceApi for ComplianceApiClient {
     > {
         let ValidateTravelRuleTransactionParams {
             travel_rule_validate_transaction_request,
+            notation,
             idempotency_key,
         } = params;
 
@@ -1066,6 +1585,10 @@ impl ComplianceApi for ComplianceApiClient {
         let mut local_var_req_builder =
             local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
+        if let Some(ref local_var_str) = notation {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("notation", &local_var_str.to_string())]);
+        }
         if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
             local_var_req_builder = local_var_req_builder
                 .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -1081,10 +1604,30 @@ impl ComplianceApi for ComplianceApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TravelRuleValidateTransactionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TravelRuleValidateTransactionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<ValidateTravelRuleTransactionError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -1130,6 +1673,14 @@ pub enum GetPostScreeningPolicyError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetScreeningConfigurationError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`get_screening_full_details`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GetScreeningFullDetailsError {
+    DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }
 

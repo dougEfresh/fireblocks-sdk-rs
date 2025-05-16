@@ -8,24 +8,47 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait DAppConnectionsApi: Send + Sync {
+    /// POST /connections/wc
+    ///
+    /// Initiate a new Web3 connection.  * Note: After this succeeds, make a request to `PUT /v1/connections/wc/{id}` (below) to approve or reject the new Web3 connection. Learn more about Fireblocks Wallet Link in the following [guide](https://developers.fireblocks.com/docs/web3-wallet-link). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn create(
         &self,
         params: CreateParams,
     ) -> Result<models::CreateConnectionResponse, Error<CreateError>>;
+
+    /// GET /connections
+    ///
+    /// List all open Web3 connections. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn get(
         &self,
         params: GetParams,
     ) -> Result<models::GetConnectionsResponse, Error<GetError>>;
+
+    /// DELETE /connections/wc/{id}
+    ///
+    /// Remove an existing Web3 connection.  </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn remove(&self, params: RemoveParams) -> Result<(), Error<RemoveError>>;
+
+    /// PUT /connections/wc/{id}
+    ///
+    /// Submit a response to *approve* or *reject* an initiated Web3 connection.
+    /// * Note: This call is used to complete your `POST /v1/connections/wc/`
+    /// request. After this succeeds, your new Web3 connection is created and
+    /// functioning.  </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn submit(&self, params: SubmitParams) -> Result<(), Error<SubmitError>>;
 }
 
@@ -91,9 +114,7 @@ pub struct SubmitParams {
 
 #[async_trait]
 impl DAppConnectionsApi for DAppConnectionsApiClient {
-    /// Initiate a new dApp connection.  * Note: After this succeeds, make a
-    /// request to `PUT /v1/connections/wc/{id}` (below) to approve or reject
-    /// the new Web3 connection.
+    /// Initiate a new Web3 connection.  * Note: After this succeeds, make a request to `PUT /v1/connections/wc/{id}` (below) to approve or reject the new Web3 connection. Learn more about Fireblocks Wallet Link in the following [guide](https://developers.fireblocks.com/docs/web3-wallet-link). </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn create(
         &self,
         params: CreateParams,
@@ -125,10 +146,30 @@ impl DAppConnectionsApi for DAppConnectionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CreateConnectionResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CreateConnectionResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -141,12 +182,12 @@ impl DAppConnectionsApi for DAppConnectionsApiClient {
         }
     }
 
-    /// List all open dApp connections.
+    /// List all open Web3 connections. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn get(
         &self,
         params: GetParams,
     ) -> Result<models::GetConnectionsResponse, Error<GetError>> {
-        #[allow(unused_variables)]
         let GetParams {
             order,
             filter,
@@ -167,10 +208,11 @@ impl DAppConnectionsApi for DAppConnectionsApiClient {
             local_var_req_builder =
                 local_var_req_builder.query(&[("order", &local_var_str.to_string())]);
         }
-        // if let Some(ref local_var_str) = filter {
-        // local_var_req_builder = local_var_req_builder.query(&[("filter",
-        // &local_var_str.to_string())]);
-        //}
+        if let Some(ref _local_var_str) = filter {
+            eprintln!("warning filter for dapp not available...skipping");
+            // local_var_req_builder = local_var_req_builder.query(&[("filter",
+            // &local_var_str.to_string())]);
+        }
         if let Some(ref local_var_str) = sort {
             local_var_req_builder =
                 local_var_req_builder.query(&[("sort", &local_var_str.to_string())]);
@@ -192,10 +234,30 @@ impl DAppConnectionsApi for DAppConnectionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetConnectionsResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetConnectionsResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetError> = serde_json::from_str(&local_var_content).ok();
             let local_var_error = ResponseContent {
@@ -207,7 +269,8 @@ impl DAppConnectionsApi for DAppConnectionsApiClient {
         }
     }
 
-    /// Remove an existing dApp connection
+    /// Remove an existing Web3 connection.  </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn remove(&self, params: RemoveParams) -> Result<(), Error<RemoveError>> {
         let RemoveParams { id } = params;
 
@@ -248,10 +311,10 @@ impl DAppConnectionsApi for DAppConnectionsApiClient {
         }
     }
 
-    /// Submit a response to *approve* or *reject* an initiated dApp connection.
+    /// Submit a response to *approve* or *reject* an initiated Web3 connection.
     /// * Note: This call is used to complete your `POST /v1/connections/wc/`
-    /// request.  After this succeeds, your new dApp connection is created and
-    /// functioning.
+    /// request. After this succeeds, your new Web3 connection is created and
+    /// functioning.  </br>Endpoint Permission: Admin, Non-Signing Admin.
     async fn submit(&self, params: SubmitParams) -> Result<(), Error<SubmitError>> {
         let SubmitParams {
             id,

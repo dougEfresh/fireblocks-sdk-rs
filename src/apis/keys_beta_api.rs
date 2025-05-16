@@ -8,18 +8,32 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait KeysBetaApi: Send + Sync {
+    /// GET /keys/mpc/list
+    ///
+    /// Returns a list of MPC signing keys of the workspace. For each key, the
+    /// list of players associated with it is attached. **Note:**  This endpoint
+    /// is currently in beta and might be subject to changes.
     async fn get_mpc_keys_list(
         &self,
     ) -> Result<models::GetMpcKeysResponse, Error<GetMpcKeysListError>>;
+
+    /// GET /keys/mpc/list/{userId}
+    ///
+    /// Returns a list of MPC signing keys of a specific user. For each key, the
+    /// list of players associated with it is attached. **Note:** This endpoint
+    /// is currently in beta and might be subject to changes.
     async fn get_mpc_keys_list_by_user(
         &self,
         params: GetMpcKeysListByUserParams,
@@ -69,10 +83,30 @@ impl KeysBetaApi for KeysBetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetMpcKeysResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetMpcKeysResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetMpcKeysListError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -115,10 +149,30 @@ impl KeysBetaApi for KeysBetaApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetMpcKeysResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetMpcKeysResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetMpcKeysListByUserError> =
                 serde_json::from_str(&local_var_content).ok();

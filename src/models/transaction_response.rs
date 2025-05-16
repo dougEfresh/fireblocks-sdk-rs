@@ -47,7 +47,7 @@ pub struct TransactionResponse {
     /// at your Fireblocks workspace.
     #[serde(rename = "note", skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
-    /// The ID of the asset to transfer, for `TRANSFER`, `MINT`, `BURN`, `ENABLE_ASSET`,`STAKE` ,`UNSTAKE` or `WITHDRAW` operations. [See the list of supported assets and their IDs on Fireblocks.](https://developers.fireblocks.com/reference/get_supported-assets)
+    /// The ID of the asset for `TRANSFER`, `MINT`, `BURN`, `ENABLE_ASSET`,`STAKE` ,`UNSTAKE` or `WITHDRAW` operations. [See the list of supported assets and their IDs on Fireblocks.](https://developers.fireblocks.com/reference/getsupportedassets)
     #[serde(rename = "assetId", skip_serializing_if = "Option::is_none")]
     pub asset_id: Option<String>,
     #[serde(rename = "source", skip_serializing_if = "Option::is_none")]

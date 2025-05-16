@@ -8,30 +8,95 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait BlockchainsAssetsApi: Send + Sync {
+    /// GET /estimate_network_fee
+    ///
+    /// Gets the estimated required fee for an asset. Fireblocks fetches, calculates and caches the result every 30 seconds. Customers should query this API while taking the caching interval into consideration. Notes: - The `networkFee` parameter is the `gasPrice` with a given delta added, multiplied by the gasLimit plus the delta. - The estimation provided depends on the asset type.     - For UTXO-based assets, the response contains the `feePerByte` parameter     - For ETH-based and all EVM based assets, the response will contain `gasPrice` parameter. This is calculated by adding the `baseFee` to the `actualPriority` based on the latest 12 blocks. The response for ETH-based  contains the `baseFee`, `gasPrice`, and `priorityFee` parameters.     - For ADA-based assets, the response will contain the parameter `networkFee` and `feePerByte` parameters.     - For XRP and XLM, the response will contain the transaction fee.     - For other assets, the response will contain the `networkFee` parameter.  Learn more about Fireblocks Fee Management in the following [guide](https://developers.fireblocks.com/reference/estimate-transaction-fee). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn estimate_network_fee(
         &self,
         params: EstimateNetworkFeeParams,
     ) -> Result<models::EstimatedNetworkFeeResponse, Error<EstimateNetworkFeeError>>;
+
+    /// GET /assets/{id}
+    ///
+    /// Returns an asset by ID or legacyID.</br>   **Note**: - We will continue
+    /// displaying and supporting the legacy ID (API ID).  Since not all
+    /// Fireblocks services fully support the new Assets UUID, please use only
+    /// the legacy ID until further notice.
+    async fn get_asset(
+        &self,
+        params: GetAssetParams,
+    ) -> Result<models::Asset, Error<GetAssetError>>;
+
+    /// GET /blockchains/{id}
+    ///
+    /// Returns a blockchain by ID or legacyID.
+    async fn get_blockchain(
+        &self,
+        params: GetBlockchainParams,
+    ) -> Result<models::BlockchainResponse, Error<GetBlockchainError>>;
+
+    /// GET /supported_assets
+    ///
+    /// Legacy Endpoint – Retrieves all assets supported by Fireblocks in your workspace without extended information.</br>  **Note**:  - This endpoint will remain available for the foreseeable future and is not deprecated.</br> - The [List assets](https://developers.fireblocks.com/reference/listassets) endpoint provides more detailed asset information and improved performance.</br> - We recommend transitioning to the [List assets](https://developers.fireblocks.com/reference/listassets) endpoint for better results.  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_supported_assets(
         &self,
     ) -> Result<Vec<models::AssetTypeResponse>, Error<GetSupportedAssetsError>>;
+
+    /// GET /assets
+    ///
+    /// Retrieves all assets supported by Fireblocks in your workspace,
+    /// providing extended information and enhanced performance compared to the
+    /// legacy `supported_assets` endpoint.</br>   **Note**:  - We will continue
+    /// displaying and supporting the legacy ID (API ID). Since not all
+    /// Fireblocks services fully support the new Assets UUID, please use only
+    /// the legacy ID until further notice.</br>
+    async fn list_assets(
+        &self,
+        params: ListAssetsParams,
+    ) -> Result<models::ListAssetsResponse, Error<ListAssetsError>>;
+
+    /// GET /blockchains
+    ///
+    /// Returns all blockchains supported by Fireblocks.</br>
+    async fn list_blockchains(
+        &self,
+        params: ListBlockchainsParams,
+    ) -> Result<models::ListBlockchainsResponse, Error<ListBlockchainsError>>;
+
+    /// POST /assets
+    ///
+    /// Register a new asset to a workspace and return the newly created asset's details. Currently supported chains are:    - EVM based chains   - Stellar   - Algorand   - TRON   - Solana  Learn more about Supporting Additional Assets in Fireblocks  in the following [guide](https://developers.fireblocks.com/docs/add-your-tokens-1). </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, NCW Admin, Editor, and Signer.
     async fn register_new_asset(
         &self,
         params: RegisterNewAssetParams,
     ) -> Result<models::AssetResponse, Error<RegisterNewAssetError>>;
+
+    /// POST /assets/prices/{id}
+    ///
+    /// Set asset price for the given asset id. Returns the asset price
+    /// response.
     async fn set_asset_price(
         &self,
         params: SetAssetPriceParams,
     ) -> Result<models::AssetPriceResponse, Error<SetAssetPriceError>>;
+
+    /// GET /transactions/validate_address/{assetId}/{address}
+    ///
+    /// Checks if an address is valid and active (for XRP, DOT, XLM, and EOS).
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn validate_address(
         &self,
         params: ValidateAddressParams,
@@ -54,6 +119,72 @@ impl BlockchainsAssetsApiClient {
 pub struct EstimateNetworkFeeParams {
     /// The asset for which to estimate the fee
     pub asset_id: String,
+}
+
+/// struct for passing parameters to the method [`get_asset`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct GetAssetParams {
+    /// The ID or legacyId of the asset
+    pub id: String,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+}
+
+/// struct for passing parameters to the method [`get_blockchain`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct GetBlockchainParams {
+    /// The ID or legacyId of the blockchain
+    pub id: String,
+}
+
+/// struct for passing parameters to the method [`list_assets`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct ListAssetsParams {
+    /// Blockchain id of the assets
+    pub blockchain_id: Option<String>,
+    /// Assets class
+    pub asset_class: Option<models::AssetClass>,
+    /// Assets onchain symbol
+    pub symbol: Option<String>,
+    /// Scope of the assets
+    pub scope: Option<models::AssetScope>,
+    /// Are assets deprecated
+    pub deprecated: Option<bool>,
+    /// A list of asset IDs (max 100)
+    pub ids: Option<Vec<String>>,
+    /// Next page cursor to fetch
+    pub page_cursor: Option<String>,
+    /// Items per page
+    pub page_size: Option<f64>,
+    /// A unique identifier for the request. If the request is sent multiple
+    /// times with the same idempotency key, the server will return the same
+    /// response as the first request. The idempotency key is valid for 24
+    /// hours.
+    pub idempotency_key: Option<String>,
+}
+
+/// struct for passing parameters to the method [`list_blockchains`]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "bon", derive(::bon::Builder))]
+pub struct ListBlockchainsParams {
+    /// Blockchain protocol
+    pub protocol: Option<String>,
+    /// Is blockchain deprecated
+    pub deprecated: Option<bool>,
+    /// Is test blockchain
+    pub test: Option<bool>,
+    /// A list of blockchain IDs (max 100)
+    pub ids: Option<Vec<String>>,
+    /// Page cursor to fetch
+    pub page_cursor: Option<String>,
+    /// Items per page (max 500)
+    pub page_size: Option<f64>,
 }
 
 /// struct for passing parameters to the method [`register_new_asset`]
@@ -94,7 +225,7 @@ pub struct ValidateAddressParams {
 
 #[async_trait]
 impl BlockchainsAssetsApi for BlockchainsAssetsApiClient {
-    /// Gets the estimated required fee for an asset. Fireblocks fetches, calculates and caches the result every 30 seconds. Customers should query this API while taking the caching interval into consideration. Notes: - The `assetId` parameter does not support the ZCash (ZEC) asset. - The `networkFee` parameter is the `gasPrice` with a given delta added, multiplied by the gasLimit plus the delta. - The estimation provided depends on the asset type.     - For UTXO-based assets, the response contains the `feePerByte` parameter     - For ETH-based and all EVM based assets, the response will contain `gasPrice` parameter. This is calculated by adding the `baseFee` to the `actualPriority` based on the latest 12 blocks. The response for ETH-based  contains the `baseFee`, `gasPrice`, and `priorityFee` parameters.     - For ADA-based assets, the response will contain the parameter `networkFee` and `feePerByte` parameters.     - For XRP and XLM, the response will contain the transaction fee.     - For other assets, the response will contain the `networkFee` parameter.  Learn more about Fireblocks Fee Management in the following [guide](https://developers.fireblocks.com/reference/estimate-transaction-fee). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+    /// Gets the estimated required fee for an asset. Fireblocks fetches, calculates and caches the result every 30 seconds. Customers should query this API while taking the caching interval into consideration. Notes: - The `networkFee` parameter is the `gasPrice` with a given delta added, multiplied by the gasLimit plus the delta. - The estimation provided depends on the asset type.     - For UTXO-based assets, the response contains the `feePerByte` parameter     - For ETH-based and all EVM based assets, the response will contain `gasPrice` parameter. This is calculated by adding the `baseFee` to the `actualPriority` based on the latest 12 blocks. The response for ETH-based  contains the `baseFee`, `gasPrice`, and `priorityFee` parameters.     - For ADA-based assets, the response will contain the parameter `networkFee` and `feePerByte` parameters.     - For XRP and XLM, the response will contain the transaction fee.     - For other assets, the response will contain the `networkFee` parameter.  Learn more about Fireblocks Fee Management in the following [guide](https://developers.fireblocks.com/reference/estimate-transaction-fee). </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn estimate_network_fee(
         &self,
         params: EstimateNetworkFeeParams,
@@ -120,10 +251,30 @@ impl BlockchainsAssetsApi for BlockchainsAssetsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::EstimatedNetworkFeeResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::EstimatedNetworkFeeResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<EstimateNetworkFeeError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -136,10 +287,145 @@ impl BlockchainsAssetsApi for BlockchainsAssetsApiClient {
         }
     }
 
-    /// Returns all asset types supported by Fireblocks. The response includes
-    /// all assets supported by Fireblocks globally in addition to assets added
-    /// to the specific workspace. </br>Endpoint Permission: Admin, Non-Signing
-    /// Admin, Signer, Approver, Editor.
+    /// Returns an asset by ID or legacyID.</br>   **Note**: - We will continue
+    /// displaying and supporting the legacy ID (API ID).  Since not all
+    /// Fireblocks services fully support the new Assets UUID, please use only
+    /// the legacy ID until further notice.
+    async fn get_asset(
+        &self,
+        params: GetAssetParams,
+    ) -> Result<models::Asset, Error<GetAssetError>> {
+        let GetAssetParams {
+            id,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/assets/{id}",
+            local_var_configuration.base_path,
+            id = crate::apis::urlencode(id)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::Asset`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::Asset`"
+                    ))))
+                }
+            }
+        } else {
+            let local_var_entity: Option<GetAssetError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Returns a blockchain by ID or legacyID.
+    async fn get_blockchain(
+        &self,
+        params: GetBlockchainParams,
+    ) -> Result<models::BlockchainResponse, Error<GetBlockchainError>> {
+        let GetBlockchainParams { id } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!(
+            "{}/blockchains/{id}",
+            local_var_configuration.base_path,
+            id = crate::apis::urlencode(id)
+        );
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::BlockchainResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::BlockchainResponse`"
+                    ))))
+                }
+            }
+        } else {
+            let local_var_entity: Option<GetBlockchainError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Legacy Endpoint – Retrieves all assets supported by Fireblocks in your workspace without extended information.</br>  **Note**:  - This endpoint will remain available for the foreseeable future and is not deprecated.</br> - The [List assets](https://developers.fireblocks.com/reference/listassets) endpoint provides more detailed asset information and improved performance.</br> - We recommend transitioning to the [List assets](https://developers.fireblocks.com/reference/listassets) endpoint for better results.  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_supported_assets(
         &self,
     ) -> Result<Vec<models::AssetTypeResponse>, Error<GetSupportedAssetsError>> {
@@ -160,12 +446,264 @@ impl BlockchainsAssetsApi for BlockchainsAssetsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::AssetTypeResponse&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::AssetTypeResponse&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetSupportedAssetsError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Retrieves all assets supported by Fireblocks in your workspace,
+    /// providing extended information and enhanced performance compared to the
+    /// legacy `supported_assets` endpoint.</br>   **Note**:  - We will continue
+    /// displaying and supporting the legacy ID (API ID). Since not all
+    /// Fireblocks services fully support the new Assets UUID, please use only
+    /// the legacy ID until further notice.</br>
+    async fn list_assets(
+        &self,
+        params: ListAssetsParams,
+    ) -> Result<models::ListAssetsResponse, Error<ListAssetsError>> {
+        let ListAssetsParams {
+            blockchain_id,
+            asset_class,
+            symbol,
+            scope,
+            deprecated,
+            ids,
+            page_cursor,
+            page_size,
+            idempotency_key,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!("{}/assets", local_var_configuration.base_path);
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_str) = blockchain_id {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("blockchainId", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = asset_class {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("assetClass", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = symbol {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("symbol", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = scope {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("scope", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = deprecated {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("deprecated", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = ids {
+            local_var_req_builder = match "multi" {
+                "multi" => local_var_req_builder.query(
+                    &local_var_str
+                        .into_iter()
+                        .map(|p| ("ids".to_owned(), p.to_string()))
+                        .collect::<Vec<(std::string::String, std::string::String)>>(),
+                ),
+                _ => local_var_req_builder.query(&[(
+                    "ids",
+                    &local_var_str
+                        .into_iter()
+                        .map(|p| p.to_string())
+                        .collect::<Vec<String>>()
+                        .join(",")
+                        .to_string(),
+                )]),
+            };
+        }
+        if let Some(ref local_var_str) = page_cursor {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("pageCursor", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = page_size {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        if let Some(local_var_param_value) = idempotency_key {
+            local_var_req_builder =
+                local_var_req_builder.header("Idempotency-Key", local_var_param_value.to_string());
+        }
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ListAssetsResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ListAssetsResponse`"
+                    ))))
+                }
+            }
+        } else {
+            let local_var_entity: Option<ListAssetsError> =
+                serde_json::from_str(&local_var_content).ok();
+            let local_var_error = ResponseContent {
+                status: local_var_status,
+                content: local_var_content,
+                entity: local_var_entity,
+            };
+            Err(Error::ResponseError(local_var_error))
+        }
+    }
+
+    /// Returns all blockchains supported by Fireblocks.</br>
+    async fn list_blockchains(
+        &self,
+        params: ListBlockchainsParams,
+    ) -> Result<models::ListBlockchainsResponse, Error<ListBlockchainsError>> {
+        let ListBlockchainsParams {
+            protocol,
+            deprecated,
+            test,
+            ids,
+            page_cursor,
+            page_size,
+        } = params;
+
+        let local_var_configuration = &self.configuration;
+
+        let local_var_client = &local_var_configuration.client;
+
+        let local_var_uri_str = format!("{}/blockchains", local_var_configuration.base_path);
+        let mut local_var_req_builder =
+            local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+        if let Some(ref local_var_str) = protocol {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("protocol", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = deprecated {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("deprecated", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = test {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("test", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = ids {
+            local_var_req_builder = match "multi" {
+                "multi" => local_var_req_builder.query(
+                    &local_var_str
+                        .into_iter()
+                        .map(|p| ("ids".to_owned(), p.to_string()))
+                        .collect::<Vec<(std::string::String, std::string::String)>>(),
+                ),
+                _ => local_var_req_builder.query(&[(
+                    "ids",
+                    &local_var_str
+                        .into_iter()
+                        .map(|p| p.to_string())
+                        .collect::<Vec<String>>()
+                        .join(",")
+                        .to_string(),
+                )]),
+            };
+        }
+        if let Some(ref local_var_str) = page_cursor {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("pageCursor", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_str) = page_size {
+            local_var_req_builder =
+                local_var_req_builder.query(&[("pageSize", &local_var_str.to_string())]);
+        }
+        if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+            local_var_req_builder = local_var_req_builder
+                .header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+        }
+
+        let local_var_req = local_var_req_builder.build()?;
+        let local_var_resp = local_var_client.execute(local_var_req).await?;
+
+        let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
+        let local_var_content = local_var_resp.text().await?;
+
+        if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ListBlockchainsResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ListBlockchainsResponse`"
+                    ))))
+                }
+            }
+        } else {
+            let local_var_entity: Option<ListBlockchainsError> =
                 serde_json::from_str(&local_var_content).ok();
             let local_var_error = ResponseContent {
                 status: local_var_status,
@@ -208,10 +746,30 @@ impl BlockchainsAssetsApi for BlockchainsAssetsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::AssetResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::AssetResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<RegisterNewAssetError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -262,10 +820,30 @@ impl BlockchainsAssetsApi for BlockchainsAssetsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::AssetPriceResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::AssetPriceResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<SetAssetPriceError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -309,10 +887,30 @@ impl BlockchainsAssetsApi for BlockchainsAssetsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ValidateAddressResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ValidateAddressResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<ValidateAddressError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -334,10 +932,48 @@ pub enum EstimateNetworkFeeError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`get_asset`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GetAssetError {
+    Status404(models::AssetNotFoundErrorResponse),
+    Status500(models::AssetInternalServerErrorResponse),
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`get_blockchain`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GetBlockchainError {
+    Status404(models::BlockchainNotFoundErrorResponse),
+    Status500(models::AssetInternalServerErrorResponse),
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`get_supported_assets`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GetSupportedAssetsError {
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`list_assets`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ListAssetsError {
+    Status500(models::AssetInternalServerErrorResponse),
+    DefaultResponse(models::ErrorSchema),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`list_blockchains`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ListBlockchainsError {
+    Status500(models::AssetInternalServerErrorResponse),
     DefaultResponse(models::ErrorSchema),
     UnknownValue(serde_json::Value),
 }

@@ -8,27 +8,59 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait ContractInteractionsApi: Send + Sync {
+    /// GET /contract_interactions/base_asset_id/{baseAssetId}/contract_address/
+    /// {contractAddress}/functions
+    ///
+    /// Return deployed contract's ABI by blockchain native asset id and
+    /// contract address. </br>Endpoint Permission: Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, and Viewer.
     async fn get_deployed_contract_abi(
         &self,
         params: GetDeployedContractAbiParams,
     ) -> Result<models::ContractAbiResponseDto, Error<GetDeployedContractAbiError>>;
+
+    /// GET /contract_interactions/base_asset_id/{baseAssetId}/tx_hash/{txHash}/
+    /// receipt
+    ///
+    /// Retrieve the transaction receipt by blockchain native asset ID and
+    /// transaction hash  </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor, and Viewer.
     async fn get_transaction_receipt(
         &self,
         params: GetTransactionReceiptParams,
     ) -> Result<models::TransactionReceiptResponse, Error<GetTransactionReceiptError>>;
+
+    /// POST /contract_interactions/base_asset_id/{baseAssetId}/
+    /// contract_address/{contractAddress}/functions/read
+    ///
+    /// Call a read function on a deployed contract by blockchain native asset
+    /// id and contract address. </br>Endpoint Permission: Endpoint Permission:
+    /// Owner, Admin, Non-Signing Admin, Signer, and Editor.
     async fn read_call_function(
         &self,
         params: ReadCallFunctionParams,
     ) -> Result<Vec<models::ParameterWithValue>, Error<ReadCallFunctionError>>;
+
+    /// POST /contract_interactions/base_asset_id/{baseAssetId}/
+    /// contract_address/{contractAddress}/functions/write
+    ///
+    /// Call a write function on a deployed contract by blockchain native asset
+    /// id and contract address. This creates an onchain transaction, thus it is
+    /// an async operation. It returns a transaction id that can be polled for
+    /// status check.  </br>Endpoint Permission: Owner, Admin, Non-Signing
+    /// Admin, Signer, and Editor.
     async fn write_call_function(
         &self,
         params: WriteCallFunctionParams,
@@ -105,7 +137,8 @@ pub struct WriteCallFunctionParams {
 #[async_trait]
 impl ContractInteractionsApi for ContractInteractionsApiClient {
     /// Return deployed contract's ABI by blockchain native asset id and
-    /// contract address. </br>Endpoint Permission: Admin, Non-Signing Admin.
+    /// contract address. </br>Endpoint Permission: Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, and Viewer.
     async fn get_deployed_contract_abi(
         &self,
         params: GetDeployedContractAbiParams,
@@ -143,10 +176,30 @@ impl ContractInteractionsApi for ContractInteractionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ContractAbiResponseDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ContractAbiResponseDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetDeployedContractAbiError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -160,7 +213,8 @@ impl ContractInteractionsApi for ContractInteractionsApiClient {
     }
 
     /// Retrieve the transaction receipt by blockchain native asset ID and
-    /// transaction hash  </br>Endpoint Permission: Admin, Non-Signing Admin.
+    /// transaction hash  </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor, and Viewer.
     async fn get_transaction_receipt(
         &self,
         params: GetTransactionReceiptParams,
@@ -192,10 +246,30 @@ impl ContractInteractionsApi for ContractInteractionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TransactionReceiptResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TransactionReceiptResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetTransactionReceiptError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -209,8 +283,8 @@ impl ContractInteractionsApi for ContractInteractionsApiClient {
     }
 
     /// Call a read function on a deployed contract by blockchain native asset
-    /// id and contract address. </br>Endpoint Permission: Admin, Non-Signing
-    /// Admin.
+    /// id and contract address. </br>Endpoint Permission: Endpoint Permission:
+    /// Owner, Admin, Non-Signing Admin, Signer, and Editor.
     async fn read_call_function(
         &self,
         params: ReadCallFunctionParams,
@@ -250,10 +324,30 @@ impl ContractInteractionsApi for ContractInteractionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `Vec&lt;models::ParameterWithValue&gt;`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `Vec&lt;models::ParameterWithValue&gt;`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<ReadCallFunctionError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -269,7 +363,8 @@ impl ContractInteractionsApi for ContractInteractionsApiClient {
     /// Call a write function on a deployed contract by blockchain native asset
     /// id and contract address. This creates an onchain transaction, thus it is
     /// an async operation. It returns a transaction id that can be polled for
-    /// status check.  </br>Endpoint Permission: Admin, Non-Signing Admin.
+    /// status check.  </br>Endpoint Permission: Owner, Admin, Non-Signing
+    /// Admin, Signer, and Editor.
     async fn write_call_function(
         &self,
         params: WriteCallFunctionParams,
@@ -309,10 +404,30 @@ impl ContractInteractionsApi for ContractInteractionsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::WriteCallFunctionResponseDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::WriteCallFunctionResponseDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<WriteCallFunctionError> =
                 serde_json::from_str(&local_var_content).ok();

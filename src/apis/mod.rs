@@ -100,8 +100,28 @@ pub fn parse_deep_object(prefix: &str, value: &serde_json::Value) -> Vec<(String
     unimplemented!("Only objects are supported with style=deepObject")
 }
 
+/// Internal use only
+/// A content type supported by this client.
+#[allow(dead_code)]
+enum ContentType {
+    Json,
+    Text,
+    Unsupported(String),
+}
+
+impl From<&str> for ContentType {
+    fn from(content_type: &str) -> Self {
+        if content_type.starts_with("application") && content_type.contains("json") {
+            return Self::Json;
+        } else if content_type.starts_with("text/plain") {
+            return Self::Text;
+        } else {
+            return Self::Unsupported(content_type.to_string());
+        }
+    }
+}
+
 pub mod blockchains_assets_api;
-pub mod blockchains_assets_beta_api;
 pub mod compliance_api;
 pub mod contract_interactions_api;
 pub mod contract_templates_api;
@@ -112,7 +132,7 @@ pub mod fiat_accounts_api;
 pub mod fireblocks_network_api;
 pub mod gas_station_api;
 pub mod job_management_api;
-pub mod key_link_beta_api;
+pub mod key_link_api;
 pub mod keys_beta_api;
 pub mod nfts_api;
 pub mod off_exchange_api;
@@ -136,9 +156,6 @@ use std::sync::Arc;
 
 pub trait Api {
     fn blockchains_assets_api(&self) -> &dyn blockchains_assets_api::BlockchainsAssetsApi;
-    fn blockchains_assets_beta_api(
-        &self,
-    ) -> &dyn blockchains_assets_beta_api::BlockchainsAssetsBetaApi;
     fn compliance_api(&self) -> &dyn compliance_api::ComplianceApi;
     fn contract_interactions_api(&self) -> &dyn contract_interactions_api::ContractInteractionsApi;
     fn contract_templates_api(&self) -> &dyn contract_templates_api::ContractTemplatesApi;
@@ -149,7 +166,7 @@ pub trait Api {
     fn fireblocks_network_api(&self) -> &dyn fireblocks_network_api::FireblocksNetworkApi;
     fn gas_station_api(&self) -> &dyn gas_station_api::GasStationApi;
     fn job_management_api(&self) -> &dyn job_management_api::JobManagementApi;
-    fn key_link_beta_api(&self) -> &dyn key_link_beta_api::KeyLinkBetaApi;
+    fn key_link_api(&self) -> &dyn key_link_api::KeyLinkApi;
     fn keys_beta_api(&self) -> &dyn keys_beta_api::KeysBetaApi;
     fn nfts_api(&self) -> &dyn nfts_api::NftsApi;
     fn off_exchange_api(&self) -> &dyn off_exchange_api::OffExchangeApi;
@@ -174,7 +191,6 @@ pub trait Api {
 
 pub struct ApiClient {
     blockchains_assets_api: Box<dyn blockchains_assets_api::BlockchainsAssetsApi>,
-    blockchains_assets_beta_api: Box<dyn blockchains_assets_beta_api::BlockchainsAssetsBetaApi>,
     compliance_api: Box<dyn compliance_api::ComplianceApi>,
     contract_interactions_api: Box<dyn contract_interactions_api::ContractInteractionsApi>,
     contract_templates_api: Box<dyn contract_templates_api::ContractTemplatesApi>,
@@ -185,7 +201,7 @@ pub struct ApiClient {
     fireblocks_network_api: Box<dyn fireblocks_network_api::FireblocksNetworkApi>,
     gas_station_api: Box<dyn gas_station_api::GasStationApi>,
     job_management_api: Box<dyn job_management_api::JobManagementApi>,
-    key_link_beta_api: Box<dyn key_link_beta_api::KeyLinkBetaApi>,
+    key_link_api: Box<dyn key_link_api::KeyLinkApi>,
     keys_beta_api: Box<dyn keys_beta_api::KeysBetaApi>,
     nfts_api: Box<dyn nfts_api::NftsApi>,
     off_exchange_api: Box<dyn off_exchange_api::OffExchangeApi>,
@@ -211,11 +227,6 @@ impl ApiClient {
         Self {
             blockchains_assets_api: Box::new(
                 blockchains_assets_api::BlockchainsAssetsApiClient::new(configuration.clone()),
-            ),
-            blockchains_assets_beta_api: Box::new(
-                blockchains_assets_beta_api::BlockchainsAssetsBetaApiClient::new(
-                    configuration.clone(),
-                ),
             ),
             compliance_api: Box::new(compliance_api::ComplianceApiClient::new(
                 configuration.clone(),
@@ -249,9 +260,7 @@ impl ApiClient {
             job_management_api: Box::new(job_management_api::JobManagementApiClient::new(
                 configuration.clone(),
             )),
-            key_link_beta_api: Box::new(key_link_beta_api::KeyLinkBetaApiClient::new(
-                configuration.clone(),
-            )),
+            key_link_api: Box::new(key_link_api::KeyLinkApiClient::new(configuration.clone())),
             keys_beta_api: Box::new(keys_beta_api::KeysBetaApiClient::new(configuration.clone())),
             nfts_api: Box::new(nfts_api::NftsApiClient::new(configuration.clone())),
             off_exchange_api: Box::new(off_exchange_api::OffExchangeApiClient::new(
@@ -305,12 +314,6 @@ impl Api for ApiClient {
         self.blockchains_assets_api.as_ref()
     }
 
-    fn blockchains_assets_beta_api(
-        &self,
-    ) -> &dyn blockchains_assets_beta_api::BlockchainsAssetsBetaApi {
-        self.blockchains_assets_beta_api.as_ref()
-    }
-
     fn compliance_api(&self) -> &dyn compliance_api::ComplianceApi {
         self.compliance_api.as_ref()
     }
@@ -351,8 +354,8 @@ impl Api for ApiClient {
         self.job_management_api.as_ref()
     }
 
-    fn key_link_beta_api(&self) -> &dyn key_link_beta_api::KeyLinkBetaApi {
-        self.key_link_beta_api.as_ref()
+    fn key_link_api(&self) -> &dyn key_link_api::KeyLinkApi {
+        self.key_link_api.as_ref()
     }
 
     fn keys_beta_api(&self) -> &dyn keys_beta_api::KeysBetaApi {

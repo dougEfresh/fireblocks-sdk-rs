@@ -42,15 +42,15 @@ impl SignedMessage {
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum Algorithm {
     #[serde(rename = "MPC_ECDSA_SECP256K1")]
-    EcdsaSecp256K1,
+    MpcEcdsaSecp256K1,
     #[serde(rename = "MPC_ECDSA_SECP256R1")]
-    EcdsaSecp256R1,
+    MpcEcdsaSecp256R1,
     #[serde(rename = "MPC_EDDSA_ED25519")]
-    EddsaEd25519,
+    MpcEddsaEd25519,
 }
 
 impl Default for Algorithm {
     fn default() -> Algorithm {
-        Self::EcdsaSecp256K1
+        Self::MpcEcdsaSecp256K1
     }
 }

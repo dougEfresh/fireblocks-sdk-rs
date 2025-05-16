@@ -19,7 +19,7 @@ Method | HTTP request | Description
 > delete_contract_template_by_id(contract_template_id)
 Delete a contract template by id
 
-Delete a contract by id. allowed only for private contract templates. Notice: it is irreversible! </br>Endpoint Permission: Admin, Non-Signing Admin.
+Delete a contract by id. allowed only for private contract templates. Notice: it is irreversible! </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor
 
 ### Parameters
 
@@ -49,7 +49,7 @@ No authorization required
 > models::ContractDeployResponse deploy_contract(contract_template_id, contract_deploy_request, idempotency_key)
 Deploy contract
 
-Deploy a new contract by contract template id. If you wish to deploy a token (ERC20, ERC721 etc), and create asset please use `POST /tokenization`. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+Deploy a new contract by contract template id. If you wish to deploy a token (ERC20, ERC721 etc), and create asset please use `POST /tokenization`. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, Approver, and Editor, Viewer.
 
 ### Parameters
 
@@ -208,7 +208,7 @@ No authorization required
 > models::ContractTemplateDto upload_contract_template(contract_upload_request, idempotency_key)
 Upload contract template
 
-Upload a new contract template. This contract template will be available for the workspace. </br>Endpoint Permission: Admin, Non-Signing Admin.
+Upload a new contract template. This contract template will be available for the workspace. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor
 
 ### Parameters
 

@@ -8,51 +8,105 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait NftsApi: Send + Sync {
+    /// GET /nfts/tokens/{id}
+    ///
+    /// Returns the requested token data. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn get_nft(
         &self,
         params: GetNftParams,
     ) -> Result<models::TokenResponse, Error<GetNftError>>;
+
+    /// GET /nfts/tokens
+    ///
+    /// Returns the requested tokens data. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor.
     async fn get_nfts(
         &self,
         params: GetNftsParams,
     ) -> Result<models::GetNftsResponse, Error<GetNftsError>>;
+
+    /// GET /nfts/ownership/tokens
+    ///
+    /// Returns all tokens and their data in your workspace.  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn get_ownership_tokens(
         &self,
         params: GetOwnershipTokensParams,
     ) -> Result<models::GetOwnershipTokensResponse, Error<GetOwnershipTokensError>>;
+
+    /// GET /nfts/ownership/collections
+    ///
+    /// Returns all collections in your workspace. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn list_owned_collections(
         &self,
         params: ListOwnedCollectionsParams,
     ) -> Result<models::ListOwnedCollectionsResponse, Error<ListOwnedCollectionsError>>;
+
+    /// GET /nfts/ownership/assets
+    ///
+    /// Returns all owned distinct tokens (for your workspace) and their data in
+    /// your workspace. </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor.
     async fn list_owned_tokens(
         &self,
         params: ListOwnedTokensParams,
     ) -> Result<models::ListOwnedTokensResponse, Error<ListOwnedTokensError>>;
+
+    /// PUT /nfts/tokens/{id}
+    ///
+    /// Updates the latest token metadata. Learn more about Fireblocks NFT management in the following [guide](https://developers.fireblocks.com/reference/deploy-an-nft-collection).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn refresh_nft_metadata(
         &self,
         params: RefreshNftMetadataParams,
     ) -> Result<(), Error<RefreshNftMetadataError>>;
+
+    /// PUT /nfts/ownership/tokens
+    ///
+    /// Updates all tokens and balances per blockchain and vault account. Learn more about Fireblocks NFT management in the following [guide](https://developers.fireblocks.com/reference/deploy-an-nft-collection).  </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
     async fn update_ownership_tokens(
         &self,
         params: UpdateOwnershipTokensParams,
     ) -> Result<(), Error<UpdateOwnershipTokensError>>;
+
+    /// PUT /nfts/ownership/tokens/{id}/status
+    ///
+    /// Updates token status for a workspace, in all workspace vaults.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn update_token_ownership_status(
         &self,
         params: UpdateTokenOwnershipStatusParams,
     ) -> Result<(), Error<UpdateTokenOwnershipStatusError>>;
+
+    /// PUT /nfts/ownership/tokens/spam
+    ///
+    /// Updates tokens spam property for a workspace's token ownerships, in all
+    /// vault accounts.  </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor.
     async fn update_tokens_ownership_spam(
         &self,
         params: UpdateTokensOwnershipSpamParams,
     ) -> Result<(), Error<UpdateTokensOwnershipSpamError>>;
+
+    /// PUT /nfts/ownership/tokens/status
+    ///
+    /// Updates tokens status for a workspace, in all vault accounts.
+    /// </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver,
+    /// Editor.
     async fn update_tokens_ownership_status(
         &self,
         params: UpdateTokensOwnershipStatusParams,
@@ -286,10 +340,30 @@ impl NftsApi for NftsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TokenResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TokenResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetNftError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -365,10 +439,30 @@ impl NftsApi for NftsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetNftsResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetNftsResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetNftsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -495,10 +589,30 @@ impl NftsApi for NftsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetOwnershipTokensResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetOwnershipTokensResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetOwnershipTokensError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -595,10 +709,30 @@ impl NftsApi for NftsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ListOwnedCollectionsResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ListOwnedCollectionsResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<ListOwnedCollectionsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -701,10 +835,30 @@ impl NftsApi for NftsApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ListOwnedTokensResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ListOwnedTokensResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<ListOwnedTokensError> =
                 serde_json::from_str(&local_var_content).ok();

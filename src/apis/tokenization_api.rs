@@ -8,53 +8,123 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait TokenizationApi: Send + Sync {
+    /// POST /tokenization/collections/{id}/tokens/burn
+    ///
+    /// Burn tokens in a collection. </br>Endpoint Permission: Owner, Admin,
+    /// Non-Signing Admin, Signer, and Editor.
     async fn burn_collection_token(
         &self,
         params: BurnCollectionTokenParams,
     ) -> Result<models::CollectionBurnResponseDto, Error<BurnCollectionTokenError>>;
+
+    /// POST /tokenization/collections
+    ///
+    /// Create a new collection and link it as a token. </br>Endpoint
+    /// Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor.
     async fn create_new_collection(
         &self,
         params: CreateNewCollectionParams,
     ) -> Result<models::CollectionLinkDto, Error<CreateNewCollectionError>>;
+
+    /// GET /tokenization/collections/{id}/tokens/{tokenId}
+    ///
+    /// Get collection token details by id. </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn fetch_collection_token_details(
         &self,
         params: FetchCollectionTokenDetailsParams,
     ) -> Result<models::CollectionLinkDto, Error<FetchCollectionTokenDetailsError>>;
+
+    /// GET /tokenization/collections/{id}
+    ///
+    /// Get a collection by id. </br>Endpoint Permission: Admin, Non-Signing
+    /// Admin, Signer, Approver, Editor, Viewer.
     async fn get_collection_by_id(
         &self,
         params: GetCollectionByIdParams,
     ) -> Result<models::CollectionLinkDto, Error<GetCollectionByIdError>>;
+
+    /// GET /tokenization/collections
+    ///
+    /// Get collections (paginated). </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_linked_collections(
         &self,
         params: GetLinkedCollectionsParams,
     ) -> Result<models::GetLinkedCollectionsPaginatedResponse, Error<GetLinkedCollectionsError>>;
+
+    /// GET /tokenization/tokens/{id}
+    ///
+    /// Return a linked token, with its status and metadata.  </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin.
     async fn get_linked_token(
         &self,
         params: GetLinkedTokenParams,
     ) -> Result<models::TokenLinkDto, Error<GetLinkedTokenError>>;
+
+    /// GET /tokenization/tokens
+    ///
+    /// Return all linked tokens (paginated).  </br>Endpoint Permission: Admin,
+    /// Non-Signing Admin.
     async fn get_linked_tokens(
         &self,
         params: GetLinkedTokensParams,
     ) -> Result<models::TokensPaginatedResponse, Error<GetLinkedTokensError>>;
+
+    /// POST /tokenization/tokens
+    ///
+    /// Facilitates the creation of a new token, supporting both EVM-based and
+    /// Stellar/Ripple platforms. For EVM, it deploys the corresponding contract
+    /// template to the blockchain and links the token to the workspace. For
+    /// Stellar/Ripple, it links a newly created token directly to the workspace
+    /// without deploying a contract. Returns the token link with status
+    /// \"PENDING\" until the token is deployed or \"SUCCESS\" if no deployment
+    /// is needed. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin,
+    /// Signer, and Editor.
     async fn issue_new_token(
         &self,
         params: IssueNewTokenParams,
     ) -> Result<models::TokenLinkDto, Error<IssueNewTokenError>>;
+
+    /// POST /tokenization/tokens/link
+    ///
+    /// Link a contract. </br>Endpoint Permission: Owner, Admin, Non-Signing
+    /// Admin, Signer, and Editor.
     async fn link(&self, params: LinkParams) -> Result<models::TokenLinkDto, Error<LinkError>>;
+
+    /// POST /tokenization/collections/{id}/tokens/mint
+    ///
+    /// Mint tokens and upload metadata. </br>Endpoint Permission: Owner, Admin,
+    /// Non-Signing Admin, Signer, Editor.
     async fn mint_collection_token(
         &self,
         params: MintCollectionTokenParams,
     ) -> Result<models::CollectionMintResponseDto, Error<MintCollectionTokenError>>;
+
+    /// DELETE /tokenization/tokens/{id}
+    ///
+    /// Unlink a token. The token will be unlinked from the workspace. The token
+    /// will not be deleted on chain nor the refId, only the link to the
+    /// workspace will be removed. </br>Endpoint Permission: Owner, Admin,
+    /// Non-Signing Admin, Signer, and Editor.
     async fn unlink(&self, params: UnlinkParams) -> Result<(), Error<UnlinkError>>;
+
+    /// DELETE /tokenization/collections/{id}
+    ///
+    /// Delete a collection link. </br>Endpoint Permission: Owner, Admin,
+    /// Non-Signing Admin, Signer, and Editor.
     async fn unlink_collection(
         &self,
         params: UnlinkCollectionParams,
@@ -206,8 +276,8 @@ pub struct UnlinkCollectionParams {
 
 #[async_trait]
 impl TokenizationApi for TokenizationApiClient {
-    /// Burn tokens in a collection. </br>Endpoint Permission: Admin,
-    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
+    /// Burn tokens in a collection. </br>Endpoint Permission: Owner, Admin,
+    /// Non-Signing Admin, Signer, and Editor.
     async fn burn_collection_token(
         &self,
         params: BurnCollectionTokenParams,
@@ -244,10 +314,30 @@ impl TokenizationApi for TokenizationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CollectionBurnResponseDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CollectionBurnResponseDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<BurnCollectionTokenError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -261,7 +351,7 @@ impl TokenizationApi for TokenizationApiClient {
     }
 
     /// Create a new collection and link it as a token. </br>Endpoint
-    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+    /// Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor.
     async fn create_new_collection(
         &self,
         params: CreateNewCollectionParams,
@@ -296,10 +386,30 @@ impl TokenizationApi for TokenizationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CollectionLinkDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CollectionLinkDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<CreateNewCollectionError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -342,10 +452,30 @@ impl TokenizationApi for TokenizationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CollectionLinkDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CollectionLinkDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<FetchCollectionTokenDetailsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -387,10 +517,30 @@ impl TokenizationApi for TokenizationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CollectionLinkDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CollectionLinkDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetCollectionByIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -448,10 +598,30 @@ impl TokenizationApi for TokenizationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::GetLinkedCollectionsPaginatedResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::GetLinkedCollectionsPaginatedResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetLinkedCollectionsError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -493,10 +663,30 @@ impl TokenizationApi for TokenizationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TokenLinkDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TokenLinkDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetLinkedTokenError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -551,10 +741,30 @@ impl TokenizationApi for TokenizationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TokensPaginatedResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TokensPaginatedResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetLinkedTokensError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -573,8 +783,8 @@ impl TokenizationApi for TokenizationApiClient {
     /// Stellar/Ripple, it links a newly created token directly to the workspace
     /// without deploying a contract. Returns the token link with status
     /// \"PENDING\" until the token is deployed or \"SUCCESS\" if no deployment
-    /// is needed. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer,
-    /// Approver, Editor, Viewer.
+    /// is needed. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin,
+    /// Signer, and Editor.
     async fn issue_new_token(
         &self,
         params: IssueNewTokenParams,
@@ -607,10 +817,30 @@ impl TokenizationApi for TokenizationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TokenLinkDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TokenLinkDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<IssueNewTokenError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -623,8 +853,8 @@ impl TokenizationApi for TokenizationApiClient {
         }
     }
 
-    /// Link a contract. </br>Endpoint Permission: Admin, Non-Signing Admin,
-    /// Signer, Approver, Editor, Viewer.
+    /// Link a contract. </br>Endpoint Permission: Owner, Admin, Non-Signing
+    /// Admin, Signer, and Editor.
     async fn link(&self, params: LinkParams) -> Result<models::TokenLinkDto, Error<LinkError>> {
         let LinkParams {
             token_link_request_dto,
@@ -656,10 +886,30 @@ impl TokenizationApi for TokenizationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TokenLinkDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TokenLinkDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<LinkError> = serde_json::from_str(&local_var_content).ok();
             let local_var_error = ResponseContent {
@@ -671,8 +921,8 @@ impl TokenizationApi for TokenizationApiClient {
         }
     }
 
-    /// Mint tokens and upload metadata. </br>Endpoint Permission: Admin,
-    /// Non-Signing Admin, Signer, Approver, Editor, Viewer.
+    /// Mint tokens and upload metadata. </br>Endpoint Permission: Owner, Admin,
+    /// Non-Signing Admin, Signer, Editor.
     async fn mint_collection_token(
         &self,
         params: MintCollectionTokenParams,
@@ -709,10 +959,30 @@ impl TokenizationApi for TokenizationApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::CollectionMintResponseDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::CollectionMintResponseDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<MintCollectionTokenError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -727,8 +997,8 @@ impl TokenizationApi for TokenizationApiClient {
 
     /// Unlink a token. The token will be unlinked from the workspace. The token
     /// will not be deleted on chain nor the refId, only the link to the
-    /// workspace will be removed. </br>Endpoint Permission: Admin, Non-Signing
-    /// Admin, Signer, Approver, Editor, Viewer.
+    /// workspace will be removed. </br>Endpoint Permission: Owner, Admin,
+    /// Non-Signing Admin, Signer, and Editor.
     async fn unlink(&self, params: UnlinkParams) -> Result<(), Error<UnlinkError>> {
         let UnlinkParams { id } = params;
 
@@ -769,8 +1039,8 @@ impl TokenizationApi for TokenizationApiClient {
         }
     }
 
-    /// Delete a collection link. </br>Endpoint Permission: Admin, Non-Signing
-    /// Admin, Signer, Approver, Editor.
+    /// Delete a collection link. </br>Endpoint Permission: Owner, Admin,
+    /// Non-Signing Admin, Signer, and Editor.
     async fn unlink_collection(
         &self,
         params: UnlinkCollectionParams,

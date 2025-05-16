@@ -8,39 +8,81 @@
 
 use {
     super::{configuration, Error},
-    crate::{apis::ResponseContent, models},
+    crate::{
+        apis::{ContentType, ResponseContent},
+        models,
+    },
     async_trait::async_trait,
     reqwest,
-    serde::{Deserialize, Serialize},
+    serde::{de::Error as _, Deserialize, Serialize},
     std::sync::Arc,
 };
 
 #[async_trait]
 pub trait ContractTemplatesApi: Send + Sync {
+    /// DELETE /tokenization/templates/{contractTemplateId}
+    ///
+    /// Delete a contract by id. allowed only for private contract templates.
+    /// Notice: it is irreversible! </br>Endpoint Permission: Owner, Admin,
+    /// Non-Signing Admin, Signer, and Editor
     async fn delete_contract_template_by_id(
         &self,
         params: DeleteContractTemplateByIdParams,
     ) -> Result<(), Error<DeleteContractTemplateByIdError>>;
+
+    /// POST /tokenization/templates/{contractTemplateId}/deploy
+    ///
+    /// Deploy a new contract by contract template id. If you wish to deploy a
+    /// token (ERC20, ERC721 etc), and create asset please use `POST
+    /// /tokenization`. </br>Endpoint Permission: Owner, Admin, Non-Signing
+    /// Admin, Signer, Approver, and Editor, Viewer.
     async fn deploy_contract(
         &self,
         params: DeployContractParams,
     ) -> Result<models::ContractDeployResponse, Error<DeployContractError>>;
+
+    /// GET /tokenization/templates/{contractTemplateId}/constructor
+    ///
+    /// Return contract template's constructor ABI. </br>Endpoint Permission:
+    /// Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_constructor_by_contract_template_id(
         &self,
         params: GetConstructorByContractTemplateIdParams,
     ) -> Result<models::AbiFunction, Error<GetConstructorByContractTemplateIdError>>;
+
+    /// GET /tokenization/templates/{contractTemplateId}
+    ///
+    /// Return detailed information about the contract template. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_contract_template_by_id(
         &self,
         params: GetContractTemplateByIdParams,
     ) -> Result<models::ContractTemplateDto, Error<GetContractTemplateByIdError>>;
+
+    /// GET /tokenization/templates
+    ///
+    /// Return minimal representation of all the contract templates available
+    /// for the workspace. </br>Endpoint Permission: Admin, Non-Signing Admin,
+    /// Signer, Approver, Editor, Viewer.
     async fn get_contract_templates(
         &self,
         params: GetContractTemplatesParams,
     ) -> Result<models::TemplatesPaginatedResponse, Error<GetContractTemplatesError>>;
+
+    /// GET /tokenization/templates/{contractTemplateId}/function
+    ///
+    /// Return contract template`s function ABI by signature. </br>Endpoint
+    /// Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
     async fn get_function_abi_by_contract_template_id(
         &self,
         params: GetFunctionAbiByContractTemplateIdParams,
     ) -> Result<models::AbiFunction, Error<GetFunctionAbiByContractTemplateIdError>>;
+
+    /// POST /tokenization/templates
+    ///
+    /// Upload a new contract template. This contract template will be available
+    /// for the workspace. </br>Endpoint Permission: Owner, Admin, Non-Signing
+    /// Admin, Signer, and Editor
     async fn upload_contract_template(
         &self,
         params: UploadContractTemplateParams,
@@ -145,8 +187,8 @@ pub struct UploadContractTemplateParams {
 #[async_trait]
 impl ContractTemplatesApi for ContractTemplatesApiClient {
     /// Delete a contract by id. allowed only for private contract templates.
-    /// Notice: it is irreversible! </br>Endpoint Permission: Admin, Non-Signing
-    /// Admin.
+    /// Notice: it is irreversible! </br>Endpoint Permission: Owner, Admin,
+    /// Non-Signing Admin, Signer, and Editor
     async fn delete_contract_template_by_id(
         &self,
         params: DeleteContractTemplateByIdParams,
@@ -194,8 +236,8 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
 
     /// Deploy a new contract by contract template id. If you wish to deploy a
     /// token (ERC20, ERC721 etc), and create asset please use `POST
-    /// /tokenization`. </br>Endpoint Permission: Admin, Non-Signing Admin,
-    /// Signer, Approver, Editor, Viewer.
+    /// /tokenization`. </br>Endpoint Permission: Owner, Admin, Non-Signing
+    /// Admin, Signer, Approver, and Editor, Viewer.
     async fn deploy_contract(
         &self,
         params: DeployContractParams,
@@ -232,10 +274,30 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ContractDeployResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ContractDeployResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<DeployContractError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -284,10 +346,30 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::AbiFunction`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::AbiFunction`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetConstructorByContractTemplateIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -331,10 +413,30 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ContractTemplateDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ContractTemplateDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetContractTemplateByIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -407,10 +509,30 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::TemplatesPaginatedResponse`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::TemplatesPaginatedResponse`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetContractTemplatesError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -457,10 +579,30 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::AbiFunction`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::AbiFunction`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<GetFunctionAbiByContractTemplateIdError> =
                 serde_json::from_str(&local_var_content).ok();
@@ -474,7 +616,8 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
     }
 
     /// Upload a new contract template. This contract template will be available
-    /// for the workspace. </br>Endpoint Permission: Admin, Non-Signing Admin.
+    /// for the workspace. </br>Endpoint Permission: Owner, Admin, Non-Signing
+    /// Admin, Signer, and Editor
     async fn upload_contract_template(
         &self,
         params: UploadContractTemplateParams,
@@ -509,10 +652,30 @@ impl ContractTemplatesApi for ContractTemplatesApiClient {
         let local_var_resp = local_var_client.execute(local_var_req).await?;
 
         let local_var_status = local_var_resp.status();
+        let local_var_content_type = local_var_resp
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("application/octet-stream");
+        let local_var_content_type = super::ContentType::from(local_var_content_type);
         let local_var_content = local_var_resp.text().await?;
 
         if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-            serde_json::from_str(&local_var_content).map_err(Error::from)
+            match local_var_content_type {
+                ContentType::Json => serde_json::from_str(&local_var_content).map_err(Error::from),
+                ContentType::Text => {
+                    return Err(Error::from(serde_json::Error::custom(
+                        "Received `text/plain` content type response that cannot be converted to \
+                         `models::ContractTemplateDto`",
+                    )))
+                }
+                ContentType::Unsupported(local_var_unknown_type) => {
+                    return Err(Error::from(serde_json::Error::custom(format!(
+                        "Received `{local_var_unknown_type}` content type response that cannot be \
+                         converted to `models::ContractTemplateDto`"
+                    ))))
+                }
+            }
         } else {
             let local_var_entity: Option<UploadContractTemplateError> =
                 serde_json::from_str(&local_var_content).ok();
