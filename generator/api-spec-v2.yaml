@@ -236,7 +236,7 @@ paths:
 
             
             
-            Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+            Endpoint Permission: Admin, Non-Signing Admin.
         tags:
             - Vaults
         parameters:
@@ -271,7 +271,7 @@ paths:
             
             - This endpoint is currently in Early Availability. Please contact CSM to get access to this endpoint.
 
-            Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+            Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, and Viewer.
             
         tags:
             - Vaults
@@ -296,6 +296,75 @@ paths:
             default:
                 $ref: '#/components/responses/Error'
         operationId: getCreateMultipleDepositAddressesJobStatus
+  /vault/accounts/bulk/:
+   post:
+    operationId: createMultipleAccounts
+    summary: Bulk creation of new vault accounts
+    description: >
+        Create multiple vault accounts by running an async job. </br>
+
+        **Note**:
+
+        - These endpoints are currently in beta and might be subject to changes.
+
+        - We limit accounts to 10k per operation and 200k per customer during beta
+        testing.
+
+        Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+    tags:
+        - Vaults
+    x-rate-limit-category: write
+    parameters:
+        - $ref: '#/components/parameters/X-Idempotency-Key'
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    $ref: '#/components/schemas/CreateMultipleAccountsRequest'
+    responses:
+        "200":
+            description: A JobCreated object
+            headers:
+                X-Request-ID:
+                    $ref: '#/components/headers/X-Request-ID'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/JobCreated'
+        default:
+            $ref: '#/components/responses/Error'
+  /vault/accounts/bulk/{jobId}:
+    get:
+      summary: Get job status of bulk creation of new vault accounts
+      description: >
+          Returns the status of bulk creation of new vault accounts job and the result or error
+
+          Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+      tags:
+          - Vaults
+      x-rate-limit-category: async
+      parameters:
+          - in: path
+            name: jobId
+            required: true
+            description: The ID of the job to create addresses
+            schema:
+                type: string
+            example: 019681b4-107d-7243-942d-4c3c30e36fae
+      responses:
+          "200":
+              description: A Job with status
+              headers:
+                  X-Request-ID:
+                      $ref: '#/components/headers/X-Request-ID'
+              content:
+                  application/json:
+                      schema:
+                          $ref: '#/components/schemas/CreateMultipleVaultAccountsJobStatus'
+          default:
+              $ref: '#/components/responses/Error'
+      operationId: getCreateMultipleVaultAccountsJobStatus
   /vault/accounts_paged:
     get:
       summary: Get vault accounts (Paginated)
@@ -2337,8 +2406,7 @@ paths:
           - language: javascript
             code: >-
               const assetsBalance = await
-              fireblocks.getVaultAssetsBalance(accountNamePrefix,
-              accountNameSuffix);
+              fireblocks.getVaultAssetsBalance(filters);
             name: Fireblocks SDK Javascript example
           - language: typescript
             code: >-
@@ -6727,7 +6795,7 @@ paths:
       description: >-
         Gets a list of whitelisted contracts.
 
-        </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+        </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
       tags:
         - Whitelisted Contracts
       responses:
@@ -8040,7 +8108,6 @@ paths:
         - For Solana Program Calls, the required parameters are:
         `operation.PROGRAM_CALL`, `assetId` (SOL/SOL_TEST), `source`,
          and `extraParameters` object with `programCallData` key while the value is a Base64 encoded unsigned serialized Solana transaction object.
-         This feature is currently in beta and might be subject to changes - Please contact your CSM for any additional information.
 
 
         - Typed Message Signing is supported for the following asset IDs: 'ETH',
@@ -12756,7 +12823,7 @@ paths:
       description: >-
         Link a contract.
 
-        </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor.
+        </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, and Signer.
       parameters:
         - $ref: '#/components/parameters/X-Idempotency-Key'
       requestBody:
@@ -13406,6 +13473,416 @@ paths:
             fireblocks.tokenization().getLinkedToken(id);
         - lang: Python
           source: response = fireblocks.tokenization.get_linked_token(id);
+  /swap/providers:
+    get:
+      operationId: getSwapProviders
+      summary: Get Providers List
+      description: |-
+        Return a list of all supported swap providers.
+
+        Note: These endpoints are currently in beta and might be subject to changes.
+
+        If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com.
+
+        Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+      tags:
+        - Swap (Beta)
+      x-rate-limit-category: query
+      parameters:
+        - name: pageCursor
+          required: false
+          in: query
+          description: Cursor of the required page
+          schema:
+            type: string
+        - name: pageSize
+          required: false
+          in: query
+          description: >-
+            Number of items in a page, Acceptable values are 1-100. Maximum
+            value is 100
+          example: 10
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 10
+            type: number
+      responses:
+        '200':
+          description: A paginated response containing ProviderDto objects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SwapProvidersPaginatedResponse'
+        default:
+          $ref: '#/components/responses/Error'
+      x-readme:
+        code-samples:
+          - language: typescript
+            code: >-
+              const response:
+              Promise<FireblocksResponse<SwapProvidersPaginatedResponse>> =
+              fireblocks.swapBeta.getSwapProviders(swapBetaApiGetSwapProvidersRequest);
+            name: Fireblocks SDK TypeScript example
+          - language: java
+            code: >-
+              CompletableFuture<ApiResponse<SwapProvidersPaginatedResponse>>
+              response = fireblocks.swapBeta().getSwapProviders(pageCursor,
+              pageSize);
+            name: Fireblocks SDK Java example
+          - language: python
+            code: >-
+              response = fireblocks.swap_beta.get_swap_providers(page_cursor,
+              page_size);
+            name: Fireblocks SDK Python example
+      x-codeSamples:
+        - lang: TypeScript
+          source: >-
+            const response:
+            Promise<FireblocksResponse<SwapProvidersPaginatedResponse>> =
+            fireblocks.swapBeta.getSwapProviders(swapBetaApiGetSwapProvidersRequest);
+        - lang: Java
+          source: >-
+            CompletableFuture<ApiResponse<SwapProvidersPaginatedResponse>>
+            response = fireblocks.swapBeta().getSwapProviders(pageCursor,
+            pageSize);
+        - lang: Python
+          source: >-
+            response = fireblocks.swap_beta.get_swap_providers(page_cursor,
+            page_size);
+  /swap/providers/{providerId}/approve_terms:
+    post:
+      operationId: approveTermsOfService
+      summary: Approve terms of service
+      description: |-
+        Approve the terms of service for a swap provider.
+        Some providers require this approval before performing a swap action for the first time.
+
+        Note: These endpoints are currently in beta and might be subject to changes.
+
+        If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com.
+
+        Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, Editor.
+      tags:
+        - Swap (Beta)
+      x-rate-limit-category: write
+      parameters:
+        - name: providerId
+          required: true
+          in: path
+          schema:
+            type: string
+        - $ref: '#/components/parameters/X-Idempotency-Key'
+      responses:
+        '200':
+          description: successfully approve terms of service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SwapProvider'
+        default:
+          $ref: '#/components/responses/Error'
+      x-readme:
+        code-samples:
+          - language: typescript
+            code: >-
+              const response: Promise<FireblocksResponse<SwapProvider>> =
+              fireblocks.swapBeta.approveTermsOfService(swapBetaApiApproveTermsOfServiceRequest);
+            name: Fireblocks SDK TypeScript example
+          - language: java
+            code: >-
+              CompletableFuture<ApiResponse<SwapProvider>> response =
+              fireblocks.swapBeta().approveTermsOfService(providerId,
+              idempotencyKey);
+            name: Fireblocks SDK Java example
+          - language: python
+            code: >-
+              response =
+              fireblocks.swap_beta.approve_terms_of_service(provider_id,
+              idempotency_key);
+            name: Fireblocks SDK Python example
+      x-codeSamples:
+        - lang: TypeScript
+          source: >-
+            const response: Promise<FireblocksResponse<SwapProvider>> =
+            fireblocks.swapBeta.approveTermsOfService(swapBetaApiApproveTermsOfServiceRequest);
+        - lang: Java
+          source: >-
+            CompletableFuture<ApiResponse<SwapProvider>> response =
+            fireblocks.swapBeta().approveTermsOfService(providerId,
+            idempotencyKey);
+        - lang: Python
+          source: >-
+            response =
+            fireblocks.swap_beta.approve_terms_of_service(provider_id,
+            idempotency_key);
+  /swap/providers/{providerId}/quote:
+    post:
+      operationId: createQuote
+      summary: Create a quote
+      description: |-
+        Create a quote from specific swap provider.
+
+        Note: These endpoints are currently in beta and might be subject to changes.
+
+        If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com.
+
+        Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+      tags:
+        - Swap (Beta)
+      x-rate-limit-category: write
+      parameters:
+        - name: providerId
+          required: true
+          in: path
+          schema:
+            type: string
+        - $ref: '#/components/parameters/X-Idempotency-Key'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuoteRequest'
+      responses:
+        '201':
+          description: >-
+            The response can be one of two possible DTOs, depending if the
+            request contains the accountId property.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuoteResponse'
+        default:
+          $ref: '#/components/responses/Error'
+      x-readme:
+        code-samples:
+          - language: typescript
+            code: >-
+              const response: Promise<FireblocksResponse<QuoteResponse>> =
+              fireblocks.swapBeta.createQuote(swapBetaApiCreateQuoteRequest);
+            name: Fireblocks SDK TypeScript example
+          - language: java
+            code: >-
+              CompletableFuture<ApiResponse<QuoteResponse>> response =
+              fireblocks.swapBeta().createQuote(quoteRequest, providerId,
+              idempotencyKey);
+            name: Fireblocks SDK Java example
+          - language: python
+            code: >-
+              response = fireblocks.swap_beta.create_quote(quote_request,
+              provider_id, idempotency_key);
+            name: Fireblocks SDK Python example
+      x-codeSamples:
+        - lang: TypeScript
+          source: >-
+            const response: Promise<FireblocksResponse<QuoteResponse>> =
+            fireblocks.swapBeta.createQuote(swapBetaApiCreateQuoteRequest);
+        - lang: Java
+          source: >-
+            CompletableFuture<ApiResponse<QuoteResponse>> response =
+            fireblocks.swapBeta().createQuote(quoteRequest, providerId,
+            idempotencyKey);
+        - lang: Python
+          source: >-
+            response = fireblocks.swap_beta.create_quote(quote_request,
+            provider_id, idempotency_key);
+  /swap/operations:
+    post:
+      operationId: createSwapOperation
+      summary: Create swap operation
+      x-rate-limit-category: write
+      description: |-
+        Create swap operation based on a provided quote Id
+
+        Note: These endpoints are currently in beta and might be subject to changes.
+
+        If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com.
+
+        Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, Editor.
+      tags:
+        - Swap (Beta)
+      parameters:
+        - $ref: '#/components/parameters/X-Idempotency-Key'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwapOperationRequest'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SwapOperation'
+        default:
+          $ref: '#/components/responses/Error'
+      x-readme:
+        code-samples:
+          - language: typescript
+            code: >-
+              const response: Promise<FireblocksResponse<SwapOperation>> =
+              fireblocks.swapBeta.createSwapOperation(swapBetaApiCreateSwapOperationRequest);
+            name: Fireblocks SDK TypeScript example
+          - language: java
+            code: >-
+              CompletableFuture<ApiResponse<SwapOperation>> response =
+              fireblocks.swapBeta().createSwapOperation(swapOperationRequest,
+              idempotencyKey);
+            name: Fireblocks SDK Java example
+          - language: python
+            code: >-
+              response =
+              fireblocks.swap_beta.create_swap_operation(swap_operation_request,
+              idempotency_key);
+            name: Fireblocks SDK Python example
+      x-codeSamples:
+        - lang: TypeScript
+          source: >-
+            const response: Promise<FireblocksResponse<SwapOperation>> =
+            fireblocks.swapBeta.createSwapOperation(swapBetaApiCreateSwapOperationRequest);
+        - lang: Java
+          source: >-
+            CompletableFuture<ApiResponse<SwapOperation>> response =
+            fireblocks.swapBeta().createSwapOperation(swapOperationRequest,
+            idempotencyKey);
+        - lang: Python
+          source: >-
+            response =
+            fireblocks.swap_beta.create_swap_operation(swap_operation_request,
+            idempotency_key);
+    get:
+      operationId: getSwapOperations
+      summary: Get Operations list
+      x-rate-limit-category: read
+      description: |-
+        Return a list of swap operations for the specific workspace
+        The operations are sorted by creation date in descending order, meaning the most recent operation appears first.
+
+        Note:These endpoints are currently in beta and might be subject to changes.
+
+        If you want to participate and learn more about the Fireblocks TAP, please contact your Fireblocks Customer Success Manager or send an email to CSM@fireblocks.com.
+
+        Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
+      tags:
+        - Swap (Beta)
+      parameters:
+        - name: pageCursor
+          required: false
+          in: query
+          description: Cursor of the required page
+          schema:
+            type: string
+        - name: pageSize
+          required: false
+          in: query
+          description: >-
+            Number of items in a page, Acceptable values are 1-100. Maximum
+            value is 100
+          example: 10
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 10
+            type: number
+      responses:
+        '200':
+          description: A paginated response containing OperationDto objects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SwapOperationsPaginatedResponse'
+        default:
+          $ref: '#/components/responses/Error'
+      x-readme:
+        code-samples:
+          - language: typescript
+            code: >-
+              const response:
+              Promise<FireblocksResponse<SwapOperationsPaginatedResponse>> =
+              fireblocks.swapBeta.getSwapOperations(swapBetaApiGetSwapOperationsRequest);
+            name: Fireblocks SDK TypeScript example
+          - language: java
+            code: >-
+              CompletableFuture<ApiResponse<SwapOperationsPaginatedResponse>>
+              response = fireblocks.swapBeta().getSwapOperations(pageCursor,
+              pageSize);
+            name: Fireblocks SDK Java example
+          - language: python
+            code: >-
+              response = fireblocks.swap_beta.get_swap_operations(page_cursor,
+              page_size);
+            name: Fireblocks SDK Python example
+      x-codeSamples:
+        - lang: TypeScript
+          source: >-
+            const response:
+            Promise<FireblocksResponse<SwapOperationsPaginatedResponse>> =
+            fireblocks.swapBeta.getSwapOperations(swapBetaApiGetSwapOperationsRequest);
+        - lang: Java
+          source: >-
+            CompletableFuture<ApiResponse<SwapOperationsPaginatedResponse>>
+            response = fireblocks.swapBeta().getSwapOperations(pageCursor,
+            pageSize);
+        - lang: Python
+          source: >-
+            response = fireblocks.swap_beta.get_swap_operations(page_cursor,
+            page_size);
+  /swap/operations/{operationId}:
+    get:
+      operationId: getSwapOperationById
+      summary: Get operation details
+      description: "Get swap operation Details by ID.\n\nNote:These endpoints are currently in beta and might be subject to changes.\n\nIf you want to participate and learn more about the Fireblocks Swap, please contact your Fireblocks Customer Success Manager or send an email to\_CSM@fireblocks.com.\n\nEndpoint Permission: Owner, Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer."
+      tags:
+        - Swap (Beta)
+      x-rate-limit-category: read
+      parameters:
+        - name: operationId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SwapOperation'
+        default:
+          $ref: '#/components/responses/Error'
+      x-readme:
+        code-samples:
+          - language: typescript
+            code: >-
+              const response: Promise<FireblocksResponse<SwapOperation>> =
+              fireblocks.swapBeta.getSwapOperationById(swapBetaApiGetSwapOperationByIdRequest);
+            name: Fireblocks SDK TypeScript example
+          - language: java
+            code: >-
+              CompletableFuture<ApiResponse<SwapOperation>> response =
+              fireblocks.swapBeta().getSwapOperationById(operationId);
+            name: Fireblocks SDK Java example
+          - language: python
+            code: >-
+              response =
+              fireblocks.swap_beta.get_swap_operation_by_id(operation_id);
+            name: Fireblocks SDK Python example
+      x-codeSamples:
+        - lang: TypeScript
+          source: >-
+            const response: Promise<FireblocksResponse<SwapOperation>> =
+            fireblocks.swapBeta.getSwapOperationById(swapBetaApiGetSwapOperationByIdRequest);
+        - lang: Java
+          source: >-
+            CompletableFuture<ApiResponse<SwapOperation>> response =
+            fireblocks.swapBeta().getSwapOperationById(operationId);
+        - lang: Python
+          source: >-
+            response =
+            fireblocks.swap_beta.get_swap_operation_by_id(operation_id);
   /contract_interactions/base_asset_id/{baseAssetId}/contract_address/{contractAddress}/functions:
     get:
       operationId: getDeployedContractAbi
@@ -13810,6 +14287,48 @@ paths:
             fireblocks.staking().getChains();
         - lang: Python
           source: response = fireblocks.staking.get_chains();
+  /staking/chains/{chainDescriptor}/merge:
+    post:
+      operationId: mergeStakeAccounts
+      summary: Merge operation on Solana stake accounts
+      description: >- 
+        Perform a Solana Merge of two active stake accounts into one.
+
+        Endpoint permissions: Admin, Non-Signing Admin, Signer, Approver, Editor.
+      parameters:
+          - name: chainDescriptor
+            required: true
+            in: path
+            description: The protocol identifier (e.g. "SOL"/"SOL_TEST") to use
+            example: SOL
+            schema:
+                enum:
+                    - SOL
+                    - SOL_TEST
+                type: string
+          - $ref: '#/components/parameters/X-Idempotency-Key'
+      requestBody:
+          required: true
+          content:
+              application/json:
+                  schema:
+                      $ref: '#/components/schemas/MergeStakeAccountsRequest'
+      responses:
+          "201":
+              description: >-
+                  Merge action has been executed successfully on vault and is
+                  associated with 201 status code.
+              headers:
+                  X-Request-ID:
+                      $ref: '#/components/headers/X-Request-ID'
+              content:
+                  application/json:
+                      schema:
+                          $ref: '#/components/schemas/MergeStakeAccountsResponse'
+          default:
+              $ref: '#/components/responses/Error'
+      tags:
+          - Staking
   /staking/chains/{chainDescriptor}/chainInfo:
     get:
       operationId: getChainInfo
@@ -23563,11 +24082,10 @@ components:
         preHash:
           $ref: '#/components/schemas/PreHash'
         content:
-          description: >
-            Content to sign on. 
-
-            Should be 32 bytes long for ECDSA (hash of the actual message to
-            sign) or any length for EdDSA as prehashing is not required.
+          description: |
+            Content to sign on.
+            - EIP-191: Requires a 32 byte-long string for ECDSA (hash of the actual message to sign) or any length for EdDSA, as prehashing is not required.
+            - EIP-712: Requires an object specifying the structured data format, including `types`, `domain`, `primaryType`, and `message`.
           type: string
           example: ababababababababababababababababababbababababababbababababababab
         bip44addressIndex:
@@ -26998,6 +27516,519 @@ components:
         - name
         - imageURL
         - link
+    SwapProviderProtocolsEnum:
+      type: string
+      description: >-
+        Protocol options supported by each provider. `UNISWAP` supports
+        `UNISWAP_CLASSIC` and `UNISWAPX`. `WRAP_UNWRAP` supports `WRAP` and
+        `UNWRAP.`
+      example: UNISWAP_CLASSIC
+      enum:
+        - UNISWAP_CLASSIC
+        - UNISWAPX
+        - WRAP
+        - UNWRAP
+    ProviderCategoryEnum:
+      type: string
+      description: >-
+        Category that classify the provider, Supported categories are:  `DEX`,
+        `CEX`, `OTC`
+      example: DEX
+      enum:
+        - DEX
+        - CEX
+        - OTC
+        - WRAP_UNWRAP
+    SwapProvider:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the provider
+          example: UNISWAP
+        name:
+          type: string
+          example: Uniswap
+          description: Name of the provider
+        protocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/SwapProviderProtocolsEnum'
+          example:
+            - UNISWAP_CLASSIC
+            - UNISWAPX
+          description: List of supported protocols. Protocols are specific per provider
+        category:
+          $ref: '#/components/schemas/ProviderCategoryEnum'
+        isTermsApprovalRequired:
+          type: boolean
+          description: >-
+            Indicates whether the terms of service are required for the
+            provider. if `true`, the user must approve the terms of service
+            before using the provider. otherwise, `termsOfServiceUrl` and
+            `isTermsOfServiceApproved` are not shown under the provider data.
+          example: true
+        termsOfServiceUrl:
+          type: string
+          description: URL to the terms of service
+          example: https://uniswap.org/terms-of-service
+        isTermsOfServiceApproved:
+          type: boolean
+          description: Indicates whether the terms of service are approved by the user
+          example: true
+      required:
+        - id
+        - name
+        - protocols
+        - category
+        - isTermsApprovalRequired
+    SwapProvidersPaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          description: The data of the current page
+          items:
+            $ref: '#/components/schemas/SwapProvider'
+        next:
+          type: string
+          description: >-
+            The cursor to fetch the next page of results, if absent or null,
+            there are no additional results.
+          example: MjAyMy0xMi0xMyA====TNjowOC4zMDI=:MTEwMA==
+          nullable: true
+      required:
+        - data
+    QuoteRequest:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: The id of the vault account or account id
+          example: '1'
+        inputAmount:
+          type: string
+          description: >-
+            The amount of tokens the swapper will provide, positive number, can
+            be a decimal.
+          example: '10'
+        inputAsset:
+          type: string
+          description: The id of the asset the swapper will provide
+          example: WETH
+        outputAsset:
+          type: string
+          description: The id of the asset the swapper will receive
+          example: DAI
+        slippageTolerance:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: >-
+            The slippage tolerance is a percentage. The slippage tolerance is
+            the maximum amount the price can change between the time the
+            transaction is submitted and the time it is executed
+          example: 0.5
+        protocol:
+          $ref: '#/components/schemas/SwapProviderProtocolsEnum'
+      required:
+        - inputAmount
+        - inputAsset
+        - outputAsset
+        - slippageTolerance
+        - protocol
+    ProviderAdditionalData:
+      type: object
+      description: Provider specific additional data
+      properties:
+        priceImpact:
+          type: string
+          example: '0.01'
+      required:
+        - priceImpact
+    SwapRequiredActionsEnum:
+      type: string
+      example: APPROVE
+      enum:
+        - APPROVE
+        - PERMIT
+        - CONTRACT_CALL
+    QuoteFee:
+      type: object
+      properties:
+        networkExecutionFee:
+          type: string
+          description: The gas fee in the asset unit.
+          example: '1478987585080628'
+        networkFeeAssetId:
+          type: string
+          description: The network fee in Fireblocks asset representation
+          example: ETH
+        providerFee:
+          type: string
+          description: The provider fee in the asset unit.
+          example: '5742266'
+        providerFeeAssetId:
+          type: string
+          description: The provider fee in Fireblocks asset representation
+          example: DAI
+        providerFeeRate:
+          type: number
+          description: Percentages of the provider fee out of the gross amount
+          example: 0.25
+        networkApproveFee:
+          type: string
+          description: The gas fee in the asset unit.
+          example: '1478987585080628'
+      required:
+        - networkExecutionFee
+        - networkFeeAssetId
+        - providerFee
+        - providerFeeAssetId
+        - providerFeeRate
+    WalletQuoteResponse:
+      type: object
+      description: Return a quote with id that can be used for swap operation.
+      properties:
+        protocol:
+          $ref: '#/components/schemas/SwapProviderProtocolsEnum'
+        inputAmount:
+          type: string
+          description: The amount of tokens the swapper will provide
+          example: '10'
+        inputAsset:
+          type: string
+          description: The id of the asset the swapper will provide
+          example: WETH
+        slippageTolerance:
+          type: number
+          description: >-
+            The slippage tolerance is a percentage. The slippage tolerance is
+            the maximum amount the price can change between the time the
+            transaction is submitted and the time it is executed
+          example: 0.5
+        outputMinAmount:
+          type: string
+          description: The minimum amount of tokens the swapper will receive
+          example: '10'
+        outputMaxAmount:
+          type: string
+          description: Maximum amount of tokens that the swapper will receive
+          example: '20'
+        outputAsset:
+          type: string
+          description: The id of the asset the swapper will receive
+          example: DAI
+        additionalData:
+          $ref: '#/components/schemas/ProviderAdditionalData'
+        providerQuoteId:
+          type: string
+          description: An identifier that uniquely identifies the received quote
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        expiredAt:
+          type: string
+          format: date-time
+          description: When was the received `providerQuoteId` is expired (ISO Date time).
+          example: '2023-07-13T15:55:34.256Z'
+        requiredActions:
+          description: The required actions for completing a swap operation
+          type: array
+          items:
+            $ref: '#/components/schemas/SwapRequiredActionsEnum'
+        estimatedFees:
+          $ref: '#/components/schemas/QuoteFee'
+      required:
+        - protocol
+        - inputAmount
+        - inputAsset
+        - slippageTolerance
+        - outputMinAmount
+        - outputMaxAmount
+        - outputAsset
+        - additionalData
+        - providerQuoteId
+        - expiredAt
+        - requiredActions
+        - estimatedFees
+    NonWalletQuoteFee:
+      type: object
+      description: The estimated fees for the swap operation.
+      properties:
+        networkExecutionFee:
+          type: string
+          description: The gas fee in the asset unit.
+          example: '1478987585080628'
+        networkFeeAssetId:
+          type: string
+          description: The network fee in Fireblocks asset representation
+          example: ETH
+        providerFee:
+          type: string
+          description: The provider fee in the asset unit.
+          example: '5742266'
+        providerFeeAssetId:
+          type: string
+          description: The provider fee in Fireblocks asset representation
+          example: DAI
+        providerFeeRate:
+          type: number
+          description: Percentages of the provider fee out of the gross amount
+          example: 0.25
+      required:
+        - networkExecutionFee
+        - networkFeeAssetId
+        - providerFee
+        - providerFeeAssetId
+        - providerFeeRate
+    NonWalletQuoteResponse:
+      type: object
+      description: Return a quote that cannot be used for a swap operation.
+      properties:
+        protocol:
+          $ref: '#/components/schemas/SwapProviderProtocolsEnum'
+        inputAmount:
+          type: string
+          description: The amount of tokens the swapper will provide
+          example: '10'
+        inputAsset:
+          type: string
+          description: The id of the asset the swapper will provide
+          example: WETH
+        slippageTolerance:
+          type: number
+          description: >-
+            The slippage tolerance is a percentage. The slippage tolerance is
+            the maximum amount the price can change between the time the
+            transaction is submitted and the time it is executed
+          example: 0.5
+        outputMinAmount:
+          type: string
+          description: The minimum amount of tokens the swapper will receive
+          example: '10'
+        outputMaxAmount:
+          type: string
+          description: Maximum amount of tokens that the swapper will receive
+          example: '20'
+        outputAsset:
+          type: string
+          description: The id of the asset the swapper will receive
+          example: DAI
+        additionalData:
+          $ref: '#/components/schemas/ProviderAdditionalData'
+        estimatedFees:
+          $ref: '#/components/schemas/NonWalletQuoteFee'
+      required:
+        - protocol
+        - inputAmount
+        - inputAsset
+        - slippageTolerance
+        - outputMinAmount
+        - outputMaxAmount
+        - outputAsset
+        - additionalData
+        - estimatedFees
+    QuoteResponse:
+      oneOf:
+        - $ref: '#/components/schemas/WalletQuoteResponse'
+        - $ref: '#/components/schemas/NonWalletQuoteResponse'
+    SwapRequiredAction:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/SwapRequiredActionsEnum'
+        status:
+          enum:
+            - WAITING
+            - PROCESSING
+            - COMPLETED
+            - FAILED
+            - CANCELED
+          type: string
+          description: The status of the required action
+          example: PENDING
+        txId:
+          type: string
+          description: The transaction id of the required action
+          example: fc69381c-1e35-48c2-8415-484d1c2f55cx
+      required:
+        - type
+        - status
+    SwapFlowError:
+      type: object
+      nullable: true
+      description: The error message for the swap
+      example: expired
+      properties:
+        code:
+          type: string
+          description: The code representing the error
+          example: '123'
+        message:
+          type: string
+          description: Error message
+          example: Failed to swap
+      required:
+        - code
+        - message
+    SwapOperation:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The id of the swap operation
+          example: 51cfb2c1-126d-4ff6-8512-ffba48f4b296
+        accountId:
+          type: string
+          description: The id of the vault account or account id
+          example: '1'
+        providerId:
+          type: string
+          description: The ID of the provider
+          example: UNISWAP
+        category:
+          $ref: '#/components/schemas/ProviderCategoryEnum'
+        protocol:
+          $ref: '#/components/schemas/SwapProviderProtocolsEnum'
+        status:
+          enum:
+            - CREATED
+            - TRANSACTION_IN_PROGRESS
+            - PENDING_PROVIDER_ACTION
+            - COMPLETED
+            - CANCELED
+            - FAILED
+          type: string
+          description: >-
+            **CREATED** – The swap request has been created but not yet started.
+
+            **PENDING_USER_ACTION** – Awaiting a user action (e.g. signature or
+            approval).
+
+            **PENDING_PROVIDER_ACTION** – Awaiting the provider to process the
+            request.
+
+            **PROCESSING** – The swap is actively being executed on‐chain.
+
+            **COMPLETED** – The swap has finished successfully.
+
+            **CANCELED** – The swap was cancelled by user or provider before
+            completion.
+
+            **FAILED** – The swap attempted but encountered an error.
+          example: CREATED
+        inputAmount:
+          type: string
+          description: The amount of tokens the swapper will provide
+          example: '10'
+        inputAsset:
+          type: string
+          description: The id of the asset the swapper will provide
+          example: WETH
+        slippageTolerance:
+          type: number
+          description: >-
+            The slippage tolerance is a percentage. The slippage tolerance is
+            the maximum amount the price can change between the time the
+            transaction is submitted and the time it is executed
+          example: 0.5
+        outputMinAmount:
+          type: string
+          description: The minimum amount of tokens the swapper will receive
+          example: '10'
+        outputMaxAmount:
+          type: string
+          description: Maximum amount of tokens that the swapper will receive
+          example: '20'
+        outputAsset:
+          type: string
+          description: The id of the asset the swapper will receive
+          example: DAI
+        outputFinalAmount:
+          type: string
+          nullable: true
+          description: Final amount of tokens that the swapper will receive
+          example: '15'
+        requiredActions:
+          description: >-
+            The required actions for the swap, including the type of action, the
+            status of the action, and the transaction id
+          type: array
+          items:
+            $ref: '#/components/schemas/SwapRequiredAction'
+        error:
+          $ref: '#/components/schemas/SwapFlowError'
+        createdAt:
+          type: string
+          format: date-time
+          description: The creation time of the swap operation (ISO Date time).
+          example: '2023-07-13T15:55:34.256Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: The last update time of the swap operation (ISO Date time).
+          example: '2023-07-13T15:55:34.256Z'
+        createdBy:
+          type: string
+          format: uuid
+          description: Fireblocks user id that issued the swap
+          example: 15a8f89f-f562-46ca-bcd3-56f8dd124816
+      required:
+        - id
+        - accountId
+        - providerId
+        - category
+        - protocol
+        - status
+        - inputAmount
+        - inputAsset
+        - slippageTolerance
+        - outputMinAmount
+        - outputMaxAmount
+        - outputAsset
+        - requiredActions
+        - createdAt
+        - updatedAt
+        - createdBy
+    SwapOperationsPaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          description: The data of the current page
+          items:
+            $ref: '#/components/schemas/SwapOperation'
+        next:
+          type: string
+          description: >-
+            The cursor to fetch the next page of results, if absent or null,
+            there are no additional results.
+          example: MjAyMy0xMi0xMyA====TNjowOC4zMDI=:MTEwMA==
+          nullable: true
+      required:
+        - data
+    SwapOperationRequest:
+      type: object
+      properties:
+        providerQuoteId:
+          type: string
+          description: An identifier that uniquely identifies the received quote
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        feeLevel:
+          type: string
+          enum:
+            - LOW
+            - MEDIUM
+            - HIGH
+          description: The fee level of the transaction
+          example: MEDIUM
+        txNote:
+          type: string
+          description: user note on the transaction
+          example: request id b70701f4-d7b1-4795-a8ee-b09cdb5b850d
+      required:
+        - providerQuoteId
     ContractAttributes:
       type: object
       properties:
@@ -27862,6 +28893,33 @@ components:
         - baseAssetId
         - contractAddress
         - contractTemplateId
+    CreateMultipleVaultAccountsJobStatus:
+      type: object
+      properties:
+          status:
+              type: string
+              example: Success
+          vaultAccounts:
+              type: object
+              description: Mapping between VaultAccountId to a mapping of asset to address
+              additionalProperties:
+                  type: object
+                  description: Mapping between asset (key) to address (value)
+                  additionalProperties:
+                      type: string
+              example:
+                  {
+                      "0":
+                          {
+                              "BTC_TEST": "bcrt1qs0zzqytuw49w2jqkmfhzgdh2lylzde2uw4zncz",
+                              "ETH_TEST": "0x460395Edb2338023c6f137259C6e20B6C37dDE95",
+                          },
+                  }
+          errorMessage:
+              type: string
+              example: Asset not supported
+      required:
+        - status
     TokenLinkDto:
       type: object
       properties:
@@ -28403,6 +29461,44 @@ components:
         - stateMutability
         - type
         - inputs
+    MergeStakeAccountsResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: f3432f4-34d1-43495-a8ee-jfdjnfj34i3
+          description: The unique identifier of the merge position (the id of the destination position)
+      required:
+          - id
+    MergeStakeAccountsRequest:
+      type: object
+      properties:
+          sourceId:
+              type: string
+              format: uuid
+              example: b70701f4-d7b1-4795-a8ee-b09cdb5b850f
+              description: Id of the source position to merge from
+          destinationId:
+              type: string
+              format: uuid
+              example: f3432f4-34d1-43495-a8ee-jfdjnfj34i3
+              description: Id of the destination position to merge into
+          fee:
+              type: string
+              example: "7"
+              description: >-
+                  Represents the fee for a transaction, which can be specified as a
+                  percentage value. Only one of fee/feeLevel is required.
+          feeLevel:
+              $ref: '#/components/schemas/FeeLevel'
+          txNote:
+              type: string
+              example: split 20 SOL out of 100 SOL, created on 02.04.23
+              description: The note to associate with the transactions.
+      required:
+          - sourceId
+          - destinationId
     ReadCallFunctionDto:
       type: object
       properties:
@@ -28727,6 +29823,7 @@ components:
         - kiln
         - figment
         - lido
+        - p2p
     FeeLevel:
       type: string
       example: MEDIUM
@@ -30480,7 +31577,7 @@ components:
                       {
                           address: "addr_test1qp07k5kdwdfx4rpfqud8ry65acxgtgfgrxw0t35cwvl4uasjneqjdc868eqlex5p2f0nyekyyk4ze5xuanvj50ysrj3qqxqhsn",
                           index: 0,
-                          descriptio: "Address one",
+                          description: "Address one",
                       },
                   ]
           errorMessage:
@@ -32601,11 +33698,35 @@ components:
         count:
           description: Count
           type: integer
-        assetIds:
+          example: 1000
+        baseAssetIds:
           description: Array of asset IDs
           type: array
           items:
             type: string
+          example:
+            - "BTC"
+            - "ETH"
+            - "SOL"
+        names:
+          description: Names to assign to vault accounts. if vaultAccountNamesStartingIndex or prefix is used it'll fail
+          type: array
+          items:
+              type: string
+          example:
+              - "first va"
+              - "client 65502e71-ecdf-48da-a074-c1753befc7fb"
+        vaultAccountNamesStartingIndex:
+            description: Copy vault accounts names starting from this index. If names array is used it'll fail
+            type: integer
+            example: 0
+        prefix:
+            description: When copying from existing vault accounts (vaultAccountNamesStartingIndex) then adding a prefix to the names. If names array is used it'll fail
+            type: string
+            example: "Copied from: "
+      required:
+        - baseAssetIds
+        - count
     JobCreated:
       type: object
       properties:
