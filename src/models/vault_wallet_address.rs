@@ -13,10 +13,10 @@ use {
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct VaultWalletAddress {
-    #[serde(rename = "assetId")]
-    pub asset_id: String,
-    #[serde(rename = "address")]
-    pub address: String,
+    #[serde(rename = "assetId", skip_serializing_if = "Option::is_none")]
+    pub asset_id: Option<String>,
+    #[serde(rename = "address", skip_serializing_if = "Option::is_none")]
+    pub address: Option<String>,
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     #[serde(rename = "tag", skip_serializing_if = "Option::is_none")]
@@ -40,8 +40,8 @@ pub struct VaultWalletAddress {
 impl VaultWalletAddress {
     pub fn new() -> VaultWalletAddress {
         VaultWalletAddress {
-            asset_id: String::new(),
-            address: String::new(),
+            asset_id: None,
+            address: None,
             description: None,
             tag: None,
             r#type: None,

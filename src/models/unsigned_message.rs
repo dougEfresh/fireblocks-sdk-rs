@@ -15,12 +15,13 @@ use {
 pub struct UnsignedMessage {
     #[serde(rename = "preHash", skip_serializing_if = "Option::is_none")]
     pub pre_hash: Option<models::PreHash>,
-    /// Content to sign on.  Should be 32 bytes long for ECDSA (hash of the
-    /// actual message to sign) or any length for EdDSA as prehashing is not
-    /// required.
+    /// Content to sign on. - EIP-191: Requires a 32 byte-long string for ECDSA
+    /// (hash of the actual message to sign) or any length for EdDSA, as
+    /// prehashing is not required. - EIP-712: Requires an object specifying the
+    /// structured data format, including `types`, `domain`, `primaryType`, and
+    /// `message`.
     #[serde(rename = "content")]
-    pub content: serde_json::Value,
-    // String,
+    pub content: String,
     /// BIP44 address index
     #[serde(rename = "bip44addressIndex", skip_serializing_if = "Option::is_none")]
     pub bip44address_index: Option<i32>,
@@ -40,8 +41,6 @@ pub struct UnsignedMessage {
 
 impl UnsignedMessage {
     pub fn new(content: String) -> UnsignedMessage {
-        let content: serde_json::Value = serde_json::to_value(content)
-            .expect("failed to convert unsigend message to serde_json::Value");
         UnsignedMessage {
             pre_hash: None,
             content,
@@ -65,10 +64,6 @@ pub enum Type {
     Tip191,
     #[serde(rename = "BTC_MESSAGE")]
     BtcMessage,
-    #[serde(rename = "SOLANA_MESSAGE")]
-    SolanaMessage,
-    #[serde(rename = "ETH_MESSAGE")]
-    EthMessage,
 }
 
 impl Default for Type {

@@ -24,8 +24,6 @@ pub enum ChainDescriptor {
     EthTest6,
     #[serde(rename = "SOL_TEST")]
     SolTest,
-    #[serde(rename = "ETH_TEST_HOODI")]
-    EthTestHOODI,
 }
 
 impl std::fmt::Display for ChainDescriptor {
@@ -36,7 +34,6 @@ impl std::fmt::Display for ChainDescriptor {
             Self::Matic => write!(f, "MATIC"),
             Self::EthTest6 => write!(f, "ETH_TEST6"),
             Self::SolTest => write!(f, "SOL_TEST"),
-            Self::EthTestHOODI => write!(f, "ETH_TEST_HOODI"),
         }
     }
 }

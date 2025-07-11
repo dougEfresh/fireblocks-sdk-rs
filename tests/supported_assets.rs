@@ -1,7 +1,7 @@
 mod setup;
 use {
     fireblocks_sdk::ASSET_BTC_TEST,
-    setup::{config, Config},
+    setup::{Config, config},
 };
 
 #[rstest::rstest]

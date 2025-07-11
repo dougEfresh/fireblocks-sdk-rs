@@ -13,6 +13,7 @@ Method | HTTP request | Description
 [**get_providers**](StakingApi.md#get_providers) | **GET** /staking/providers | List staking providers details
 [**get_summary**](StakingApi.md#get_summary) | **GET** /staking/positions/summary | Get staking summary details
 [**get_summary_by_vault**](StakingApi.md#get_summary_by_vault) | **GET** /staking/positions/summary/vaults | Get staking summary details by vault
+[**merge_stake_accounts**](StakingApi.md#merge_stake_accounts) | **POST** /staking/chains/{chainDescriptor}/merge | Merge operation on Solana stake accounts
 [**split**](StakingApi.md#split) | **POST** /staking/chains/{chainDescriptor}/split | Execute a Split operation
 [**stake**](StakingApi.md#stake) | **POST** /staking/chains/{chainDescriptor}/stake | Initiate Stake Operation
 [**unstake**](StakingApi.md#unstake) | **POST** /staking/chains/{chainDescriptor}/unstake | Execute an Unstake operation
@@ -276,6 +277,38 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+
+## merge_stake_accounts
+
+> models::MergeStakeAccountsResponse merge_stake_accounts(chain_descriptor, merge_stake_accounts_request, idempotency_key)
+Merge operation on Solana stake accounts
+
+Perform a Solana Merge of two active stake accounts into one. Endpoint permissions: Admin, Non-Signing Admin, Signer, Approver, Editor.
+
+### Parameters
+
+
+Name | Type | Description  | Required | Notes
+------------- | ------------- | ------------- | ------------- | -------------
+**chain_descriptor** | **String** | The protocol identifier (e.g. \"SOL\"/\"SOL_TEST\") to use | [required] |
+**merge_stake_accounts_request** | [**MergeStakeAccountsRequest**](MergeStakeAccountsRequest.md) |  | [required] |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
+
+### Return type
+
+[**models::MergeStakeAccountsResponse**](MergeStakeAccountsResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

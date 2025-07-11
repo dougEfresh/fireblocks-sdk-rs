@@ -6,6 +6,8 @@ use {
 mod assets;
 mod client;
 pub mod error;
+mod transaction_status;
+pub use transaction_status::TransactionStatus;
 pub(crate) mod jwt;
 mod log;
 #[cfg(feature = "page")]
@@ -16,11 +18,10 @@ pub use paged_client::{PagedClient, TransactionStream, VaultStream};
 pub use {
     crate::error::*,
     apis::{
-        configuration::{ApiKey, Configuration},
         ApiClient,
+        configuration::{ApiKey, Configuration},
     },
     assets::{
-        Asset,
         ASSET_BTC,
         ASSET_BTC_TEST,
         ASSET_DOGE,
@@ -29,6 +30,7 @@ pub use {
         ASSET_ETH_TEST,
         ASSET_SOL,
         ASSET_SOL_TEST,
+        Asset,
     },
     client::{Client, ClientBuilder},
     wallet::WalletContainer,

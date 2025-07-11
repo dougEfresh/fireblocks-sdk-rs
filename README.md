@@ -3,14 +3,14 @@
   <a href="https://docs.rs/fireblocks-sdk/">
     <img src="https://docs.rs/fireblocks-sdk/badge.svg" height="25">
   </a>
-  <a href="https://github.com/dougEfresh/fireblocks-sdk-rs/actions">
-    <img src="https://github.com/dougEfresh/fireblocks-sdk-rs/workflows/Continuous%20integration/badge.svg" height="25">
+  <a href="https://github.com/CarteraMesh/fireblocks-sdk-rs/actions">
+    <img src="https://github.com/CarteraMesh/fireblocks-sdk-rs/workflows/Continuous%20integration/badge.svg" height="25">
   </a>
-  <a href="https://deps.rs/repo/github/dougEfresh/fireblocks-sdk-rs">
-    <img src="https://deps.rs/repo/github/dougEfresh/fireblocks-sdk-rs/status.svg" height="25">
+  <a href="https://deps.rs/repo/github/CarteraMesh/fireblocks-sdk-rs">
+    <img src="https://deps.rs/repo/github/CarteraMesh/fireblocks-sdk-rs/status.svg" height="25">
   </a>
-  <a href="https://codecov.io/github/dougEfresh/fireblocks-sdk-rs" > 
-   <img src="https://codecov.io/github/dougEfresh/fireblocks-sdk-rs/graph/badge.svg?token=dILa1k9tlW" height="25"/> 
+  <a href="https://codecov.io/github/CarteraMesh/fireblocks-sdk-rs" > 
+   <img src="https://codecov.io/github/CarteraMesh/fireblocks-sdk-rs/graph/badge.svg?token=dILa1k9tlW" height="25"/> 
  </a>
   <a href="https://crates.io/crates/fireblocks-sdk">
     <img src="https://img.shields.io/crates/v/fireblocks-sdk.svg" height="25">

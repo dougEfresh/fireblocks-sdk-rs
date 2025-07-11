@@ -4,7 +4,7 @@ use {
         apis::d_app_connections_api::{RemoveParams, SubmitParams},
         models::RespondToConnectionRequest,
     },
-    setup::{config, Config},
+    setup::{Config, config},
 };
 
 #[rstest::rstest]

@@ -14,11 +14,21 @@ use {
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CreateTransactionResponse {
     /// Unique Fireblocks identifier of the transaction
-    #[serde(rename = "id")]
-    pub id: String,
+    #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
     /// The primary status of the transaction. For details, see [Primary transaction statuses.] (https://developers.fireblocks.com/reference/primary-transaction-statuses)
-    #[serde(rename = "status")]
-    pub status: models::TransactionStatus,
+    #[serde(rename = "status", skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
     #[serde(rename = "systemMessages", skip_serializing_if = "Option::is_none")]
     pub system_messages: Option<models::SystemMessageInfo>,
+}
+
+impl CreateTransactionResponse {
+    pub fn new() -> CreateTransactionResponse {
+        CreateTransactionResponse {
+            id: None,
+            status: None,
+            system_messages: None,
+        }
+    }
 }

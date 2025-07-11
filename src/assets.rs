@@ -99,7 +99,7 @@ impl AsRef<str> for Asset {
             Self::SOL(Network::Test) => "SOL_TEST",
             Self::ETH(EthNetwork::Main) => "ETH",
             Self::ETH(EthNetwork::Test) => "ETH_TEST5",
-            Self::Unknown(ref s) => s,
+            Self::Unknown(s) => s,
         }
     }
 }
@@ -155,11 +155,11 @@ pub const ASSET_DOGE_TEST: Asset = Asset::Dodge(Network::Test);
 mod tests {
     use {
         crate::{
-            assets::{Asset, ASSET_DOGE, ASSET_DOGE_TEST, ASSET_ETH, ASSET_ETH_TEST},
             ASSET_BTC,
             ASSET_BTC_TEST,
             ASSET_SOL,
             ASSET_SOL_TEST,
+            assets::{ASSET_DOGE, ASSET_DOGE_TEST, ASSET_ETH, ASSET_ETH_TEST, Asset},
         },
         serde_json::json,
         std::str::FromStr,

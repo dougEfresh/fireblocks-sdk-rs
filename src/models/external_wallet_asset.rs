@@ -19,14 +19,29 @@ pub struct ExternalWalletAsset {
     pub status: Option<models::ConfigChangeRequestStatus>,
     #[serde(rename = "address", skip_serializing_if = "Option::is_none")]
     pub address: Option<String>,
-    //#[serde(rename = "balance", skip_serializing_if = "Option::is_none")]
-    // pub balance: Option<i64>,
-    //#[serde(rename = "lockedAmount", skip_serializing_if = "Option::is_none")]
-    // pub locked_amount: Option<String>,
+    #[serde(rename = "balance", skip_serializing_if = "Option::is_none")]
+    pub balance: Option<String>,
+    #[serde(rename = "lockedAmount", skip_serializing_if = "Option::is_none")]
+    pub locked_amount: Option<String>,
     #[serde(rename = "tag", skip_serializing_if = "Option::is_none")]
     pub tag: Option<String>,
     #[serde(rename = "activationTime", skip_serializing_if = "Option::is_none")]
     pub activation_time: Option<String>,
     #[serde(rename = "additionalInfo", skip_serializing_if = "Option::is_none")]
     pub additional_info: Option<Vec<models::WalletAssetAdditionalInfo>>,
+}
+
+impl ExternalWalletAsset {
+    pub fn new() -> ExternalWalletAsset {
+        ExternalWalletAsset {
+            id: None,
+            status: None,
+            address: None,
+            balance: None,
+            locked_amount: None,
+            tag: None,
+            activation_time: None,
+            additional_info: None,
+        }
+    }
 }

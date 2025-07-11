@@ -104,8 +104,8 @@ pub enum FireblocksError {
     #[error(transparent)]
     FetchVaultAccountError(#[from] crate::apis::Error<GetVaultAccountError>),
 
-    #[error(transparent)]
-    FetchAddressesError(#[from] crate::apis::Error<GetVaultAccountAssetAddressesPaginatedError>),
+    #[error("failed to get addressed {0}")]
+    FetchAddressesError(String),
 
     #[error(transparent)]
     FetchTransactionError(#[from] crate::apis::Error<GetTransactionError>),

@@ -24,56 +24,6 @@ concurrency:
   cancel-in-progress: true
 name: test
 jobs:
-  # required:
-  #   runs-on: ubuntu-latest
-  #   name: ubuntu / ${{ matrix.toolchain }}
-  #   strategy:
-  #     matrix:
-  #       # run on stable and beta to ensure that tests won't break on the next version of the rust
-  #       # toolchain
-  #       toolchain: [stable]
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         submodules: true
-  #     - name: Install ${{ matrix.toolchain }}
-  #       uses: dtolnay/rust-toolchain@master
-  #       with:
-  #         toolchain: ${{ matrix.toolchain }}
-  #     - name: cargo generate-lockfile
-  #       # enable this ci template to run regardless of whether the lockfile is checked in or not
-  #       if: hashFiles('Cargo.lock') == ''
-  #       run: cargo generate-lockfile
-  #     - name: cargo test --locked
-  #       run: cargo test --locked --all-features --all-targets
-  #     # https://github.com/rust-lang/cargo/issues/6669
-  #     - name: cargo test --doc
-  #       run: cargo test --locked --all-features --doc
-  # # os-check:
-  #   # run cargo test on mac and windows
-  #   runs-on: ${{ matrix.os }}
-  #   name: ${{ matrix.os }} / stable
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       os: [macos-latest]
-  #   steps:
-  #     # if your project needs OpenSSL, uncomment this to fix Windows builds.
-  #     # it's commented out by default as the install command takes 5-10m.
-  #     # - run: echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-  #     #   if: runner.os == 'Windows'
-  #     # - run: vcpkg install openssl:x64-windows-static-md
-  #     #   if: runner.os == 'Windows'
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         submodules: true
-  #     - name: Install stable
-  #       uses: dtolnay/rust-toolchain@stable
-  #     - name: cargo generate-lockfile
-  #       if: hashFiles('Cargo.lock') == ''
-  #       run: cargo generate-lockfile
-  #     - name: cargo test
-  #       run: cargo test --locked --all-features --all-targets
   coverage:
     # use llvm-cov to build and collect coverage and outputs in a format that
     # is compatible with codecov.io
@@ -96,7 +46,7 @@ jobs:
     #   https://github.com/codecov/feedback/issues/112
     #
     # for lots of more discussion
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     name: coverage
     steps:
       - uses: actions/checkout@v4
