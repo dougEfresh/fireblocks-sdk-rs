@@ -6,12 +6,14 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**activate_asset_for_vault_account**](VaultsApi.md#activate_asset_for_vault_account) | **POST** /vault/accounts/{vaultAccountId}/{assetId}/activate | Activate a wallet in a vault account
 [**create_legacy_address**](VaultsApi.md#create_legacy_address) | **POST** /vault/accounts/{vaultAccountId}/{assetId}/addresses/{addressId}/create_legacy | Convert a segwit address to legacy format
+[**create_multiple_accounts**](VaultsApi.md#create_multiple_accounts) | **POST** /vault/accounts/bulk/ | Bulk creation of new vault accounts
 [**create_multiple_deposit_addresses**](VaultsApi.md#create_multiple_deposit_addresses) | **POST** /vault/accounts/addresses/bulk | Bulk creation of new deposit addresses
 [**create_vault_account**](VaultsApi.md#create_vault_account) | **POST** /vault/accounts | Create a new vault account
 [**create_vault_account_asset**](VaultsApi.md#create_vault_account_asset) | **POST** /vault/accounts/{vaultAccountId}/{assetId} | Create a new vault wallet
 [**create_vault_account_asset_address**](VaultsApi.md#create_vault_account_asset_address) | **POST** /vault/accounts/{vaultAccountId}/{assetId}/addresses | Create new asset deposit address
 [**get_asset_wallets**](VaultsApi.md#get_asset_wallets) | **GET** /vault/asset_wallets | Get vault wallets (Paginated)
 [**get_create_multiple_deposit_addresses_job_status**](VaultsApi.md#get_create_multiple_deposit_addresses_job_status) | **GET** /vault/accounts/addresses/bulk/{jobId} | Get the job status of the bulk deposit address creation
+[**get_create_multiple_vault_accounts_job_status**](VaultsApi.md#get_create_multiple_vault_accounts_job_status) | **GET** /vault/accounts/bulk/{jobId} | Get job status of bulk creation of new vault accounts
 [**get_max_spendable_amount**](VaultsApi.md#get_max_spendable_amount) | **GET** /vault/accounts/{vaultAccountId}/{assetId}/max_spendable_amount | Get the max spendable amount in a transaction.
 [**get_paged_vault_accounts**](VaultsApi.md#get_paged_vault_accounts) | **GET** /vault/accounts_paged | Get vault accounts (Paginated)
 [**get_public_key_info**](VaultsApi.md#get_public_key_info) | **GET** /vault/public_key_info | Get the public key for a derivation path
@@ -99,12 +101,43 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 
+## create_multiple_accounts
+
+> models::JobCreated create_multiple_accounts(create_multiple_accounts_request, idempotency_key)
+Bulk creation of new vault accounts
+
+Create multiple vault accounts by running an async job. </br> **Note**: - These endpoints are currently in beta and might be subject to changes. - We limit accounts to 10k per operation and 200k per customer during beta testing. Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor. 
+
+### Parameters
+
+
+Name | Type | Description  | Required | Notes
+------------- | ------------- | ------------- | ------------- | -------------
+**create_multiple_accounts_request** | [**CreateMultipleAccountsRequest**](CreateMultipleAccountsRequest.md) |  | [required] |
+**idempotency_key** | Option<**String**> | A unique identifier for the request. If the request is sent multiple times with the same idempotency key, the server will return the same response as the first request. The idempotency key is valid for 24 hours. |  |
+
+### Return type
+
+[**models::JobCreated**](JobCreated.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+
 ## create_multiple_deposit_addresses
 
 > models::JobCreated create_multiple_deposit_addresses(create_multiple_deposit_addresses_request, idempotency_key)
 Bulk creation of new deposit addresses
 
-Create multiple deposit address by running an async job. </br> **Note**: - We limit accounts to 10k per operation. - The target Vault Account should already have the asset wallet created, or the deposit addresses will fail. - This endpoint should be used for UTXO blockchains. - This endpoint is currently in Early Availability. Please contact CSM to get access to this endpoint.   Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+Create multiple deposit address by running an async job. </br> **Note**: - We limit accounts to 10k per operation. - The target Vault Account should already have the asset wallet created, or the deposit addresses will fail. - This endpoint should be used for UTXO blockchains. - This endpoint is currently in Early Availability. Please contact CSM to get access to this endpoint.   Endpoint Permission: Admin, Non-Signing Admin.
 
 ### Parameters
 
@@ -267,7 +300,7 @@ No authorization required
 > models::CreateMultipleDepositAddressesJobStatus get_create_multiple_deposit_addresses_job_status(job_id)
 Get the job status of the bulk deposit address creation
 
-Returns the status of the bulk creation of new deposit addresses job, and the result or error. **Note**: - The target Vault Account should already have the asset wallet created, or the deposit addresses will fail. - This endpoint is currently in Early Availability. Please contact CSM to get access to this endpoint. Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+Returns the status of the bulk creation of new deposit addresses job, and the result or error. **Note**: - The target Vault Account should already have the asset wallet created, or the deposit addresses will fail. - This endpoint is currently in Early Availability. Please contact CSM to get access to this endpoint. Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, and Viewer.
 
 ### Parameters
 
@@ -279,6 +312,36 @@ Name | Type | Description  | Required | Notes
 ### Return type
 
 [**models::CreateMultipleDepositAddressesJobStatus**](CreateMultipleDepositAddressesJobStatus.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+
+## get_create_multiple_vault_accounts_job_status
+
+> models::CreateMultipleVaultAccountsJobStatus get_create_multiple_vault_accounts_job_status(job_id)
+Get job status of bulk creation of new vault accounts
+
+Returns the status of bulk creation of new vault accounts job and the result or error Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer. 
+
+### Parameters
+
+
+Name | Type | Description  | Required | Notes
+------------- | ------------- | ------------- | ------------- | -------------
+**job_id** | **String** | The ID of the job to create addresses | [required] |
+
+### Return type
+
+[**models::CreateMultipleVaultAccountsJobStatus**](CreateMultipleVaultAccountsJobStatus.md)
 
 ### Authorization
 

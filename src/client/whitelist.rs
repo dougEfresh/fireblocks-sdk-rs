@@ -1,7 +1,10 @@
 use {
     super::Client,
     crate::{
+        WalletContainer,
+        WalletType,
         apis::{
+            Api,
             whitelisted_contracts_api::{
                 AddContractAssetParams,
                 CreateContractParams,
@@ -20,7 +23,6 @@ use {
                 DeleteInternalWalletParams,
                 GetInternalWalletParams,
             },
-            Api,
         },
         error::FireblocksError,
         models::{
@@ -30,12 +32,13 @@ use {
             CreateInternalWalletAssetRequest,
             CreateWalletRequest,
         },
-        WalletContainer,
-        WalletType,
     },
 };
 
 impl Client {
+    /// Create asset in a wallet
+    /// # Panics
+    /// this will panic if id returned is None, which shouldn't happen
     pub async fn wallet_create_asset(
         &self,
         wallet_type: WalletType,
@@ -77,6 +80,7 @@ impl Client {
                     .await
                     .map_err(|e| FireblocksError::FetchWalletCreateError(e.to_string()))?
                     .id
+                    .expect("id to be defined")
             }
             WalletType::Contract => {
                 let api = self.api_client.whitelisted_contracts_api();
@@ -123,7 +127,7 @@ impl Client {
                     .await
                     .map_err(|e| FireblocksError::FetchWalletCreateError(e.to_string()))?;
             }
-        };
+        }
         Ok(())
     }
 

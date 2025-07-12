@@ -14,18 +14,37 @@ use {
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CreateMultipleAccountsRequest {
     /// Count
-    #[serde(rename = "count", skip_serializing_if = "Option::is_none")]
-    pub count: Option<i32>,
+    #[serde(rename = "count")]
+    pub count: i32,
     /// Array of asset IDs
-    #[serde(rename = "assetIds", skip_serializing_if = "Option::is_none")]
-    pub asset_ids: Option<Vec<String>>,
+    #[serde(rename = "baseAssetIds")]
+    pub base_asset_ids: Vec<String>,
+    /// Names to assign to vault accounts. if vaultAccountNamesStartingIndex or
+    /// prefix is used it'll fail
+    #[serde(rename = "names", skip_serializing_if = "Option::is_none")]
+    pub names: Option<Vec<String>>,
+    /// Copy vault accounts names starting from this index. If names array is
+    /// used it'll fail
+    #[serde(
+        rename = "vaultAccountNamesStartingIndex",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub vault_account_names_starting_index: Option<i32>,
+    /// When copying from existing vault accounts
+    /// (vaultAccountNamesStartingIndex) then adding a prefix to the names. If
+    /// names array is used it'll fail
+    #[serde(rename = "prefix", skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
 }
 
 impl CreateMultipleAccountsRequest {
-    pub fn new() -> CreateMultipleAccountsRequest {
+    pub fn new(count: i32, base_asset_ids: Vec<String>) -> CreateMultipleAccountsRequest {
         CreateMultipleAccountsRequest {
-            count: None,
-            asset_ids: None,
+            count,
+            base_asset_ids,
+            names: None,
+            vault_account_names_starting_index: None,
+            prefix: None,
         }
     }
 }

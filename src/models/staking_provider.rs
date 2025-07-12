@@ -21,6 +21,8 @@ pub enum StakingProvider {
     Figment,
     #[serde(rename = "lido")]
     Lido,
+    #[serde(rename = "p2p")]
+    P2p,
 }
 
 impl std::fmt::Display for StakingProvider {
@@ -29,6 +31,7 @@ impl std::fmt::Display for StakingProvider {
             Self::Kiln => write!(f, "kiln"),
             Self::Figment => write!(f, "figment"),
             Self::Lido => write!(f, "lido"),
+            Self::P2p => write!(f, "p2p"),
         }
     }
 }

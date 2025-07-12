@@ -2,7 +2,7 @@ mod setup;
 use {
     chrono::{TimeZone, Utc},
     fireblocks_sdk::*,
-    setup::{config, Config},
+    setup::{Config, config},
     std::{sync::Arc, time::Duration},
     tokio_stream::StreamExt,
 };
@@ -22,7 +22,9 @@ async fn transaction_stream(mut ts: TransactionStream) -> anyhow::Result<()> {
         }
         if let Some(last) = result.last() {
             if let Some(created) = last.created_at {
-                // tracing::info!("id={}", last.id);
+                // tracing::info!("id={}", last.id)
+                #[allow(clippy::cast_possible_truncation)]
+                let created = created as i64;
                 assert!(after < created);
                 after = created;
             }
@@ -40,8 +42,7 @@ async fn get_paged_vault_accounts(config: Config) -> anyhow::Result<()> {
     let pc = PagedClient::new(Arc::new(c.clone()));
     let mut vs = pc.vaults(50);
 
-    while let Ok(Some(result)) = vs.try_next().await {
-        tracing::info!("accounts {}", result.accounts.len());
+    while let Ok(Some(_)) = vs.try_next().await {
         tokio::time::sleep(Duration::from_millis(50)).await;
     }
     Ok(())

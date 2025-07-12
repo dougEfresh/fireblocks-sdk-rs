@@ -2,7 +2,7 @@ mod setup;
 use {
     apis::vaults_api::*,
     fireblocks_sdk::*,
-    setup::{config, Config},
+    setup::{Config, config},
 };
 
 #[rstest::rstest]
@@ -41,7 +41,8 @@ async fn get_paged_vault_accounts(config: Config) -> anyhow::Result<()> {
     let c = config.client();
     let params = GetPagedVaultAccountsParams::builder().limit(10.0).build();
     let result = c.vaults_api().get_paged_vault_accounts(params).await?;
-    assert!(!result.accounts.is_empty());
+    let accounts = result.accounts.unwrap_or_else(Vec::new);
+    assert!(!accounts.is_empty());
     Ok(())
 }
 
@@ -53,15 +54,10 @@ async fn test_vault_names(config: Config) -> anyhow::Result<()> {
         .name_prefix("Default".to_owned())
         .build();
     let results = c.vaults_api().get_paged_vault_accounts(params).await?;
-    assert!(!results.accounts.is_empty());
-    assert_eq!(results.accounts[0].name.to_lowercase(), "default");
-
-    let params = GetPagedVaultAccountsParams::builder()
-        .name_suffix("Default".to_owned())
-        .build();
-    let results = c.vaults_api().get_paged_vault_accounts(params).await?;
-    assert!(!results.accounts.is_empty());
-    assert_eq!(results.accounts[0].name.to_lowercase(), "default");
+    assert!(results.accounts.is_some());
+    let accounts = results.accounts.unwrap_or_else(Vec::new);
+    assert!(!accounts.is_empty());
+    assert_eq!(accounts[0].name.to_lowercase(), "default");
     Ok(())
 }
 

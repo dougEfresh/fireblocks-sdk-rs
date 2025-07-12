@@ -1,10 +1,10 @@
 mod setup;
 use {
     fireblocks_sdk::{
-        apis::{staking_api::GetChainInfoParams, Api},
+        apis::{Api, staking_api::GetChainInfoParams},
         models::ChainDescriptor,
     },
-    setup::{config, Config},
+    setup::{Config, config},
 };
 
 #[rstest::rstest]

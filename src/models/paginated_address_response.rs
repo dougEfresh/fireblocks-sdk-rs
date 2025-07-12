@@ -13,8 +13,8 @@ use {
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PaginatedAddressResponse {
-    #[serde(rename = "addresses")]
-    pub addresses: Vec<models::VaultWalletAddress>,
+    #[serde(rename = "addresses", skip_serializing_if = "Option::is_none")]
+    pub addresses: Option<Vec<models::VaultWalletAddress>>,
     #[serde(rename = "paging", skip_serializing_if = "Option::is_none")]
     pub paging: Option<models::PaginatedAddressResponsePaging>,
 }
@@ -22,7 +22,7 @@ pub struct PaginatedAddressResponse {
 impl PaginatedAddressResponse {
     pub fn new() -> PaginatedAddressResponse {
         PaginatedAddressResponse {
-            addresses: vec![],
+            addresses: None,
             paging: None,
         }
     }

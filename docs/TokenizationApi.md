@@ -273,7 +273,7 @@ No authorization required
 > models::TokenLinkDto link(token_link_request_dto, idempotency_key)
 Link a contract
 
-Link a contract. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, Signer, and Editor.
+Link a contract. </br>Endpoint Permission: Owner, Admin, Non-Signing Admin, and Signer.
 
 ### Parameters
 

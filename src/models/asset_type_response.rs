@@ -72,8 +72,6 @@ pub enum Type {
     XlmAsset,
     #[serde(rename = "XDB_ASSET")]
     XdbAsset,
-    #[serde(rename = "TON_ASSET")]
-    TonAsset,
 }
 
 impl Default for Type {

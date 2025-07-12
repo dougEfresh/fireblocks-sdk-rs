@@ -1,11 +1,11 @@
 use {
     crate::{
-        apis::vaults_api::GetPagedVaultAccountsParams,
-        models::VaultAccountsPagedResponse,
         Client,
         FireblocksError,
+        apis::vaults_api::GetPagedVaultAccountsParams,
+        models::VaultAccountsPagedResponse,
     },
-    futures::{future::BoxFuture, stream::FuturesUnordered, FutureExt, Stream, StreamExt},
+    futures::{FutureExt, Stream, StreamExt, future::BoxFuture, stream::FuturesUnordered},
     std::{
         pin::Pin,
         sync::Arc,
@@ -72,12 +72,10 @@ impl Stream for VaultStream {
             Poll::Ready(opt) => {
                 if let Some(result) = opt {
                     match result {
-                        Ok(ref va) => {
-                            match &va.paging {
-                                None => self.after = String::new(),
-                                Some(p) => self.after = p.after.clone().unwrap_or_default(),
-                            };
-                        }
+                        Ok(ref va) => match &va.paging {
+                            None => self.after = String::new(),
+                            Some(p) => self.after = p.after.clone().unwrap_or_default(),
+                        },
                         Err(e) => {
                             return Poll::Ready(Some(Err(e)));
                         }
@@ -90,7 +88,7 @@ impl Stream for VaultStream {
                 cx.waker().wake_by_ref();
                 return Poll::Pending;
             }
-        };
+        }
 
         tracing::trace!("checking after {:#?}", self.after);
         // If there are no more pages to fetch and no pending futures, end the stream

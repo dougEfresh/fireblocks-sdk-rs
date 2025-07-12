@@ -1,7 +1,7 @@
 use {
     fireblocks_sdk::{
-        apis::vaults_api::{GetPagedVaultAccountsParams, GetVaultAccountParams},
         ClientBuilder,
+        apis::vaults_api::{GetPagedVaultAccountsParams, GetVaultAccountParams},
     },
     std::{fs::File, io::Read, time::Duration},
 };

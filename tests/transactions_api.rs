@@ -2,7 +2,7 @@ mod setup;
 use {
     apis::transactions_api::*,
     fireblocks_sdk::*,
-    setup::{config, Config},
+    setup::{Config, config},
 };
 
 #[rstest::rstest]

@@ -13,8 +13,8 @@ use {
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct VaultAccountsPagedResponse {
-    #[serde(rename = "accounts")]
-    pub accounts: Vec<models::VaultAccount>,
+    #[serde(rename = "accounts", skip_serializing_if = "Option::is_none")]
+    pub accounts: Option<Vec<models::VaultAccount>>,
     #[serde(rename = "paging", skip_serializing_if = "Option::is_none")]
     pub paging: Option<models::VaultAccountsPagedResponsePaging>,
     #[serde(rename = "previousUrl", skip_serializing_if = "Option::is_none")]
@@ -26,7 +26,7 @@ pub struct VaultAccountsPagedResponse {
 impl VaultAccountsPagedResponse {
     pub fn new() -> VaultAccountsPagedResponse {
         VaultAccountsPagedResponse {
-            accounts: vec![],
+            accounts: None,
             paging: None,
             previous_url: None,
             next_url: None,

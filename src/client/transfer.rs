@@ -1,17 +1,17 @@
 use {
     super::Client,
     crate::{
-        apis::{transactions_api::CreateTransactionParams, Api},
+        WalletType,
+        apis::{Api, transactions_api::CreateTransactionParams},
         error::FireblocksError,
         models::{
-            transaction_request::FeeLevel,
             CreateTransactionResponse,
             DestinationTransferPeerPath,
             SourceTransferPeerPath,
             TransactionRequest,
             TransferPeerPathType,
+            transaction_request::FeeLevel,
         },
-        WalletType,
     },
 };
 

@@ -1,16 +1,16 @@
 use {
     crate::{
-        apis::{
-            transactions_api::{GetTransactionsError, GetTransactionsParams},
-            ResponseContent,
-        },
-        models::{self, ErrorSchema, TransactionResponse},
         Client,
         Epoch,
         FireblocksError,
+        apis::{
+            ResponseContent,
+            transactions_api::{GetTransactionsError, GetTransactionsParams},
+        },
+        models::{self, ErrorSchema, TransactionResponse},
     },
-    chrono::{offset::LocalResult, TimeZone, Utc},
-    futures::{future::BoxFuture, stream::FuturesUnordered, FutureExt, Stream, StreamExt},
+    chrono::{TimeZone, Utc, offset::LocalResult},
+    futures::{FutureExt, Stream, StreamExt, future::BoxFuture, stream::FuturesUnordered},
     std::{
         pin::Pin,
         sync::Arc,
@@ -110,8 +110,9 @@ impl Stream for TransactionStream {
                                     last.created_at
                                 );
                                 if let Some(millis) = last.created_at {
+                                    #[allow(clippy::cast_possible_truncation)]
                                     let LocalResult::Single(ts) =
-                                        Utc.timestamp_millis_opt(millis + 1)
+                                        Utc.timestamp_millis_opt((millis as i64) + 1)
                                     else {
                                         let entity: GetTransactionsError =
                                             GetTransactionsError::DefaultResponse(ErrorSchema {
@@ -147,7 +148,7 @@ impl Stream for TransactionStream {
                 cx.waker().wake_by_ref();
                 return Poll::Pending;
             }
-        };
+        }
 
         let client = self.client.clone();
         let params = self.build_params();

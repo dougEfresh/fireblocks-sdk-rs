@@ -1,13 +1,14 @@
 mod setup;
 use {
     fireblocks_sdk::{
-        models::{CreateTransactionResponse, TransactionStatus},
+        ASSET_SOL_TEST,
         Client,
+        TransactionStatus,
         WalletContainer,
         WalletType,
-        ASSET_SOL_TEST,
+        models::CreateTransactionResponse,
     },
-    setup::{config, Config},
+    setup::{Config, config},
     std::time::Duration,
     tracing::info,
 };
@@ -44,7 +45,12 @@ async fn transfer_whitelist(
         .vault_whitelist_transfer("0", ASSET_SOL_TEST, "0.00001", wallet_type, &w.id, None)
         .await?;
 
-    assert_eq!(response.status, TransactionStatus::Submitted);
+    let status: TransactionStatus = response
+        .status
+        .clone()
+        .unwrap_or_else(|| String::from("unknown"))
+        .into();
+    assert_eq!(status, TransactionStatus::Submitted);
     Ok(response)
 }
 
@@ -79,12 +85,11 @@ async fn test_transfer_poll(config: Config) -> anyhow::Result<()> {
     }
     let c = c.expect("client should be defined");
     let resp = transfer_whitelist(c.clone(), WalletType::External).await?;
-    c.poll_transaction(
-        &resp.id,
-        Duration::from_secs(120),
-        Duration::from_secs(5),
-        |t| info!("transaction status {} ({})", t.status, t.id),
-    )
+    assert!(resp.id.is_some());
+    let id = resp.id.unwrap_or_default();
+    c.poll_transaction(&id, Duration::from_secs(120), Duration::from_secs(5), |t| {
+        info!("transaction status {} ({})", t.status, t.id);
+    })
     .await?;
     Ok(())
 }

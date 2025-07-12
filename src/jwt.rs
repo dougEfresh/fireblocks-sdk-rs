@@ -1,7 +1,7 @@
 use {
     async_trait::async_trait,
     http::Extensions,
-    jsonwebtoken::{errors as jwterrors, Algorithm, EncodingKey, Header},
+    jsonwebtoken::{Algorithm, EncodingKey, Header, errors as jwterrors},
     rand::Rng,
     reqwest::{Body, Response},
     reqwest_middleware::{Middleware, Next},
@@ -95,8 +95,8 @@ impl<'a> Claims<'a> {
                 .as_millis(),
         )
         .unwrap_or_default();
-        let mut rng = rand::thread_rng();
-        let nonce = rng.gen::<u64>();
+        let mut rng = rand::rng();
+        let nonce = rng.random::<u64>();
         let now = now / 1000;
 
         let body_hash = {
