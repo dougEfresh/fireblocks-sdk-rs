@@ -9,6 +9,8 @@
 use {
     crate::models,
     serde::{Deserialize, Serialize},
+    serde_with::{DeserializeFromStr, SerializeDisplay},
+    std::{fmt, str::FromStr},
 };
 
 /// AssetTypeResponse : Supported Asset Object
@@ -48,34 +50,66 @@ impl AssetTypeResponse {
     }
 }
 /// Asset type
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, DeserializeFromStr, SerializeDisplay,
+)]
 pub enum Type {
-    #[serde(rename = "BASE_ASSET")]
     BaseAsset,
-    #[serde(rename = "ERC20")]
     Erc20,
-    #[serde(rename = "BEP20")]
     Bep20,
-    #[serde(rename = "COMPOUND")]
     Compound,
-    #[serde(rename = "TRON_TRC20")]
     TronTrc20,
-    #[serde(rename = "NEAR_ASSET")]
     NearAsset,
-    #[serde(rename = "SOL_ASSET")]
     SolAsset,
-    #[serde(rename = "FIAT")]
     Fiat,
-    #[serde(rename = "ALGO_ASSET")]
     AlgoAsset,
-    #[serde(rename = "XLM_ASSET")]
     XlmAsset,
-    #[serde(rename = "XDB_ASSET")]
     XdbAsset,
+    Other(String),
 }
 
 impl Default for Type {
     fn default() -> Type {
         Self::BaseAsset
+    }
+}
+
+impl fmt::Display for Type {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Type::BaseAsset => write!(f, "BASE_ASSET"),
+            Type::Erc20 => write!(f, "ERC20"),
+            Type::Bep20 => write!(f, "BEP20"),
+            Type::Compound => write!(f, "COMPOUND"),
+            Type::TronTrc20 => write!(f, "TRON_TRC20"),
+            Type::NearAsset => write!(f, "NEAR_ASSET"),
+            Type::SolAsset => write!(f, "SOL_ASSET"),
+            Type::Fiat => write!(f, "FIAT"),
+            Type::AlgoAsset => write!(f, "ALGO_ASSET"),
+            Type::XlmAsset => write!(f, "XLM_ASSET"),
+            Type::XdbAsset => write!(f, "XDB_ASSET"),
+            Type::Other(value) => write!(f, "{value}"),
+        }
+    }
+}
+
+impl FromStr for Type {
+    type Err = crate::FireblocksError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "BASE_ASSET" => Ok(Type::BaseAsset),
+            "ERC20" => Ok(Type::Erc20),
+            "BEP20" => Ok(Type::Bep20),
+            "COMPOUND" => Ok(Type::Compound),
+            "TRON_TRC20" => Ok(Type::TronTrc20),
+            "NEAR_ASSET" => Ok(Type::NearAsset),
+            "SOL_ASSET" => Ok(Type::SolAsset),
+            "FIAT" => Ok(Type::Fiat),
+            "ALGO_ASSET" => Ok(Type::AlgoAsset),
+            "XLM_ASSET" => Ok(Type::XlmAsset),
+            "XDB_ASSET" => Ok(Type::XdbAsset),
+            other => Ok(Type::Other(other.to_string())),
+        }
     }
 }

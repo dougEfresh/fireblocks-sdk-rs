@@ -48,7 +48,7 @@ fn load_secret() -> anyhow::Result<Vec<u8>> {
     match std::env::var("FIREBLOCKS_SECRET").ok() {
         Some(secret) => Ok(secret.into_bytes()),
         None => {
-            let secret = std::env::var("FIREBLOCKS_SECRET_FILE")
+            let secret = std::env::var("FIREBLOCKS_SECRET")
                 .expect("failed find secret key in FIREBLOCKS_SECRET or FIREBLOCKS_SECRET_FILE");
             let mut file = File::open(secret).expect("file not found");
             let mut secret: String = String::new();
