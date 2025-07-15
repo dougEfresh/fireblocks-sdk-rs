@@ -1,16 +1,16 @@
 use {
     super::Client,
     crate::{
+        FireblocksError,
         apis::{
+            Api,
             vaults_api::{
                 ActivateAssetForVaultAccountParams,
                 CreateVaultAccountParams,
                 GetVaultAccountParams,
             },
-            Api,
         },
         models::{CreateVaultAccountRequest, VaultAccount},
-        FireblocksError,
     },
 };
 

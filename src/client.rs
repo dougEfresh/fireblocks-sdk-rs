@@ -1,21 +1,21 @@
 use {
     crate::{
+        ApiClient,
+        Configuration,
+        FIREBLOCKS_API,
+        FIREBLOCKS_SANDBOX_API,
         apis::{
+            Api,
             d_app_connections_api::DAppConnectionsApi,
             transactions_api::{GetTransactionParams, TransactionsApi},
             vaults_api::{GetVaultAccountAssetAddressesPaginatedParams, VaultsApi},
             whitelisted_contracts_api::WhitelistedContractsApi,
             whitelisted_external_wallets_api::WhitelistedExternalWalletsApi,
             whitelisted_internal_wallets_api::WhitelistedInternalWalletsApi,
-            Api,
         },
         error::{self},
         jwt::{JwtSigningMiddleware, Signer},
         models::{AssetTypeResponse, TransactionResponse, VaultWalletAddress},
-        ApiClient,
-        Configuration,
-        FIREBLOCKS_API,
-        FIREBLOCKS_SANDBOX_API,
     },
     jsonwebtoken::EncodingKey,
     std::{sync::Arc, time::Duration},
@@ -167,11 +167,12 @@ impl Client {
             .asset_id(asset_id.into())
             .build();
 
-        vault_api
+        let addresses: Option<Vec<VaultWalletAddress>> = vault_api
             .get_vault_account_asset_addresses_paginated(params)
             .await
-            .map_err(crate::FireblocksError::FetchAddressesError)
-            .map(|r| r.addresses)
+            .map_err(|e| crate::FireblocksError::FetchAddressesError(e.to_string()))
+            .map(|r| r.addresses)?;
+        Ok(addresses.unwrap_or_default())
     }
 
     pub fn transactions_api(&self) -> &dyn TransactionsApi {

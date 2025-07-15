@@ -1,7 +1,7 @@
 mod setup;
 use {
-    fireblocks_sdk::{Asset, Client, WalletType, ASSET_ETH_TEST, ASSET_SOL_TEST},
-    setup::{config, dummy_name, Config},
+    fireblocks_sdk::{ASSET_ETH_TEST, ASSET_SOL_TEST, Asset, Client, WalletType},
+    setup::{Config, config, dummy_name},
     std::time::Duration,
 };
 

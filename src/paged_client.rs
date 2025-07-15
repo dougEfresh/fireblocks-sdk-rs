@@ -31,7 +31,6 @@ impl PagedClient {
     ///     let pc = PagedClient::new(Arc::new(c));
     ///     let mut vault_stream = pc.vaults(100);
     ///     while let Ok(Some(result)) = vault_stream.try_next().await {
-    ///         tracing::info!("accounts {}", result.accounts.len());
     ///         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
     ///     }
     ///     Ok(())

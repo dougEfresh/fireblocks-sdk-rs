@@ -1,7 +1,7 @@
 use {
     fireblocks_sdk::Client,
     std::{sync::Once, time::Duration},
-    tracing_subscriber::{fmt::format::FmtSpan, EnvFilter},
+    tracing_subscriber::{EnvFilter, fmt::format::FmtSpan},
 };
 
 static INIT: Once = Once::new();

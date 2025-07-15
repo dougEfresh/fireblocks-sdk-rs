@@ -3,14 +3,14 @@
   <a href="https://docs.rs/fireblocks-sdk/">
     <img src="https://docs.rs/fireblocks-sdk/badge.svg" height="25">
   </a>
-  <a href="https://github.com/dougEfresh/fireblocks-sdk-rs/actions">
-    <img src="https://github.com/dougEfresh/fireblocks-sdk-rs/workflows/Continuous%20integration/badge.svg" height="25">
+  <a href="https://github.com/CarteraMesh/fireblocks-sdk-rs/actions">
+    <img src="https://github.com/CarteraMesh/fireblocks-sdk-rs/workflows/Continuous%20integration/badge.svg" height="25">
   </a>
-  <a href="https://deps.rs/repo/github/dougEfresh/fireblocks-sdk-rs">
-    <img src="https://deps.rs/repo/github/dougEfresh/fireblocks-sdk-rs/status.svg" height="25">
+  <a href="https://deps.rs/repo/github/CarteraMesh/fireblocks-sdk-rs">
+    <img src="https://deps.rs/repo/github/CarteraMesh/fireblocks-sdk-rs/status.svg" height="25">
   </a>
-  <a href="https://codecov.io/github/dougEfresh/fireblocks-sdk-rs" > 
-   <img src="https://codecov.io/github/dougEfresh/fireblocks-sdk-rs/graph/badge.svg?token=dILa1k9tlW" height="25"/> 
+  <a href="https://codecov.io/github/CarteraMesh/fireblocks-sdk-rs" > 
+   <img src="https://codecov.io/github/CarteraMesh/fireblocks-sdk-rs/graph/badge.svg?token=dILa1k9tlW" height="25"/> 
  </a>
   <a href="https://crates.io/crates/fireblocks-sdk">
     <img src="https://img.shields.io/crates/v/fireblocks-sdk.svg" height="25">
@@ -48,7 +48,7 @@ fn load_secret() -> anyhow::Result<Vec<u8>> {
     match std::env::var("FIREBLOCKS_SECRET").ok() {
         Some(secret) => Ok(secret.into_bytes()),
         None => {
-            let secret = std::env::var("FIREBLOCKS_SECRET_FILE")
+            let secret = std::env::var("FIREBLOCKS_SECRET")
                 .expect("failed find secret key in FIREBLOCKS_SECRET or FIREBLOCKS_SECRET_FILE");
             let mut file = File::open(secret).expect("file not found");
             let mut secret: String = String::new();

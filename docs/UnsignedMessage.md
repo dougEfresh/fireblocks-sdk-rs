@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **pre_hash** | Option<[**models::PreHash**](PreHash.md)> |  | [optional]
-**content** | **String** | Content to sign on.  Should be 32 bytes long for ECDSA (hash of the actual message to sign) or any length for EdDSA as prehashing is not required.  | 
+**content** | **String** | Content to sign on. - EIP-191: Requires a 32 byte-long string for ECDSA (hash of the actual message to sign) or any length for EdDSA, as prehashing is not required. - EIP-712: Requires an object specifying the structured data format, including `types`, `domain`, `primaryType`, and `message`.  | 
 **bip44address_index** | Option<**i32**> | BIP44 address index | [optional]
 **bip44change** | Option<**f64**> | BIP44 change index | [optional]
 **derivation_path** | Option<**Vec<f64>**> | BIP44 full derivation path | [optional]

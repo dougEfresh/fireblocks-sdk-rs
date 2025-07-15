@@ -9,23 +9,21 @@
 use {
     crate::models,
     serde::{Deserialize, Serialize},
+    serde_with::{DeserializeFromStr, SerializeDisplay},
+    std::str::FromStr,
 };
 
 ///
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, SerializeDisplay, DeserializeFromStr,
+)]
 pub enum ChainDescriptor {
-    #[serde(rename = "ETH")]
     Eth,
-    #[serde(rename = "SOL")]
     Sol,
-    #[serde(rename = "MATIC")]
     Matic,
-    #[serde(rename = "ETH_TEST6")]
     EthTest6,
-    #[serde(rename = "SOL_TEST")]
     SolTest,
-    #[serde(rename = "ETH_TEST_HOODI")]
-    EthTestHOODI,
+    Other(String),
 }
 
 impl std::fmt::Display for ChainDescriptor {
@@ -36,7 +34,22 @@ impl std::fmt::Display for ChainDescriptor {
             Self::Matic => write!(f, "MATIC"),
             Self::EthTest6 => write!(f, "ETH_TEST6"),
             Self::SolTest => write!(f, "SOL_TEST"),
-            Self::EthTestHOODI => write!(f, "ETH_TEST_HOODI"),
+            Self::Other(s) => write!(f, "{s}"),
+        }
+    }
+}
+
+impl FromStr for ChainDescriptor {
+    type Err = crate::FireblocksError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "ETH" => Ok(Self::Eth),
+            "SOL" => Ok(Self::Sol),
+            "MATIC" => Ok(Self::Matic),
+            "EthTest6" => Ok(Self::EthTest6),
+            "SOL_TEST" => Ok(Self::SolTest),
+            _ => Ok(Self::Other(String::from(s))),
         }
     }
 }

@@ -22,8 +22,9 @@ impl From<UnmanagedWallet> for WalletContainer {
                 .into_iter()
                 .map(|w| WalletAssetExternal {
                     id: w.id,
+                    locked_amount: w.locked_amount,
                     // locked_amount: w.locked_amount,
-                    address: w.address.unwrap_or_default(),
+                    address: w.address,
                     tag: w.tag,
                     activation_time: w.activation_time,
                     status: w.status,

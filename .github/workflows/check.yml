@@ -22,7 +22,7 @@ concurrency:
 name: check
 jobs:
   fmt:
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     name: nightly / fmt
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
       - name: cargo fmt --check
         run: cargo fmt --check
   clippy:
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     name: ${{ matrix.toolchain }} / clippy
     permissions:
       contents: read
@@ -43,8 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Get early warning of new lints which are regularly introduced in beta channels.
-        toolchain: [stable, beta]
+        toolchain: [stable]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -59,25 +58,11 @@ jobs:
         with:
           reporter: 'github-pr-check'
           github_token: ${{ secrets.GITHUB_TOKEN }}
-  semver:
-    runs-on: ubuntu-latest
-    name: semver
-    if: false
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Install stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
-      - name: cargo-semver-checks
-        uses: obi1kenobi/cargo-semver-checks-action@v2
   doc:
     # run docs generation on nightly rather than stable. This enables features like
     # https://doc.rust-lang.org/beta/unstable-book/language-features/doc-cfg.html which allows an
     # API be documented as only available in some specific platforms.
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     name: nightly / doc
     steps:
       - uses: actions/checkout@v4

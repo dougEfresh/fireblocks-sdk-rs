@@ -205,7 +205,7 @@ No authorization required
 > Vec<models::UnmanagedWallet> get_contracts()
 List Whitelisted Contracts
 
-Gets a list of whitelisted contracts. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor.
+Gets a list of whitelisted contracts. </br>Endpoint Permission: Admin, Non-Signing Admin, Signer, Approver, Editor, Viewer.
 
 ### Parameters
 
