@@ -1,0 +1,142 @@
+name: Release Candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (do not actually publish)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release-candidate:
+    name: Release Candidate
+    runs-on: ubicloud-standard-2
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get current branch
+        id: branch
+        run: |
+          BRANCH_NAME=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          echo "name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "🌿 Publishing RC from branch: $BRANCH_NAME"
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Rust nightly for formatting
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+
+      - name: Install cargo-release
+        run: cargo install cargo-release
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Calculate RC version
+        id: version
+        run: |
+          # Get current version from Cargo.toml
+          CURRENT_VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          
+          # Get git short SHA
+          GIT_SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "git_sha=$GIT_SHORT_SHA" >> $GITHUB_OUTPUT
+          
+          # Parse version components (strip any existing RC/SHA suffixes)
+          if [[ "$CURRENT_VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+            major=${BASH_REMATCH[1]}
+            minor=${BASH_REMATCH[2]}
+            patch=${BASH_REMATCH[3]}
+            patch=$((patch +1))
+          else
+            echo "❌ Unable to parse version: $CURRENT_VERSION"
+            exit 1
+          fi
+          
+          # Create new RC version with format: major.minor.patch-rc-$GIT_SHORT_SHA
+          NEW_VERSION="$major.$minor.$patch-rc-$GIT_SHORT_SHA"
+           
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Current version: $CURRENT_VERSION"
+          echo "🔗 Git SHA: $GIT_SHORT_SHA"
+          echo "🚀 New RC version: $NEW_VERSION" 
+
+      - name: Run basic checks
+        run: |
+          echo "🔍 Running basic checks for RC..."
+          cargo check --all-features
+          echo "✅ Basic checks passed"
+
+      - name: Dry run RC release
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "🔍 Dry run mode - no changes will be published"
+          echo "Would release RC version: ${{ steps.version.outputs.new_version }}"
+          echo "From branch: ${{ steps.branch.outputs.name }}"
+          cargo release --execute --no-confirm --no-publish --no-push --no-tag ${{ steps.version.outputs.new_version }}
+
+      - name: Execute RC release
+        if: ${{ !inputs.dry_run }}
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          echo "🚀 Publishing Release Candidate v${{ steps.version.outputs.new_version }}"
+          echo "📍 From branch: ${{ steps.branch.outputs.name }}"
+          # Allow publishing from any branch for RC releases
+          cargo release --execute --no-confirm --allow-branch '*' ${{ steps.version.outputs.new_version }}
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dry_run }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.new_version }}
+          name: Release Candidate v${{ steps.version.outputs.new_version }}
+          body: |
+            ## 🧪 Release Candidate v${{ steps.version.outputs.new_version }}
+            
+            **Version bump:** RC from v${{ steps.version.outputs.current_version }})  
+            **Published from branch:** `${{ steps.branch.outputs.name }}`  
+            **Git commit:** `${{ steps.version.outputs.git_sha }}`
+            
+            ⚠️ **This is a release candidate.** It may contain bugs and is not recommended for production use.
+          draft: false
+          prerelease: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Post-release summary
+        if: ${{ !inputs.dry_run }}
+        run: |
+          echo "🎉 Release Candidate published successfully!"
+          echo "📦 Version: v${{ steps.version.outputs.new_version }}"
+          echo "🌿 Branch: ${{ steps.branch.outputs.name }}"
+          echo "📋 GitHub Release: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.new_version }}"

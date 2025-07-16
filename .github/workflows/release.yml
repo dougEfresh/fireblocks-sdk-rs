@@ -1,0 +1,134 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+      dry_run:
+        description: 'Dry run (do not actually publish)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubicloud-standard-2
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Rust nightly for formatting
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+
+      - name: Install cargo-release
+        run: cargo install cargo-release
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Get current version and calculate new version
+        id: version
+        run: |
+          # Get current version from Cargo.toml
+          CURRENT_VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          
+          # Parse version components
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          
+          # Calculate new version based on bump type
+          case "${{ inputs.version_bump }}" in
+            "major")
+              NEW_VERSION="$((major + 1)).0.0"
+              ;;
+            "minor")
+              NEW_VERSION="$major.$((minor + 1)).0"
+              ;;
+            "patch")
+              NEW_VERSION="$major.$minor.$((patch + 1))"
+              ;;
+          esac
+          
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Current version: $CURRENT_VERSION"
+          echo "🚀 New version: $NEW_VERSION (${{ inputs.version_bump }} bump)"
+
+      - name: Run tests
+        if: false
+        run: cargo test --all-features
+
+      - name: Check formatting
+        if: false
+        run: cargo +nightly fmt --all -- --check
+
+      - name: Run clippy
+        if: false
+        run: cargo clippy --all-features -- -D warnings
+
+      - name: Dry run release
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "🔍 Dry run mode - no changes will be published"
+          echo "Would release version: ${{ steps.version.outputs.new_version }}"
+          cargo release --execute --no-confirm --no-publish --no-push --no-tag ${{ steps.version.outputs.new_version }}
+
+      - name: Execute release
+        if: ${{ !inputs.dry_run }}
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          echo "🚀 Executing release for version ${{ steps.version.outputs.new_version }}"
+          cargo release --execute --no-confirm ${{ steps.version.outputs.new_version }}
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dry_run }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.new_version }}
+          name: Release v${{ steps.version.outputs.new_version }}
+          body: |
+            ## Changes in v${{ steps.version.outputs.new_version }}
+            
+            **Version bump:** ${{ inputs.version_bump }} (from v${{ steps.version.outputs.current_version }})
+            
+            See [CHANGELOG.md](./CHANGELOG.md) for detailed changes.
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
