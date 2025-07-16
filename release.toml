@@ -6,7 +6,7 @@ pre-release-commit-message = "chore: release {{crate_name}} v{{version}}"
 
 # Tag settings
 tag-message = "chore: release v{{version}}"
-tag-prefix = "v"
+tag-prefix = ""
 
 # Push and publish settings
 push = true
